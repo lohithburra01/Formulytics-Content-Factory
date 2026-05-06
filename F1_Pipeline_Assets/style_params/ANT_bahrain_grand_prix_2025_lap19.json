@@ -1,0 +1,120 @@
+{
+  "version": 2,
+  "source": {
+    "driver": "ANT",
+    "season": "2025",
+    "grand_prix": "Bahrain Grand Prix",
+    "session": "Q",
+    "lap": 19,
+    "extracted_at": "2026-05-06T17:03:17.641640+00:00"
+  },
+  "style_params": {
+    "apex_phase": 0.44219160590247986,
+    "apex_tightness": 0.8846368078817688,
+    "entry_width": 0.0,
+    "exit_width": 0.0,
+    "vu_shape": 0.6957787481804949,
+    "straight_bias": 0.0,
+    "smoothness": 0.0,
+    "lr_asymmetry": -0.009069024662841521
+  },
+  "corners": [
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 33
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.6862686580514498,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 20
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.3146902740763014,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 15
+    },
+    {
+      "apex_phase": 0.3333333333333335,
+      "apex_tightness": 1.0,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 37
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 0.6579333440393355,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 16
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.568356279388928,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 20
+    },
+    {
+      "apex_phase": 0.2857142857142856,
+      "apex_tightness": 1.0,
+      "vu_shape": 0.7054263565891474,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 43
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 0.851851851851852,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 54
+    },
+    {
+      "apex_phase": -0.04651162790697683,
+      "apex_tightness": 0.9975575980580101,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 44
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 0.7039134056951699,
+      "vu_shape": 0.2437810945273633,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 67
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 0.09452736318407966,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 67
+    },
+    {
+      "apex_phase": -0.04878048780487809,
+      "apex_tightness": 0.9468842654557111,
+      "vu_shape": 0.8253968253968257,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 42
+    }
+  ],
+  "notes": "style_params are lap-wide aggregates kept as fallback. The consumer should prefer corners[] (per-corner apex_phase/apex_tightness/vu_shape/smoothness in lap order) when its own corner count matches len(corners). entry_width, exit_width and straight_bias default to 0 when no centerline is available \u2014 the standalone addon refines them."
+}
