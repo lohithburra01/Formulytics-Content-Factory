@@ -1,0 +1,136 @@
+{
+  "version": 2,
+  "source": {
+    "driver": "NOR",
+    "season": "2025",
+    "grand_prix": "Miami Grand Prix",
+    "session": "Q",
+    "lap": 20,
+    "extracted_at": "2026-05-17T15:10:06.978671+00:00"
+  },
+  "style_params": {
+    "apex_phase": 0.1349667754017156,
+    "apex_tightness": 0.8574029132698847,
+    "entry_width": 0.0,
+    "exit_width": 0.0,
+    "vu_shape": 0.7393258426966293,
+    "straight_bias": 0.0,
+    "smoothness": 0.0,
+    "lr_asymmetry": 0.04976117087835836
+  },
+  "corners": [
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 27
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.5081408144479179,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 13
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.697821107889146,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 42
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 0.7160547490100232,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 18
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 0.772549069665957,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 14
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 47
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 0.8627450980392158,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 34
+    },
+    {
+      "apex_phase": 0.2666666666666666,
+      "apex_tightness": 1.0,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 31
+    },
+    {
+      "apex_phase": 1.0,
+      "apex_tightness": 1.0,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 25
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.7152982872178983,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 13
+    },
+    {
+      "apex_phase": 0.19354838709677402,
+      "apex_tightness": 1.0,
+      "vu_shape": 0.9791666666666667,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 32
+    },
+    {
+      "apex_phase": -0.19999999999999996,
+      "apex_tightness": 1.0,
+      "vu_shape": 0.3114754098360656,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 61
+    },
+    {
+      "apex_phase": -0.19999999999999996,
+      "apex_tightness": 0.6876158297069771,
+      "vu_shape": -0.12568306010928953,
+      "smoothness": 0.0,
+      "kappa_sign": 1,
+      "length": 61
+    },
+    {
+      "apex_phase": -1.0,
+      "apex_tightness": 0.5067356845359103,
+      "vu_shape": 1.0,
+      "smoothness": 0.0,
+      "kappa_sign": -1,
+      "length": 27
+    }
+  ],
+  "notes": "style_params are lap-wide aggregates kept as fallback. The consumer should prefer corners[] (per-corner apex_phase/apex_tightness/vu_shape/smoothness in lap order) when its own corner count matches len(corners). entry_width, exit_width and straight_bias default to 0 when no centerline is available \u2014 the standalone addon refines them."
+}
