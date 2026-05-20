@@ -50,6 +50,7 @@ classes_tuple = (
     ADDONPREFERENCES_UserPref,
     f1_studio_panel.PANEL_PT_F1_Studio,
     f1_track_setup_panel.PANEL_PT_F1_TrackSetup,
+    f1_track_setup_panel.PANEL_PT_F1_StyleTune,
     WM_OT_delete_rig_dialog,
     WM_OT_delete_anim_preset_confirm,
     WM_OT_overwrite_anim_preset_confirm,

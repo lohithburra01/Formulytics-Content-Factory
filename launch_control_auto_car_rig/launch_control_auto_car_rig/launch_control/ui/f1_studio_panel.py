@@ -138,6 +138,16 @@ class PANEL_PT_F1_Studio(bpy.types.Panel):
         row.operator(OBJECT_OT_f1_generate_scene.bl_idname,
                      icon='RENDER_ANIMATION', text="GENERATE SCENE")
 
+        # Racing-line blend used by the auto-chain's align step. 0 = rigid
+        # Kabsch only (path stays in raw telemetry shape); 1 = fully snapped
+        # to the per-driver styled racing line. Surfaced here because the
+        # standalone addon's panel (which used to expose it) was dropped in
+        # the merge — without this the user has no way to tune it.
+        track_viz_props = getattr(scene, "f1_track_viz_props", None)
+        if track_viz_props is not None:
+            layout.prop(track_viz_props, "alignment_blend",
+                        text="Racing Line Blend", slider=True)
+
         layout.separator()
         row = layout.row()
         row.scale_y = 1.3

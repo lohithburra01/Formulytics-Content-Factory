@@ -7,6 +7,7 @@ set "SVG=%ROOT%CANADA CIRCUIT.svg"
 set "OUTLINE=%ROOT%F1_Pipeline_Assets\tracks\canadian_grand_prix_outline.json"
 set "RACELINE=%ROOT%F1_Pipeline_Assets\tracks\canadian_grand_prix_raceline.json"
 set "CSV=%ROOT%F1_Pipeline_Assets\exports\canada_2026_synthetic.csv"
+set "REFCSV=%ROOT%F1_Pipeline_Assets\exports\reference_2025_canada_q.csv"
 set "OUTMP4=%ROOT%canadian_grand_prix_2026_optimal_lap.mp4"
 
 if not exist "%PYTHON%" goto :err_py
@@ -17,7 +18,7 @@ echo === Stage 1: SVG -^> outline ===
 if errorlevel 1 goto :err
 
 echo === Stage 2: raceline + 2026 physics sim ===
-"%PYTHON%" "%ROOT%sim_2026_lap.py" --outline "%OUTLINE%" --raceline-out "%RACELINE%" --csv-out "%CSV%"
+"%PYTHON%" "%ROOT%sim_2026_lap.py" --outline "%OUTLINE%" --raceline-out "%RACELINE%" --csv-out "%CSV%" --reference-csv "%REFCSV%"
 if errorlevel 1 goto :err
 
 echo === Stage 3: render video ===

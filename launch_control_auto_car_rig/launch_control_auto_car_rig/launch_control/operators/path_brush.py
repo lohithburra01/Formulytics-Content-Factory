@@ -3,6 +3,7 @@ import gpu
 import numpy as np
 from gpu_extras.batch import batch_for_shader
 from bpy_extras.view3d_utils import region_2d_to_origin_3d, region_2d_to_vector_3d, location_3d_to_region_2d
+from mathutils import Vector
 
 
 class F1_OT_PathBrush(bpy.types.Operator):
@@ -67,27 +68,58 @@ class F1_OT_PathBrush(bpy.types.Operator):
         if obj is None or obj.type != 'CURVE':
             return
 
-        mouse_pos = np.array([self._mouse_3d.x, self._mouse_3d.y])
+        # Mouse raycast is in WORLD space, but bp.co.x/y are OBJECT-LOCAL.
+        # If the curve has any transform (parent, manual move, rotation,
+        # scale) those two spaces don't match and the radius check silently
+        # excludes every point. Convert mouse to object-local space, then
+        # compare and modify entirely in local space.
+        mw_inv = obj.matrix_world.inverted()
+        local_mouse_v = mw_inv @ Vector(self._mouse_3d)
+        mouse_pos = np.array([local_mouse_v.x, local_mouse_v.y])
+        # Scale also affects what radius means in local space. For uniform
+        # scale we divide; for non-uniform we use the average XY scale as a
+        # best-effort match.
+        sx, sy, _ = obj.matrix_world.to_scale()
+        scale_xy = max((abs(sx) + abs(sy)) * 0.5, 1e-6)
+        local_radius = radius / scale_xy
 
+        touched_any = False
         for spline in obj.data.splines:
-            if spline.type != 'BEZIER':
+            # POLY support added so Q_RACING_LINE / Q_RACING_LINE_STYLED_*
+            # (created as POLY in f1_track_viz.py) can be sculpted. BEZIER
+            # uses .bezier_points (3D co), POLY uses .points (4D co — xyzw).
+            if spline.type == 'BEZIER':
+                points = spline.bezier_points
+                is_poly = False
+            elif spline.type == 'POLY':
+                points = spline.points
+                is_poly = True
+            else:
                 continue
-            for bp in spline.bezier_points:
+            for bp in points:
                 pt_pos = np.array([bp.co.x, bp.co.y])
                 dist   = np.linalg.norm(mouse_pos - pt_pos)
-                if dist > radius:
+                if dist > local_radius:
                     continue
-                falloff   = (np.cos(dist / radius * np.pi) + 1) / 2
+                falloff   = (np.cos(dist / local_radius * np.pi) + 1) / 2
                 weight    = falloff * strength
                 direction = (pt_pos - mouse_pos) if scene.f1_brush_mode == 'PUSH' else (mouse_pos - pt_pos)
                 d_mag     = np.linalg.norm(direction)
                 if d_mag < 1e-8:
                     continue
                 direction /= d_mag
-                bp.co.x += direction[0] * weight
-                bp.co.y += direction[1] * weight
-                bp.handle_left_type  = 'AUTO'
-                bp.handle_right_type = 'AUTO'
+                bp.co.x += direction[0] * weight / scale_xy
+                bp.co.y += direction[1] * weight / scale_xy
+                if not is_poly:
+                    bp.handle_left_type  = 'AUTO'
+                    bp.handle_right_type = 'AUTO'
+                touched_any = True
+
+        # Force a curve redraw — without update_tag a few Blender versions
+        # cache the evaluated curve geometry and the visible line lags
+        # behind the actual point data until something else dirties it.
+        if touched_any:
+            obj.data.update_tag()
 
     def _draw_brush_circle(self, context):
         if self._mouse_3d is None:

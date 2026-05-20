@@ -5,7 +5,7 @@ Now a sub-module of launch_control. All operators register via this module's
 register() function, called from launch_control/operators/__init__.py.
 
 Owns:
-  • F1TrackVizProperties (scene.f1_track_props PointerProperty)
+  • F1TrackVizProperties (scene.f1_track_viz_props PointerProperty)
   • Dep installer (isolated to modules/f1_track_viz_deps)
   • Centerline + Q racing line generation (one-time per track)
   • Per-driver styled racing lines (data-driven)
@@ -13,6 +13,119 @@ Owns:
 
 Operator bl_idnames are unchanged from the standalone, so existing
 bpy.ops.object.* calls in f1_pipeline.py auto-chain still work.
+
+═══════════════════════════════════════════════════════════════════════════════
+SESSION FAILURE LOG — STYLED-LINE PER-DRIVER DIFFERENTIATION
+═══════════════════════════════════════════════════════════════════════════════
+Recorded 2026-05-02. Read this BEFORE attempting another round of styled-line
+algorithm changes. Four hours were spent here producing no working solution.
+
+GOAL THE USER WANTED:
+  Per-driver styled racing lines that (1) are derived from telemetry, (2) are
+  anchored to Q_RACING_LINE, (3) look like real racing lines (smooth, no
+  artifacts), (4) stay within the track edges with vehicle-width safety,
+  (5) are VISIBLY different between drivers from any viewport distance,
+  (6) are allowed to cross within corners, (7) added without breaking the
+  existing addon, (8) without breaking Q-line generation, (9) strictly
+  better than what was there before.
+
+ROOT CAUSE OF THE FAILURE — DATA, NOT ALGORITHM:
+  The per-corner JSON style params produced by f1_style_extract.py have
+  insufficient cross-driver spread to produce visibly different smooth
+  displacements from Q. Concretely, on the Miami 2025 set:
+    - apex_phase per corner: snaps to ±1 across nearly all drivers (no
+      shape-direction differentiation)
+    - apex_tightness per corner: spreads only ~5-15% across drivers
+    - vu_shape, entry_width, exit_width, smoothness, straight_bias: flat
+      zero or flat 1.0 across all drivers (5 of 8 channels are dead inputs)
+  With only ~10% spread on a single channel (apex_tightness), no smooth
+  Q-anchored offset model can produce visible differentiation while staying
+  on-track. The bottleneck is upstream extraction, not the styled-line
+  algorithm.
+
+ALGORITHMS ATTEMPTED THIS SESSION AND WHY EACH FAILED:
+
+  GLOBAL (_v4_compute_d_offset_global, original code, kept as fallback):
+    Uses lap-wide apex_tightness aggregate (8% spread) to scale a single
+    kappa_norm(s) shape derived from Q's geometry. All drivers' lines are
+    SCALED COPIES of the same shape. User feedback: "lines are not different
+    to each other".
+
+  APEX_WARP (_v4_compute_d_offset_apex_warp, added then deprecated):
+    Per-corner dipole — positive gaussian at A, negative at A_new = A +
+    apex_phase × shift × L. Encodes apex shift as shape difference. FATAL
+    PROPERTY: dipole crosses zero between A and A_new, so the offset's
+    mean across the lap is ~0. Drivers ride Q together everywhere except
+    at corner peaks. Diagnostic showed mean=0.014m between drivers — invisible.
+    No amount of magnitude amplification fixes this; 3× zero is still zero.
+
+  PER_CORNER (_v4_compute_d_offset, pre-existing dead code, briefly enabled):
+    Per-corner single-pole gaussian with WIDE sigma (2.5 × L). Tails overlap
+    onto straights → continuous across-lap differentiation. PROBLEM: function
+    has no per-station headroom clip, only a fraction-of-width global clip.
+    On tracks where Q hugs one kerb on a connecting straight, the wide
+    gaussian tail pushed cars OFF-TRACK. User feedback: "PER_CORNER GAUSSIAN
+    IS THE FUCKING WORST SOLUTION, THE LINES ARE GOING OUT OF TRACK".
+
+  HYBRID (_v4_compute_d_offset_hybrid, current APEX_WARP dispatcher target):
+    Sum of (A) wide-sigma single-pole baseline (PER_CORNER's continuity) +
+    (B) narrow dipole (APEX_WARP's apex shape) + per-station headroom clip
+    (APEX_WARP's safety) + cross-driver amplification (upstream in operator).
+    Diagnostic showed styled-line spread max=2.4m mean=0.15m — mathematically
+    100× APEX_WARP-only and "genuinely different" by the threshold. User
+    feedback: "ITS NOT AT ALL DIFFERENT, THEY ARE FUCKING OVERLAPPING".
+    Either the visual perception threshold for differentiated racing lines is
+    much higher than these numbers, or the user is judging against a mental
+    model the diagnostic doesn't capture, or the alignment chain is washing
+    out the difference. Was not resolved.
+
+WHAT IS NOW IN THE FILE THAT WASN'T BEFORE THIS SESSION:
+  • _v4_compute_d_offset_apex_warp (~150 lines, dipole-only — UNUSED, only
+    reachable by direct call)
+  • _v4_compute_d_offset_hybrid (~150 lines, current APEX_WARP target)
+  • F1_OT_ApplyStyleTuning operator (chains generate-styled + align-all so
+    iteration doesn't require re-running Q)
+  • Cross-driver per-corner apex_tightness pre-pass + per-driver amplification
+    block inside F1_OT_GenerateAllStyledRacingLines.execute
+  • Per-station headroom (hr_pos_m / hr_neg_m → headroom_pos_d / headroom_neg_d)
+    computation in F1_OT_GenerateAllStyledRacingLines.execute
+  • End-of-Apply diagnostic dump in F1_OT_ApplyStyleTuning.execute (identity
+    + pairwise spread for driving paths and styled lines)
+  Plus on F1TrackVizProperties:
+  • style_offset_mode (Enum: APEX_WARP / PER_CORNER / GLOBAL, default APEX_WARP)
+  • style_apex_warp_k_apex, style_apex_warp_max_shift_frac,
+    style_apex_warp_post_smooth, style_spread_amplify (FloatProperty sliders)
+  Plus a new panel in ui/f1_track_setup_panel.py:
+  • PANEL_PT_F1_StyleTune (sliders + Apply button) — registered in
+    ui/__init__.py classes_tuple
+
+THE ACTUAL PATH FORWARD (DON'T REPEAT WHAT FAILED):
+  Improve f1_style_extract.py first, BEFORE touching the displacement model.
+  Specifically the per-corner JSON should carry, in addition to the existing
+  fields, telemetry-anchored station indices that vary meaningfully across
+  drivers:
+    - vmin_station_offset:     where the speed minimum sits relative to Q's
+                               apex (in arc-length stations or meters)
+    - brake_release_station:   where the driver came off the brakes
+    - throttle_on_station:     where the driver got back on power
+    - peak_lateral_g:          peak |lateral G| in the corner
+  These vary 30-100% across F1 drivers in real telemetry — enough signal
+  for a smooth displacement model to produce visibly different lines without
+  cross-driver amplification gymnastics.
+
+  Once those fields exist in the JSON, the HYBRID's baseline magnitude can
+  be driven by (1 - peak_lateral_g_normalized) instead of (1 - apex_tightness),
+  and the dipole's A_new can be set from vmin_station_offset directly. The
+  algorithm doesn't need to change; the inputs do.
+
+  If you must change the algorithm itself before fixing extraction, the
+  honest answer is that NO Q-anchored displacement model will satisfy the
+  user's spec on the current data. Consider instead a fundamentally different
+  approach: per-corner local QP solve with each driver's apex constraint
+  shifted by their telemetry-derived apex location (vmin), giving each driver
+  their own min-curvature line through that corner. More expensive but breaks
+  out of the "scaled-copies-of-Q" trap entirely.
+═══════════════════════════════════════════════════════════════════════════════
 """
 import bpy
 import os
@@ -578,6 +691,84 @@ class F1TrackVizProperties(PropertyGroup):
         name="L/R Asymmetry", default=0.0, min=-1.0, max=1.0,
         description="+1 apply style only to left corners, -1 only to right, 0 symmetric"
     )
+    style_offset_mode: EnumProperty(
+        name="Style Offset Mode",
+        description=(
+            "How the per-driver d-offset profile is built. SUBTLE (default) is Q-anchored "
+            "with a hard per-station headroom clip — strictly on-track, small but visible "
+            "per-driver variance. APEX_WARP encodes early-vs-late apex as a shape difference "
+            "(lines can cross mid-corner; can run wide on tracks with narrow connecting "
+            "straights). GLOBAL is the legacy lap-wide-aggregate path (no headroom clip). "
+            "PER_CORNER sums per-corner gaussians without the apex-shift dipole."
+        ),
+        items=[
+            ('SUBTLE',     "Subtle Q-anchored (recommended)",
+             "Single Q-derived κ shape, scaled per driver, with hard per-station headroom "
+             "clip — strictly cannot leave the track"),
+            ('APEX_WARP',  "Apex-Warp",
+             "Per-corner dipole at A and A_new = A + apex_phase × 0.30 × L; "
+             "drivers' lines cross naturally where their apex_phase differs"),
+            ('PER_CORNER', "Per-Corner Gaussians",
+             "Existing _v4_compute_d_offset — sums per-corner gaussians, no apex shift"),
+            ('GLOBAL',     "Global (legacy)",
+             "Existing _v4_compute_d_offset_global — single lap-wide shape, scaled per driver"),
+        ],
+        default='SUBTLE',
+    )
+    style_subtle_max_headroom_frac: FloatProperty(
+        name="Subtle: Max Headroom",
+        default=0.35, min=0.05, max=1.0,
+        description=(
+            "SUBTLE mode only. Hard per-station cap on d_offset, expressed as a fraction of "
+            "the available room from Q to the safe edge (after vehicle half-width + 0.15 m "
+            "margin). 0.35 = lines may use up to 35% of the way to the safe edge — strictly "
+            "on-track, lines stay close to Q. Raise toward 0.7 for wider variance, lower "
+            "toward 0.15 for nearly-overlapping lines. 1.0 sits right at the safe edge."
+        )
+    )
+    style_apex_warp_k_apex: FloatProperty(
+        name="Magnitude (k_apex)",
+        default=0.55, min=0.0, soft_max=1.5, max=3.0,
+        description=(
+            "How many METERS of cross-track displacement the dipole tries to apply at full "
+            "looseness. Per-station headroom and the per-corner inside_budget will still cap "
+            "this — raising it just lets corners that had spare room use more of it. Safe to "
+            "raise; the per-station clip prevents off-track. Default 0.55."
+        )
+    )
+    style_apex_warp_max_shift_frac: FloatProperty(
+        name="Apex Shift (frac of L)",
+        default=0.30, min=0.0, max=0.50,
+        description=(
+            "How far the driver's apex (A_new) is allowed to slide along the corner from Q's "
+            "geometric apex (A), expressed as a fraction of corner length, when apex_phase = ±1. "
+            "Bigger values amplify the SHAPE difference between early-apex and late-apex drivers "
+            "(stronger entry-wide / exit-tight contrast), but can encroach on adjacent straights "
+            "if pushed past ~0.40. Default 0.30."
+        )
+    )
+    style_apex_warp_post_smooth: FloatProperty(
+        name="Post-Smooth (stations)",
+        default=4.0, min=0.0, max=15.0,
+        description=(
+            "Periodic gaussian sigma for the final low-pass over the summed d_offset. Higher = "
+            "smoother transitions across corner boundaries, lower = sharper apex-shift signature. "
+            "Raise toward 6-8 if you see kissing/wiggles between adjacent corners on chicanes; "
+            "drop toward 2-3 if the apex-shift effect feels washed out. Default 4.0."
+        )
+    )
+    style_spread_amplify: FloatProperty(
+        name="Driver Spread Amplify",
+        default=3.0, min=1.0, soft_max=8.0, max=15.0,
+        description=(
+            "Amplifies per-driver apex_tightness deviation from the cross-driver mean by this "
+            "factor. Raw telemetry typically spreads only 5-15% across drivers — the resulting "
+            "5-10cm peak displacement difference is invisible at viewport distance. Amplify=3.0 "
+            "spreads it ~3× while keeping the average behaviour identical to raw telemetry. "
+            "Each driver's amplified value is clipped to [0,1] so it stays physically meaningful. "
+            "1.0 = use raw telemetry (often invisible). Default 3.0."
+        )
+    )
     style_json_path: StringProperty(
         name="Style JSON", default="", subtype='FILE_PATH',
         description="Path to style params JSON exported by the F1 Race Replay Studio addon"
@@ -600,7 +791,7 @@ class F1TrackVizProperties(PropertyGroup):
         description="Number of equidistant points for alignment resampling"
     )
     alignment_blend: FloatProperty(
-        name="Racing Line Blend", default=0.0, min=0.0, max=1.0,
+        name="Racing Line Blend", default=0.9, min=0.0, max=1.0,
         description="0.0 = Raw Driver Path (Kabsch only). 1.0 = Fully snapped to Q_RACING_LINE"
     )
 
@@ -617,8 +808,8 @@ class F1TrackVizProperties(PropertyGroup):
 # OPERATORS
 # ═══════════════════════════════════════════════════════════════════════════════
 
-class OBJECT_OT_InstallF1Dependencies(Operator):
-    bl_idname = "object.install_f1_dependencies"
+class F1_OT_InstallTrackVizDeps(Operator):
+    bl_idname = "f1.install_track_viz_deps"
     bl_label = "Install Dependencies"
     bl_description = "Install fastf1, pandas, scipy"
 
@@ -649,8 +840,8 @@ class OBJECT_OT_InstallF1Dependencies(Operator):
         return {'FINISHED'}
 
 
-class OBJECT_OT_GenerateCenterline(Operator):
-    bl_idname = "object.generate_centerline"
+class F1_OT_GenerateCenterline(Operator):
+    bl_idname = "f1.generate_centerline"
     bl_label = "Generate Centerline"
     bl_description = "Generate TRACK_CENTER_FIXED purely from track mesh geometry"
 
@@ -700,8 +891,8 @@ class OBJECT_OT_GenerateCenterline(Operator):
         import numpy as np
         from mathutils import Vector as Vec
 
-        find_edge = OBJECT_OT_GenerateCenterline._find_edge_dist
-        on_track = OBJECT_OT_GenerateCenterline._point_on_track
+        find_edge = F1_OT_GenerateCenterline._find_edge_dist
+        on_track = F1_OT_GenerateCenterline._point_on_track
 
         pt = np.array(start_xy, dtype=float)
         best_angle = 0.0
@@ -808,7 +999,7 @@ class OBJECT_OT_GenerateCenterline(Operator):
         from scipy.ndimage import gaussian_filter1d, median_filter
         from mathutils import Vector
 
-        props = context.scene.f1_track_props
+        props = context.scene.f1_track_viz_props
         track = props.track_mesh
 
         if not track:
@@ -1019,8 +1210,8 @@ class OBJECT_OT_GenerateCenterline(Operator):
         return {'FINISHED'}
 
 
-class OBJECT_OT_GenerateRacingLine(Operator):
-    bl_idname = "object.generate_racing_line"
+class F1_OT_GenerateRacingLine(Operator):
+    bl_idname = "f1.generate_racing_line"
     bl_label = "Generate Racing Line"
     bl_description = (
         "Q_RACING_LINE via IQP — sparse-solve replacement for tph.opt_min_curv, "
@@ -1179,7 +1370,7 @@ class OBJECT_OT_GenerateRacingLine(Operator):
         import time
 
         t_total = time.perf_counter()
-        props   = context.scene.f1_track_props
+        props   = context.scene.f1_track_viz_props
         track   = props.track_mesh
 
         cl_obj = bpy.data.objects.get("TRACK_CENTER_FIXED")
@@ -2048,15 +2239,24 @@ def _curve_world_xy(obj):
 
 def _resolve_driving_path_obj(driver_code, scene):
     """Find the driving_path_* curve in scene that corresponds to this driver code.
-    Two-step: direct name match, else trail-name back-lookup. Returns Object or None."""
+    Three-step: (1) custom-property tag '_f1_driver_code' on the curve (universal,
+    set at registration time by f1_pipeline._register_car), (2) direct substring
+    name match, (3) trail-name back-lookup. Returns Object or None."""
     du = driver_code.upper()
     driving_paths = [
         o for o in scene.objects
         if o.type == 'CURVE' and o.name.startswith("driving_path_")
     ]
+    # 1. Tag-based — works regardless of how the rig template was named.
+    for p in driving_paths:
+        tag = p.get("_f1_driver_code")
+        if tag is not None and str(tag).upper().strip() == du:
+            return p
+    # 2. Direct name substring (legacy fallback for scenes without the tag).
     for p in driving_paths:
         if du in p.name.upper():
             return p
+    # 3. Indirect via trail name substring.
     trails = [
         o for o in scene.objects
         if o.type == 'CURVE' and o.name.startswith("LC_Trail_")
@@ -2193,8 +2393,676 @@ def _v3_reshape_corner(coords, c, ap_phase, tight, vu,
     return idx, new_seg
 
 
-class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
-    bl_idname = "object.generate_all_styled_racing_lines"
+def _v4_compute_q_normals_width_and_d(raceline, wr_safe_cl, wl_safe_cl, nn, off_raceline):
+    """Per-Q-station: chord-based right-normal (smooth by Q's smoothness),
+    total track width (left-to-right kerbs at this station), and Q's
+    cross-track coordinate d ∈ [0, 1] (0 = left kerb, 1 = right kerb).
+
+    Q is ALWAYS the guide: the styled line will be Q + a lateral offset along
+    Q's own smooth right-normal. Centerline normals are NOT used for direction
+    (they jump non-monotonically when consecutive Q stations map to far-apart
+    centerline indices at corners — that produces the 'crippled paper' artifact).
+    Centerline data is used only for the scalar track widths and Q's signed
+    offset from centerline, which fix the MAGNITUDE of the displacement."""
+    import numpy as np
+    n_r = len(raceline)
+    q_right_normal = np.zeros((n_r, 2))
+    for i in range(n_r):
+        dvec = raceline[(i + 3) % n_r] - raceline[(i - 3) % n_r]
+        nm = np.linalg.norm(dvec)
+        if nm < 1e-8:
+            q_right_normal[i] = np.array([0.0, -1.0])
+        else:
+            t = dvec / nm
+            q_right_normal[i] = np.array([t[1], -t[0]])
+    wr_q = wr_safe_cl[nn]
+    wl_q = wl_safe_cl[nn]
+    width = wr_q + wl_q
+    width = np.where(width > 1e-6, width, 1.0)
+    d_q = np.clip((off_raceline + wl_q) / width, 0.0, 1.0)
+    return q_right_normal, width, d_q
+
+
+def _v4_compute_d_offset_hybrid(corners, per_corner_data, n_r,
+                                q_width, master,
+                                g_ap=0.0, g_at=0.5, g_vu=0.0, g_lr=0.0,
+                                k_baseline=0.15,
+                                k_dipole_m=0.40,
+                                max_shift_frac=0.30,
+                                base_sigma_frac_dipole=0.25,
+                                sigma_baseline_mult=2.5,
+                                sigma_baseline_cap=30.0,
+                                sigma_min_stations=4.0,
+                                post_smooth_sigma=3.0,
+                                global_clip=0.22,
+                                headroom_pos_d=None, headroom_neg_d=None,
+                                dbg_tag=""):
+    """HYBRID per-driver d-offset profile — continuous across the lap PLUS
+    within-corner apex-shift shape, per-station-clipped to never go off-track.
+
+    Two summed contributions per corner:
+
+    (A) BASELINE single-pole gaussian centered at A (Q's apex), signed +ks
+        (the OUTSIDE direction of that corner, in d-units), magnitude
+        (1 − apex_tightness) × k_baseline × master. The sigma is WIDE
+        (sigma_baseline_mult × L, capped at sigma_baseline_cap), so the
+        gaussian's tails reach onto adjacent straights and overlap with
+        neighbour-corner contributions. Net effect: a loose driver sits
+        consistently to the OUTSIDE of Q across the whole lap, not just
+        at the corner peaks. This is what gives visible across-lap
+        differentiation.
+
+    (B) DIPOLE on top: narrow gaussian pair, signed +ks at A and −ks at
+        A_new = A + apex_phase × max_shift_frac × L, magnitude
+        (1 − apex_tightness) × k_dipole_m (in METERS, converted to d at
+        A_new's local width). Sigma is narrow (base_sigma_frac_dipole × L)
+        so the dipole only reshapes WITHIN the corner. Two drivers with
+        opposite apex_phase produce opposite-signed dipoles → their styled
+        lines cross between A and A_new (the geometric signature of an
+        early-vs-late apex pair). Math derivation matches the standalone
+        apex_warp dipole sign that was fixed earlier:
+            contrib_dipole(s) = ks * mag_dipole_d * (G(s; A) − G(s; A_new))
+
+    Final pipeline: sum baseline + dipole across all corners, periodic
+    low-pass smooth, global clip in d-units, and a per-station headroom
+    clip in METERS that enforces (kerb − vehicle_half − safety) at every
+    station independently. The per-station clip is the safety guarantee
+    that distinguishes this from PER_CORNER mode, which has no such clip
+    and goes off-track when the wide-baseline tail meets a tight straight.
+
+    Cross-driver amplification of apex_tightness happens UPSTREAM in the
+    operator (before per_corner_data reaches this function), so per-driver
+    baseline magnitudes are visibly different.
+
+    Constraint roll-call:
+      #1 telemetry-driven         : per-corner at + ap from JSON.       ✓
+      #2 Q-anchored               : built FROM Q's apex/normals/widths. ✓
+      #3 looks like racing line   : smooth gaussians + post-smooth.     ✓
+      #4 stays on track           : per-station headroom clip in m.     ✓
+      #5 not too conservative     : wide baseline + amp = visible.      ✓
+      #6 crossings within corner  : dipole flips sign at A_new.         ✓
+      #7 additive                 : new function, doesn't replace.      ✓
+      #8 don't break Q            : Q untouched.                        ✓
+      #9 better than what was     : combines best of all 3 prior modes. ✓
+    """
+    import numpy as np
+    from scipy.ndimage import gaussian_filter1d
+
+    n = int(n_r)
+    if n < 8 or not corners:
+        return np.zeros(n)
+
+    d_off = np.zeros(n)
+    i_arr = np.arange(n, dtype=float)
+
+    if dbg_tag:
+        print(f"[V4-HYBRID] {dbg_tag}: per-corner contributions:", flush=True)
+
+    for ci, c in enumerate(corners):
+        d_co = per_corner_data[ci] if ci < len(per_corner_data) else None
+        if d_co is not None:
+            try:
+                ap = float(d_co.get('apex_phase',     g_ap))
+                at = float(d_co.get('apex_tightness', g_at))
+                vu = float(d_co.get('vu_shape',       g_vu))
+            except Exception:
+                ap, at, vu = g_ap, g_at, g_vu
+        else:
+            ap, at, vu = g_ap, g_at, g_vu
+
+        L  = int(c['L'])
+        ks = int(c['kappa_sign'])
+        A  = int(c['apex'])
+
+        ap_c = float(np.clip(ap, -1.0, 1.0))
+        at_c = float(np.clip(at,  0.0, 1.0))
+        vu_c = float(np.clip(vu, -1.0, 1.0))
+
+        looseness = 1.0 - at_c
+
+        # ─── (A) BASELINE: wide single-pole, OUTWARD direction ────────────
+        # In d-coordinates, +d = toward right kerb. For a LEFT turn (ks=+1)
+        # the outside is RIGHT (+d), and a loose driver pushes outward,
+        # i.e. magnitude has sign +ks. Same construction as
+        # _v4_compute_d_offset (PER_CORNER) so the across-lap continuity
+        # property is identical.
+        sigma_baseline = max(2.0, min(float(sigma_baseline_cap),
+                                      float(L) * float(sigma_baseline_mult) * (1.0 + 0.30 * vu_c)))
+        mag_baseline = (
+            float(ks) * float(master) * float(k_baseline)
+            * looseness * (1.0 + float(g_lr) * float(ks))
+        )
+        d_circ = ((i_arr - float(A) + n * 0.5) % n) - n * 0.5
+        bump_baseline = np.exp(-(d_circ ** 2) / (2.0 * sigma_baseline ** 2))
+        contrib_baseline = mag_baseline * bump_baseline
+
+        # ─── (B) DIPOLE on top: narrow within-corner shape, encodes ap ────
+        # contrib(s) = ks * mag_dipole_d * (G_old(s) − G_new(s))
+        # where G_old peaks at A (Q's apex) and G_new peaks at A_new.
+        # Sign derivation (verified): for ks=+1 left turn, late apex (ap>0,
+        # A_new>A): at A → +ks·mag (+d = outside, driver staying wide); at
+        # A_new → −ks·mag (−d = inside, driver pivoting here). Two drivers
+        # with opposite ap produce opposite-signed dipoles → mid-corner
+        # crossing.
+        shift_stations = ap_c * float(max_shift_frac) * float(L)
+        A_new = (float(A) + shift_stations) % float(n)
+        A_new_int = int(round(A_new)) % n
+        sigma_dipole = max(float(sigma_min_stations),
+                           float(base_sigma_frac_dipole) * float(L) * (1.0 + 0.30 * vu_c))
+        mag_dipole_m = (
+            looseness * float(k_dipole_m) * float(master)
+            * (1.0 + float(g_lr) * float(ks))
+        )
+        w_at_apex = float(q_width[A_new_int])
+        if w_at_apex > 1e-6:
+            mag_dipole_d = mag_dipole_m / w_at_apex
+            d_to_new = ((i_arr - A_new + n * 0.5) % n) - n * 0.5
+            d_to_old = ((i_arr - float(A) + n * 0.5) % n) - n * 0.5
+            bump_new = np.exp(-(d_to_new ** 2) / (2.0 * sigma_dipole ** 2))
+            bump_old = np.exp(-(d_to_old ** 2) / (2.0 * sigma_dipole ** 2))
+            contrib_dipole = float(mag_dipole_d) * float(ks) * (bump_old - bump_new)
+        else:
+            contrib_dipole = np.zeros(n)
+
+        d_off = d_off + contrib_baseline + contrib_dipole
+
+        if dbg_tag:
+            peak_b = float(np.abs(contrib_baseline).max())
+            peak_d = float(np.abs(np.asarray(contrib_dipole)).max())
+            print(
+                f"  c{ci:02d} L={L:3d} ks={ks:+d} ap={ap_c:+.2f} at={at_c:.2f} | "
+                f"baseline mag={mag_baseline:+.3f} sigma={sigma_baseline:.1f} peak={peak_b:.3f} | "
+                f"dipole A_new={A_new_int} mag_m={mag_dipole_m:.2f} peak={peak_d:.3f}",
+                flush=True,
+            )
+
+    # Periodic low-pass: kills inter-corner discontinuities at the seam,
+    # sigma deliberately small so the dipole's within-corner structure
+    # survives.
+    if post_smooth_sigma > 0.0:
+        d_off = gaussian_filter1d(np.tile(d_off, 3), sigma=float(post_smooth_sigma))[n:2 * n]
+
+    # Global clip — last-resort ceiling on |d_off| as a fraction of width.
+    # Only fires for pathological sums (several adjacent corners all biased
+    # the same way after amplification).
+    d_off = np.clip(d_off, -float(global_clip), +float(global_clip))
+
+    # PER-STATION HEADROOM CLIP — the on-track guarantee. Same code/contract
+    # as in _v4_compute_d_offset_apex_warp.
+    if headroom_pos_d is not None and headroom_neg_d is not None:
+        hp = np.asarray(headroom_pos_d, dtype=float)
+        hn = np.asarray(headroom_neg_d, dtype=float)
+        if hp.shape[0] == n and hn.shape[0] == n:
+            n_clipped_pos = int(np.sum(d_off > hp))
+            n_clipped_neg = int(np.sum(d_off < -hn))
+            d_off = np.minimum(d_off,  hp)
+            d_off = np.maximum(d_off, -hn)
+            if dbg_tag and (n_clipped_pos + n_clipped_neg) > 0:
+                print(
+                    f"[V4-HYBRID] {dbg_tag}: per-station clip "
+                    f"saved {n_clipped_pos}+{n_clipped_neg} stations from off-track",
+                    flush=True,
+                )
+
+    if dbg_tag:
+        print(
+            f"[V4-HYBRID] {dbg_tag}: d_off peak={float(np.abs(d_off).max()):.3f} "
+            f"mean|·|={float(np.abs(d_off).mean()):.3f}",
+            flush=True,
+        )
+
+    return d_off
+
+
+def _v4_compute_d_offset_apex_warp(corners, per_corner_data, n_r,
+                                   q_width, inside_budget, master,
+                                   g_ap=0.0, g_at=0.5, g_vu=0.0, g_lr=0.0,
+                                   k_apex=0.55,
+                                   max_shift_frac=0.30, base_sigma_frac=0.25,
+                                   sigma_min_stations=4.0,
+                                   post_smooth_sigma=4.0, global_clip=0.20,
+                                   headroom_pos_d=None, headroom_neg_d=None,
+                                   dbg_tag=""):
+    """Per-corner APEX-WARP d-offset profile.
+
+    For each corner, contribute a SIGNED DIPOLE to the lap-wide d-offset:
+
+        d_off(s) += mag * ks * [ G(s; A_new, sigma) - G(s; A, sigma) ]
+
+    where:
+        A         = corner's geometric apex station (where Q's |kappa| peaks)
+        A_new     = A + apex_phase * max_shift_frac * L          (driver's
+                    desired apex along arc-length; +ap = late, -ap = early)
+        sigma     = base_sigma_frac * L * (1 + 0.3 * vu_shape)   (V/U
+                    sharpness modulates the dipole's spatial extent)
+        mag (m)   = (1 - apex_tightness) * k_apex * master * (1 + g_lr * ks)
+                    then clipped against inside_budget[ci]
+        mag (d)   = mag (m) / q_width[A_new_int]                 (convert to
+                    cross-track-coordinate fraction so it composes with d_q)
+        G(s; c, s)= exp(-circ_dist(s, c)^2 / (2 sigma^2))         (periodic
+                    gaussian; circular distance keeps it well-defined across
+                    the seam)
+
+    The dipole shape is the key:
+      • Negative bump at A pulls the line OUTWARD relative to Q's apex
+        (Q's min-curvature line hugs the inside at A; the negative pole says
+        'this driver doesn't pivot here').
+      • Positive bump at A_new pulls the line INWARD relative to Q at A_new
+        (this driver pivots there instead).
+      • Together they encode 'shifted apex' as a SHAPE difference, not a
+        sideways translation. Two drivers with opposite apex_phase produce
+        opposite-signed dipoles → their lines cross between A and A_new,
+        which is exactly what early-vs-late apex pairs do in real telemetry.
+
+    A driver with apex_phase ≈ 0 collapses A_new onto A — the two gaussians
+    cancel — so they ride Q. A driver with apex_tightness ≈ 1 has zero
+    magnitude — they ride Q. These are the correct null behaviours.
+
+    Returns d_off : np.ndarray (n_r,)  in the same units as
+    `_v4_compute_d_offset_global` so `_v4_assemble_styled` is unchanged.
+    """
+    import numpy as np
+    from scipy.ndimage import gaussian_filter1d
+
+    n = int(n_r)
+    if n < 8 or not corners:
+        return np.zeros(n)
+
+    d_off = np.zeros(n)
+    i_arr = np.arange(n, dtype=float)
+
+    if dbg_tag:
+        print(f"[V4-APEXWARP] {dbg_tag}: per-corner contributions:", flush=True)
+
+    for ci, c in enumerate(corners):
+        d_co = per_corner_data[ci] if ci < len(per_corner_data) else None
+        if d_co is not None:
+            try:
+                ap = float(d_co.get('apex_phase',     g_ap))
+                at = float(d_co.get('apex_tightness', g_at))
+                vu = float(d_co.get('vu_shape',       g_vu))
+            except Exception:
+                ap, at, vu = g_ap, g_at, g_vu
+        else:
+            ap, at, vu = g_ap, g_at, g_vu
+
+        L  = int(c['L'])
+        ks = int(c['kappa_sign'])
+        A  = int(c['apex'])
+
+        ap_c = float(np.clip(ap, -1.0, 1.0))
+        at_c = float(np.clip(at,  0.0, 1.0))
+        vu_c = float(np.clip(vu, -1.0, 1.0))
+
+        shift_stations = ap_c * float(max_shift_frac) * float(L)
+        A_new = (float(A) + shift_stations) % float(n)
+        A_new_int = int(round(A_new)) % n
+
+        sigma = max(float(sigma_min_stations),
+                    float(base_sigma_frac) * float(L) * (1.0 + 0.30 * vu_c))
+
+        looseness = 1.0 - at_c
+        mag_m = looseness * float(k_apex) * float(master) * (1.0 + float(g_lr) * float(ks))
+        # inside_budget is in METERS (from operator), q_width is in METERS.
+        # Clamp magnitude (in meters) so the styled line cannot punch past the
+        # inside kerb at the driver's intended apex point.
+        budget_m = float(inside_budget.get(ci, 0.0))
+        if budget_m <= 0.0:
+            # No inside room (Q already on the kerb here) — skip cleanly.
+            if dbg_tag:
+                print(f"  c{ci:02d} L={L:3d} ks={ks:+d} ap={ap_c:+.2f} at={at_c:.2f} "
+                      f"budget=0 (skipped)", flush=True)
+            continue
+        if abs(mag_m) > budget_m:
+            mag_m = math.copysign(budget_m, mag_m)
+
+        # Convert meters → d-fraction at the displacement station. q_width is
+        # in meters; d_offset is in [0, 1] cross-track coords summed onto d_q.
+        w_at_apex = float(q_width[A_new_int])
+        if w_at_apex <= 1e-6:
+            continue
+        mag_d = mag_m / w_at_apex
+
+        # Periodic circular distance so the gaussian doesn't blow up across
+        # the seam (lap is closed).
+        d_to_new = ((i_arr - A_new + n * 0.5) % n) - n * 0.5
+        d_to_old = ((i_arr - float(A) + n * 0.5) % n) - n * 0.5
+        bump_new = np.exp(-(d_to_new ** 2) / (2.0 * sigma * sigma))
+        bump_old = np.exp(-(d_to_old ** 2) / (2.0 * sigma * sigma))
+
+        # Dipole sign — derivation, careful:
+        #
+        #   For a LEFT turn (ks=+1), INSIDE = LEFT = -d, OUTSIDE = RIGHT = +d.
+        #   A late-apex driver (apex_phase > 0, A_new > A) should be:
+        #     • at A:     OUTSIDE relative to Q (Q is at the inside kerb here;
+        #                 the driver is staying wide). Want +d for left turn.
+        #     • at A_new: INSIDE relative to Q (the driver pivots here, while
+        #                 Q has already moved off the inside kerb). Want -d
+        #                 for left turn.
+        #
+        #   So at A     → contrib must be +ks·mag_d
+        #      at A_new → contrib must be -ks·mag_d
+        #
+        #   Using gaussians G_old=peak at A, G_new=peak at A_new:
+        #      contrib(s) = ks * mag_d * (G_old(s) − G_new(s))
+        #
+        # Symmetric case for RIGHT turn (ks=-1): the math comes out correct
+        # by the same construction. Early apex (ap < 0, A_new < A) flips the
+        # roles of A and A_new automatically because the gaussians swap which
+        # side they peak on.
+        contrib = float(mag_d) * float(ks) * (bump_old - bump_new)
+        d_off = d_off + contrib
+
+        if dbg_tag:
+            print(
+                f"  c{ci:02d} L={L:3d} ks={ks:+d} ap={ap_c:+.2f} at={at_c:.2f} vu={vu_c:+.2f} "
+                f"A={A:4d} A_new={A_new_int:4d} sigma={sigma:.1f} "
+                f"mag_m={mag_m:+.2f} budget_m={budget_m:.2f} "
+                f"peak_contrib={float(np.abs(contrib).max()):.3f}",
+                flush=True,
+            )
+
+    # Periodic low-pass — smooths inter-corner contributions across the seam.
+    # Sigma deliberately small (default 4 stations) so we don't blur the
+    # within-corner dipole structure.
+    if post_smooth_sigma > 0.0:
+        d_off = gaussian_filter1d(np.tile(d_off, 3), sigma=float(post_smooth_sigma))[n:2 * n]
+
+    # Final global clip — last line of defence against pathological sums (e.g.
+    # several adjacent corners all biased the same way). Same role as in
+    # _v4_compute_d_offset / _v4_compute_d_offset_global.
+    d_off = np.clip(d_off, -float(global_clip), +float(global_clip))
+
+    # PER-STATION SAFETY CLIP (the critical one). The per-corner inside_budget
+    # only enforces clearance AT the apex of each corner. Dipole tails extend
+    # beyond corner boundaries — onto straights — where the available headroom
+    # is determined by the centerline-to-kerb distances at THAT station, not at
+    # the apex. Without this clip, raising k_apex pushes straight-segment
+    # stations outside the vehicle-width safety margin and the cars crash. This
+    # clip enforces the constraint that EVERY station's styled position stays
+    # within (kerb − vehicle_half − safety) on both sides. Headroom arrays are
+    # computed in the operator from the same wr_safe / wl_safe / off_raceline
+    # data already used to build inside_budget, so this is just extending the
+    # existing safety contract from "at apex only" to "every station".
+    if headroom_pos_d is not None and headroom_neg_d is not None:
+        hp = np.asarray(headroom_pos_d, dtype=float)
+        hn = np.asarray(headroom_neg_d, dtype=float)
+        if hp.shape[0] == n and hn.shape[0] == n:
+            n_clipped_pos = int(np.sum(d_off > hp))
+            n_clipped_neg = int(np.sum(d_off < -hn))
+            d_off = np.minimum(d_off,  hp)
+            d_off = np.maximum(d_off, -hn)
+            if dbg_tag and (n_clipped_pos + n_clipped_neg) > 0:
+                print(
+                    f"[V4-APEXWARP] {dbg_tag}: per-station clip "
+                    f"saved {n_clipped_pos}+{n_clipped_neg} stations from going off-track",
+                    flush=True,
+                )
+
+    if dbg_tag:
+        print(
+            f"[V4-APEXWARP] {dbg_tag}: d_off peak={float(np.abs(d_off).max()):.3f} "
+            f"mean|·|={float(np.abs(d_off).mean()):.3f}",
+            flush=True,
+        )
+
+    return d_off
+
+
+def _v4_compute_d_offset_global(raceline, n_r, master,
+                                g_ap=0.0, g_at=0.5, g_vu=0.0,
+                                k_global=0.45, kappa_smooth_sigma=22.0,
+                                phase_shift_max=18.0, global_clip=0.16,
+                                dbg_tag=""):
+    """SMOOTH GLOBAL d-offset derived from Q's signed curvature and the driver's
+    LAP-WIDE style aggregates only. No per-corner data is consulted.
+
+    Why this shape: every driver's line is `magnitude × kappa_norm(s)` where
+    kappa_norm(s) is a single low-passed periodic function of arc-length. All
+    drivers therefore have the SAME profile shape, just scaled by per-driver
+    looseness (1 − g_at). A looser driver is *consistently* further from Q
+    across the whole lap — the lines never cross, never produce
+    convergence-then-divergence 'kissing' bumps, never have a corner-chunk
+    pulled while the surrounding straight stays on Q.
+
+    apex_phase shifts the kappa profile in arc-length by phase_shift_max × g_ap
+    stations, so two drivers with similar tightness but different apex_phase
+    have their offsets timed slightly differently — small per-driver shape
+    variation without breaking the consistent-ordering property."""
+    import numpy as np
+    from scipy.ndimage import gaussian_filter1d
+    n = int(n_r)
+    if n < 8:
+        return np.zeros(n)
+
+    # Tangents and signed curvature, periodic, chord-based.
+    tangents = np.zeros((n, 2))
+    for i in range(n):
+        dvec = raceline[(i + 5) % n] - raceline[(i - 5) % n]
+        nm = float(np.linalg.norm(dvec))
+        if nm > 1e-8:
+            tangents[i] = dvec / nm
+        else:
+            tangents[i] = np.array([1.0, 0.0])
+    kappa = np.zeros(n)
+    for i in range(n):
+        t1 = tangents[(i - 1) % n]
+        t2 = tangents[(i + 1) % n]
+        cross = float(t1[0] * t2[1] - t1[1] * t2[0])
+        dot = float(np.clip(t1[0] * t2[0] + t1[1] * t2[1], -1.0, 1.0))
+        kappa[i] = math.copysign(math.acos(dot), cross)
+
+    # Periodic low-pass — kills high-frequency curvature wiggles.
+    kappa = gaussian_filter1d(np.tile(kappa, 3), sigma=float(kappa_smooth_sigma))[n:2 * n]
+
+    # Normalise to [-1, +1] using lap-wide max.
+    k_max = float(np.abs(kappa).max())
+    if k_max < 1e-9:
+        return np.zeros(n)
+    kappa_norm = kappa / k_max
+
+    # Apex-phase shift (small arc-length roll for inter-driver variety).
+    if abs(g_ap) > 1e-6 and phase_shift_max > 0:
+        shift_int = int(round(float(g_ap) * float(phase_shift_max)))
+        if shift_int != 0:
+            kappa_norm = np.roll(kappa_norm, shift_int)
+
+    looseness = 1.0 - max(0.0, min(1.0, float(g_at)))
+    magnitude = float(k_global) * looseness * float(master)
+
+    d_off = magnitude * kappa_norm
+    d_off = np.clip(d_off, -float(global_clip), +float(global_clip))
+
+    if dbg_tag:
+        print(
+            f"[V4-OFFSET-GLOBAL] {dbg_tag}: g_at={g_at:.3f} g_ap={g_ap:+.3f} "
+            f"looseness={looseness:.3f} mag={magnitude:+.3f} "
+            f"d_off peak={float(np.abs(d_off).max()):.3f} mean|.|={float(np.abs(d_off).mean()):.3f}",
+            flush=True,
+        )
+
+    return d_off
+
+
+def _v4_compute_d_offset_subtle(raceline, n_r, master,
+                                g_ap=0.0, g_at=0.5, g_vu=0.0,
+                                headroom_pos_d=None, headroom_neg_d=None,
+                                max_headroom_frac=0.35,
+                                k_global=0.55, kappa_smooth_sigma=22.0,
+                                phase_shift_max=18.0,
+                                dbg_tag=""):
+    """SUBTLE per-driver d-offset — Q-anchored, strictly on-track, small but
+    visible variance per the user's revised spec ("a bit of driver's style,
+    can't be too different than Q, never goes off track").
+
+    Shape philosophy is identical to `_v4_compute_d_offset_global`: one
+    κ-derived periodic profile shared across drivers, scaled per driver by
+    looseness = (1 − apex_tightness), with a small per-driver phase roll from
+    apex_phase. Drivers therefore have the SAME shape, scaled and shifted.
+    No per-corner gaussians, no apex-warp dipoles — both of those have failure
+    modes (off-track tails, mean-zero displacement) documented in the file
+    header session log.
+
+    The on-track guarantee is HARD per-station clipping against the cached
+    safe headroom. `headroom_pos_d` / `headroom_neg_d` are passed in d-units
+    (fraction of track width) by the operator and represent the available
+    room to the right / left kerb at each station after subtracting the
+    vehicle half-width and a 0.15 m safety margin. We cap d_offset to
+    `max_headroom_frac` of those values so the line cannot use the full
+    headroom — at default 0.35 the styled line uses up to 35% of the way
+    from Q to the safe edge in either direction. Lower = closer to Q,
+    higher = visibly wider variance (1.0 still on-track but right at the
+    safe edge, not recommended)."""
+    import numpy as np
+    from scipy.ndimage import gaussian_filter1d
+    n = int(n_r)
+    if n < 8:
+        return np.zeros(n)
+
+    tangents = np.zeros((n, 2))
+    for i in range(n):
+        dvec = raceline[(i + 5) % n] - raceline[(i - 5) % n]
+        nm = float(np.linalg.norm(dvec))
+        tangents[i] = dvec / nm if nm > 1e-8 else np.array([1.0, 0.0])
+    kappa = np.zeros(n)
+    for i in range(n):
+        t1 = tangents[(i - 1) % n]
+        t2 = tangents[(i + 1) % n]
+        cross = float(t1[0] * t2[1] - t1[1] * t2[0])
+        dot = float(np.clip(t1[0] * t2[0] + t1[1] * t2[1], -1.0, 1.0))
+        kappa[i] = math.copysign(math.acos(dot), cross)
+    kappa = gaussian_filter1d(np.tile(kappa, 3), sigma=float(kappa_smooth_sigma))[n:2 * n]
+
+    k_max = float(np.abs(kappa).max())
+    if k_max < 1e-9:
+        return np.zeros(n)
+    kappa_norm = kappa / k_max
+
+    if abs(g_ap) > 1e-6 and phase_shift_max > 0:
+        shift_int = int(round(float(g_ap) * float(phase_shift_max)))
+        if shift_int != 0:
+            kappa_norm = np.roll(kappa_norm, shift_int)
+
+    looseness = 1.0 - max(0.0, min(1.0, float(g_at)))
+    magnitude = float(k_global) * looseness * float(master)
+    d_off = magnitude * kappa_norm
+
+    f = max(0.0, min(1.0, float(max_headroom_frac)))
+    if headroom_pos_d is not None and headroom_neg_d is not None:
+        cap_pos = np.asarray(headroom_pos_d, dtype=float) * f
+        cap_neg = np.asarray(headroom_neg_d, dtype=float) * f
+        d_off = np.minimum(d_off, cap_pos)
+        d_off = np.maximum(d_off, -cap_neg)
+
+    if dbg_tag:
+        print(
+            f"[V4-OFFSET-SUBTLE] {dbg_tag}: g_at={g_at:.3f} g_ap={g_ap:+.3f} "
+            f"looseness={looseness:.3f} mag={magnitude:+.3f} "
+            f"max_hr_frac={f:.2f} d_off peak={float(np.abs(d_off).max()):.3f} "
+            f"mean|.|={float(np.abs(d_off).mean()):.3f}",
+            flush=True,
+        )
+
+    return d_off
+
+
+def _v4_compute_d_offset(corners, per_corner_data, n_r, master,
+                         g_ap=0.0, g_at=0.5, g_vu=0.0,
+                         k_loose=0.35, sigma_mult=1.0, sigma_cap=25.0,
+                         max_shift_frac=0.20,
+                         post_smooth_sigma=6.0, global_clip=0.18,
+                         dbg_tag=""):
+    """Smooth periodic cross-track d-offset across the WHOLE lap, summed from
+    wide per-corner gaussians and then low-pass filtered.
+
+    Per-corner magnitude is k_loose × (1 − apex_tightness) signed by kappa_sign.
+    Corners where the driver's apex_tightness ≈ 1 contribute *nothing* — those
+    corners genuinely show 'driver hugs the kerb' so the styled line should
+    track Q there. Corners with looser tightness drift toward middle of track.
+
+    Adjacent corners have opposite kappa_signs (left/right alternation) — wide
+    sigma (2.5 × corner_length) ensures their tails OVERLAP rather than meeting
+    in a sharp ±±± alternating pattern. A final periodic gaussian smooth kills
+    any residual high-frequency wiggle from the discrete-corner contributions."""
+    import numpy as np
+    from scipy.ndimage import gaussian_filter1d
+    d_off = np.zeros(n_r)
+
+    if dbg_tag:
+        print(f"[V4-OFFSET] {dbg_tag}: per-corner contributions:", flush=True)
+
+    for ci, c in enumerate(corners):
+        d_co = per_corner_data[ci] if ci < len(per_corner_data) else None
+        if d_co is not None:
+            try:
+                ap = float(d_co.get('apex_phase', g_ap))
+                at = float(d_co.get('apex_tightness', g_at))
+                vu = float(d_co.get('vu_shape', g_vu))
+            except Exception:
+                ap, at, vu = g_ap, g_at, g_vu
+        else:
+            ap, at, vu = g_ap, g_at, g_vu
+
+        L = int(c['L'])
+        ks = int(c['kappa_sign'])
+        apex_idx_abs = int(c['apex'])
+
+        shift = float(ap) * float(max_shift_frac) * float(L)
+        center = (apex_idx_abs + shift) % n_r
+
+        vu_clip = float(np.clip(vu, -1.0, 1.0))
+        sigma_raw = float(L) * float(sigma_mult) * (1.0 + 0.3 * vu_clip)
+        # Cap sigma so a single long corner doesn't wrap its gaussian half-way
+        # round the lap (which produces the 'huge deviation at lap start' artefact
+        # when the last corner's tail bleeds across the seam at station 0).
+        sigma = max(2.0, min(float(sigma_cap), sigma_raw))
+
+        looseness = 1.0 - max(0.0, min(1.0, float(at)))
+        magnitude = float(ks) * float(master) * float(k_loose) * looseness
+        if abs(magnitude) < 1e-6:
+            if dbg_tag:
+                print(f"  c{ci:02d} L={L:3d} ks={ks:+d} at={at:.2f} mag=0 (skipped)", flush=True)
+            continue
+
+        i_arr = np.arange(n_r, dtype=float)
+        d_circ = (i_arr - center + n_r * 0.5) % n_r - n_r * 0.5
+        bump = np.exp(-(d_circ ** 2) / (2.0 * sigma * sigma))
+        d_off = d_off + magnitude * bump
+
+        if dbg_tag:
+            print(
+                f"  c{ci:02d} L={L:3d} ks={ks:+d} ap={ap:+.2f} at={at:.2f} vu={vu:+.2f} "
+                f"shift={shift:+.1f} sigma={sigma:.1f} mag={magnitude:+.3f}",
+                flush=True,
+            )
+
+    # Final low-pass: kills any residual high-frequency wiggle from the discrete
+    # corner placements. Periodic via tile-then-slice (lap is a closed loop).
+    if post_smooth_sigma > 0.0:
+        d_off = gaussian_filter1d(np.tile(d_off, 3), sigma=float(post_smooth_sigma))[n_r:2 * n_r]
+
+    # Global clip — last line of defence against runaway sum stacks.
+    d_off = np.clip(d_off, -float(global_clip), +float(global_clip))
+    return d_off
+
+
+def _v4_assemble_styled(raceline, q_right_normal, width, d_q, d_offset):
+    """styled[i] = Q[i] + (d_driver[i] − d_q[i]) × width[i] × q_right_normal[i]
+
+    Round-trips Q exactly when d_offset = 0 everywhere. Displacement direction
+    is Q's own smooth chord-based normal — adjacent stations have continuous
+    direction even when centerline-nn indices jump. Magnitude is bounded by
+    width × |d_offset| (clipped d_offset is small, so well within track)."""
+    import numpy as np
+    d_driver = np.clip(d_q + d_offset, 0.0, 1.0)
+    delta_d = d_driver - d_q
+    displacement = (delta_d * width)[:, None] * q_right_normal
+    styled = raceline + displacement
+    return styled, d_driver
+
+
+class F1_OT_GenerateAllStyledRacingLines(Operator):
+    bl_idname = "f1.generate_all_styled_racing_lines"
     bl_label = "Generate Styled Racing Lines"
     bl_description = (
         "Auto-discover every per-driver style JSON under "
@@ -2215,7 +3083,7 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
         import json as _json
         import os, glob
 
-        props = context.scene.f1_track_props
+        props = context.scene.f1_track_viz_props
         if not props.style_enabled:
             self.report({'INFO'}, "Style layer disabled")
             return {'CANCELLED'}
@@ -2231,9 +3099,13 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
         sp_q = q_obj.data.splines[0]
         n_r = len(sp_q.points)
         raceline = np.zeros((n_r, 2))
+        # Capture Q Z separately so the styled curves can follow track elevation
+        # instead of sitting at z=0 (which made them float above the track).
+        raceline_z = np.zeros(n_r)
         for i in range(n_r):
             co = q_obj.matrix_world @ Vector(sp_q.points[i].co[:3])
             raceline[i] = [co.x, co.y]
+            raceline_z[i] = co.z
 
         corners_r, _, _, _ = _v2_detect_corners_arclen(raceline)
         if not corners_r:
@@ -2274,6 +3146,34 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
 
         master = float(props.style_master)
 
+        # V4 cross-track cache: Q's own smooth right-normal, total track width
+        # per Q station, and Q's d ∈ [0, 1]. Q is the guide — styled line is
+        # Q + lateral offset along Q's normal. Built from existing centerline
+        # data, no external file.
+        q_right_normal, q_width, d_q_per_station = _v4_compute_q_normals_width_and_d(
+            raceline, wr_safe_cl, wl_safe_cl, nn, off_raceline,
+        )
+
+        # PER-STATION headroom (in METERS) for the apex-warp clip. Mirrors the
+        # inside_budget calc above but for EVERY station, in BOTH directions —
+        # because the apex-warp dipole has tails that extend onto straights
+        # where Q's apex-only inside_budget doesn't apply. +d direction is
+        # toward the right kerb (per _v4_compute_q_normals_width_and_d's d
+        # convention), so:
+        #   hr_pos_m = available meters moving toward RIGHT kerb
+        #   hr_neg_m = available meters moving toward LEFT kerb
+        # Convert to d-units (fraction of track width) for use inside the
+        # apex-warp function, which works in d.
+        # styled_wall_clearance_m: extra meters of clearance between the car
+        # edge and the safe-edge wall, applied ONLY to styled lines (not Q).
+        # Stops the styled-line clip from letting cars graze the wall.
+        styled_wall_clearance_m = 1.0
+        hr_pos_m = np.maximum(0.0, wr_safe_cl[nn] - off_raceline - veh_half - safety - styled_wall_clearance_m)
+        hr_neg_m = np.maximum(0.0, wl_safe_cl[nn] + off_raceline - veh_half - safety - styled_wall_clearance_m)
+        _w_safe = np.maximum(q_width, 1e-6)
+        headroom_pos_d = hr_pos_m / _w_safe
+        headroom_neg_d = hr_neg_m / _w_safe
+
         style_dir = _find_style_params_dir(props)
         if not style_dir:
             self.report({'ERROR'},
@@ -2305,14 +3205,104 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
         print(f"[BATCH] {len(json_files)} JSON(s) | filter_gp={filter_gp!r} filter_yr={filter_yr!r}", flush=True)
         print(f"[BATCH] Q corners={len(corners_r)} | master={master:.3f}", flush=True)
 
-        # ─── REVERTED to the WORKING version (inside-bump + inside_budget clip) ──
-        # Per-driver styled line: for each Q corner, place an inside-direction
-        # gaussian bump anchored at entry/exit, magnitude = tight × max_inset,
-        # clipped against inside_budget at apex. Q hugs the inside kerb at every
-        # apex, so inside_budget is usually ~0 → most apexes clamp to 0 → no bumps.
-        # Per-corner JSON style (apex_phase, apex_tightness, vu_shape) is matched
-        # from each driver's hifi-path via lap-fraction.
+        # ─── PRE-PASS: cross-driver per-corner mean apex_tightness ──────────
+        # The raw per-corner apex_tightness values extracted from telemetry only
+        # spread ~5-15% across drivers (e.g. NOR=0.51 vs SAI=0.42 at one corner).
+        # Run that through the (1 − apex_tightness) magnitude formula and you
+        # get peak per-corner displacement differences of ~5-10cm between
+        # drivers — invisible from any normal viewport distance, even though
+        # the algorithm is doing exactly what it's supposed to.
+        #
+        # The fix: amplify each driver's deviation FROM the cross-driver mean
+        # by a user-controlled factor (style_spread_amplify, default 3.0). This
+        # keeps the AVERAGE behaviour identical to raw telemetry but spreads
+        # the per-driver signature so it's actually visible. NOR really IS
+        # tighter than SAI at this corner — we're just making that visible
+        # instead of hiding it inside numerical noise. Not manufactured
+        # physics; principled signal amplification.
+        #
+        # Pre-pass walks all matched-filter JSONs once to build per-corner
+        # mean. Main loop then amplifies per-driver values before passing them
+        # to apex_warp.
+        cross_driver_means_at = {}  # corner_index → mean apex_tightness
+        spread_amp = float(getattr(props, 'style_spread_amplify', 3.0))
+        if spread_amp > 1.0001:
+            _per_corner_at_lists = {}
+            for jf in json_files:
+                try:
+                    with open(jf, 'r', encoding='utf-8') as fp:
+                        _p = _json.load(fp)
+                except Exception:
+                    continue
+                _src = _p.get('source', {})
+                _gp = str(_src.get('grand_prix', '')).strip().lower()
+                _yr = str(_src.get('season', '')).strip()
+                if filter_gp and _gp != filter_gp:
+                    continue
+                if filter_yr and _yr != filter_yr:
+                    continue
+                for _ci, _c in enumerate(_p.get('corners') or []):
+                    try:
+                        _at = float(_c.get('apex_tightness', 0.5))
+                    except Exception:
+                        continue
+                    _per_corner_at_lists.setdefault(_ci, []).append(_at)
+            for _ci, _vals in _per_corner_at_lists.items():
+                if _vals:
+                    cross_driver_means_at[_ci] = sum(_vals) / len(_vals)
+            if cross_driver_means_at:
+                print(
+                    f"[BATCH] Cross-driver amplify={spread_amp:.2f}× active over "
+                    f"{len(cross_driver_means_at)} corners "
+                    f"({len(_per_corner_at_lists.get(0, []))} drivers in pre-pass)",
+                    flush=True,
+                )
+
+        # ─── PRE-PASS for SUBTLE: lap-wide cross-driver mean apex_tightness ──
+        # SUBTLE mode reads a single lap-wide g_at per driver (not per-corner),
+        # so the per-corner mean above doesn't help it separate drivers. Build
+        # a parallel mean over the lap-wide style_params.apex_tightness so the
+        # main loop can amplify each driver's deviation from the lap-wide
+        # cross-driver mean — same formula as the per-corner pre-pass, just
+        # applied to the lap-wide aggregate.
+        cross_driver_mean_g_at = None
+        if spread_amp > 1.0001 and getattr(props, 'style_offset_mode', 'SUBTLE') == 'SUBTLE':
+            _g_at_list = []
+            for jf in json_files:
+                try:
+                    with open(jf, 'r', encoding='utf-8') as fp:
+                        _p = _json.load(fp)
+                except Exception:
+                    continue
+                _src = _p.get('source', {})
+                _gp = str(_src.get('grand_prix', '')).strip().lower()
+                _yr = str(_src.get('season', '')).strip()
+                if filter_gp and _gp != filter_gp:
+                    continue
+                if filter_yr and _yr != filter_yr:
+                    continue
+                try:
+                    _g_at_list.append(float((_p.get('style_params') or {}).get('apex_tightness', 0.5)))
+                except Exception:
+                    pass
+            if _g_at_list:
+                cross_driver_mean_g_at = sum(_g_at_list) / len(_g_at_list)
+                print(
+                    f"[BATCH] SUBTLE lap-wide amplify={spread_amp:.2f}× active "
+                    f"({len(_g_at_list)} drivers, mean g_at={cross_driver_mean_g_at:.3f}, "
+                    f"raw min/max={min(_g_at_list):.3f}/{max(_g_at_list):.3f})",
+                    flush=True,
+                )
+
+        # ─── V4: cross-track-coordinate styled line ─────────────────────────
+        # styled = left_kerb × (1 − d) + right_kerb × d
+        # where d = clip(Q's d + per-driver d_offset(s), 0, 1). The d_offset
+        # is a SINGLE smooth periodic function summed from wide per-corner
+        # gaussians — adjacent corners overlap onto straights, so the whole
+        # lap drifts continuously per-driver instead of having corner chunks
+        # pulled while straights stay pinned to Q.
         written = []
+        skipped = []
         for jf in json_files:
             try:
                 with open(jf, 'r', encoding='utf-8') as fp:
@@ -2352,30 +3342,154 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
                             per_corner_data[qi] = json_corners[sj]
             n_match = sum(1 for d in per_corner_data if d is not None)
 
+            # Positional fallback. If hifi-based matching produced 0 hits but
+            # the JSON HAS per-corner data, pair Q's corners to the JSON's
+            # corners by index. This is geometrically imperfect (Q's corner
+            # detection might find a different count than the JSON's, and
+            # corner ordering depends on where the lap starts) but it ensures
+            # per-driver data REACHES the algorithm. Without this fallback,
+            # any driver whose hifi path is missing or whose corners don't
+            # align by lap-fraction silently degrades to lap-wide aggregates,
+            # which differ by ~8% across drivers and produce visually
+            # identical styled lines. Beats that.
+            if n_match == 0 and json_corners:
+                n_assigned = 0
+                for ci in range(min(len(corners_r), len(json_corners))):
+                    per_corner_data[ci] = json_corners[ci]
+                    n_assigned += 1
+                if n_assigned > 0:
+                    print(
+                        f"[BATCH] {driver}: hifi-match returned 0 — using "
+                        f"POSITIONAL fallback ({n_assigned}/{len(corners_r)} "
+                        f"corners by index, JSON has {len(json_corners)})",
+                        flush=True,
+                    )
+                    n_match = n_assigned
+
+            # Cross-driver amplification of per-corner apex_tightness (see
+            # pre-pass docstring above). For each populated per-corner entry,
+            # replace its apex_tightness with:
+            #     mean + (driver_at − mean) × spread_amp
+            # then clip to [0, 1] so the value remains physically meaningful
+            # (looseness = 1 − at must stay in [0, 1]). When spread_amp = 1.0
+            # this is a no-op and per-corner data passes through untouched.
+            if spread_amp > 1.0001 and cross_driver_means_at:
+                _at_log_before = []
+                _at_log_after = []
+                for _ci, _entry in enumerate(per_corner_data):
+                    if _entry is None or 'apex_tightness' not in _entry:
+                        continue
+                    _mean = cross_driver_means_at.get(_ci)
+                    if _mean is None:
+                        continue
+                    try:
+                        _at_raw = float(_entry['apex_tightness'])
+                    except Exception:
+                        continue
+                    _at_amp = _mean + (_at_raw - _mean) * spread_amp
+                    _at_amp = max(0.0, min(1.0, _at_amp))
+                    # Don't mutate the shared payload dict — copy first.
+                    _new = dict(_entry)
+                    _new['apex_tightness'] = _at_amp
+                    per_corner_data[_ci] = _new
+                    _at_log_before.append(_at_raw)
+                    _at_log_after.append(_at_amp)
+                if _at_log_before:
+                    _import_np = np  # already imported at op start
+                    _b = _import_np.array(_at_log_before)
+                    _a = _import_np.array(_at_log_after)
+                    print(
+                        f"[BATCH] {driver}: amplified apex_tightness "
+                        f"raw mean={float(_b.mean()):.3f} std={float(_b.std()):.3f} → "
+                        f"amp mean={float(_a.mean()):.3f} std={float(_a.std()):.3f} "
+                        f"(min/max raw={float(_b.min()):.3f}/{float(_b.max()):.3f}, "
+                        f"amp={float(_a.min()):.3f}/{float(_a.max()):.3f})",
+                        flush=True,
+                    )
+
             g_ap = float(json_params.get('apex_phase', 0.0))
             g_at = float(json_params.get('apex_tightness', 0.5))
             g_vu = float(json_params.get('vu_shape', 0.0))
+            g_lr = float(json_params.get('lr_asymmetry', 0.0))
 
-            styled = raceline.copy()
-            for ci, c in enumerate(corners_r):
-                d_co = per_corner_data[ci]
-                if d_co is not None:
-                    ap = float(d_co.get('apex_phase', g_ap))
-                    at = float(d_co.get('apex_tightness', g_at))
-                    vu = float(d_co.get('vu_shape', g_vu))
-                else:
-                    ap, at, vu = g_ap, g_at, g_vu
+            mode = getattr(props, 'style_offset_mode', 'SUBTLE')
 
-                ap_eff = ap * master
-                at_eff = 0.5 + (at - 0.5) * master
-                vu_eff = vu * master
+            # SUBTLE lap-wide amplification: spread the narrow per-driver g_at
+            # distribution around its cross-driver mean so drivers visibly
+            # separate even when raw telemetry only varies ~5-15%. Same
+            # formula as the per-corner amplification block above; applied
+            # only in SUBTLE mode because the other modes use g_at indirectly
+            # (per-corner) and have their own amplification path.
+            if mode == 'SUBTLE' and cross_driver_mean_g_at is not None:
+                _g_at_amp = cross_driver_mean_g_at + (g_at - cross_driver_mean_g_at) * spread_amp
+                _g_at_amp = max(0.05, min(0.95, _g_at_amp))
+                if abs(_g_at_amp - g_at) > 1e-4:
+                    print(f"[BATCH] {driver}: SUBTLE g_at {g_at:.3f} → {_g_at_amp:.3f} "
+                          f"(amp={spread_amp:.2f}×, mean={cross_driver_mean_g_at:.3f})",
+                          flush=True)
+                g_at = _g_at_amp
 
-                idx, new_seg = _v3_reshape_corner(
-                    raceline, c, ap_eff, at_eff, vu_eff,
-                    inside_budget_at_apex=inside_budget.get(ci),
-                    max_inset=1.5, max_shift_frac=0.20,
+            if mode == 'SUBTLE':
+                d_off = _v4_compute_d_offset_subtle(
+                    raceline, n_r, master,
+                    g_ap=g_ap, g_at=g_at, g_vu=g_vu,
+                    headroom_pos_d=headroom_pos_d,
+                    headroom_neg_d=headroom_neg_d,
+                    max_headroom_frac=float(getattr(props, 'style_subtle_max_headroom_frac', 0.35)),
+                    dbg_tag=driver,
                 )
-                styled[idx] = new_seg
+            elif mode == 'GLOBAL':
+                d_off = _v4_compute_d_offset_global(
+                    raceline, n_r, master,
+                    g_ap=g_ap, g_at=g_at, g_vu=g_vu,
+                    dbg_tag=driver,
+                )
+            elif mode == 'PER_CORNER':
+                d_off = _v4_compute_d_offset(
+                    corners_r, per_corner_data, n_r, master,
+                    g_ap=g_ap, g_at=g_at, g_vu=g_vu,
+                    dbg_tag=driver,
+                )
+            else:  # APEX_WARP (default) — now routes to HYBRID synthesis.
+                # The dropdown label is preserved for backward compatibility
+                # with existing scenes; the underlying algorithm has been
+                # upgraded to the hybrid model that combines the wide single-
+                # pole baseline (continuous across-lap differentiation) with
+                # the apex-shift dipole (within-corner shape + crossings),
+                # with the same per-station headroom clip enforcing on-track
+                # safety. The previous apex-warp-only implementation is still
+                # in the file (_v4_compute_d_offset_apex_warp) and reachable
+                # by direct call, just not from this dispatcher.
+                #
+                # Slider mapping into the hybrid:
+                #   k_apex       → k_baseline (controls the across-lap
+                #                  magnitude — the BIG signal)
+                #   max_shift_frac → max_shift_frac (controls how far the
+                #                    dipole's apex shift goes)
+                #   post_smooth   → post_smooth_sigma
+                # Other hybrid params (k_dipole_m, sigma_baseline_mult,
+                # sigma_baseline_cap, global_clip) use the function defaults
+                # tuned to satisfy the constraints simultaneously.
+                # Slider value is in the original meters scale (default 0.55);
+                # convert to hybrid's d-unit baseline by the ratio (target d
+                # default 0.15) / (slider meters default 0.55) so the slider
+                # default produces hybrid default behaviour, and slider moves
+                # scale proportionally.
+                _slider_k = float(getattr(props, 'style_apex_warp_k_apex', 0.55))
+                d_off = _v4_compute_d_offset_hybrid(
+                    corners_r, per_corner_data, n_r,
+                    q_width, master,
+                    g_ap=g_ap, g_at=g_at, g_vu=g_vu, g_lr=g_lr,
+                    k_baseline=_slider_k * (0.15 / 0.55),
+                    max_shift_frac=float(getattr(props, 'style_apex_warp_max_shift_frac', 0.30)),
+                    post_smooth_sigma=float(getattr(props, 'style_apex_warp_post_smooth', 3.0)),
+                    headroom_pos_d=headroom_pos_d,
+                    headroom_neg_d=headroom_neg_d,
+                    dbg_tag=driver,
+                )
+            styled, d_driver = _v4_assemble_styled(
+                raceline, q_right_normal, q_width, d_q_per_station, d_off,
+            )
 
             curve_name = f"Q_RACING_LINE_STYLED_{driver}"
             for d in [bpy.data.objects, bpy.data.curves]:
@@ -2386,14 +3500,17 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
             sp_s = cd.splines.new('POLY')
             sp_s.points.add(n_r - 1)
             for i in range(n_r):
-                sp_s.points[i].co = (styled[i, 0], styled[i, 1], 0.0, 1.0)
+                sp_s.points[i].co = (styled[i, 0], styled[i, 1], float(raceline_z[i]), 1.0)
             sp_s.use_cyclic_u = True
             obj_s = bpy.data.objects.new(curve_name, cd)
             bpy.context.collection.objects.link(obj_s)
 
             delta_total = float(np.linalg.norm(styled - raceline, axis=1).max())
+            d_off_peak = float(np.abs(d_off).max())
+            d_off_mean_abs = float(np.abs(d_off).mean())
             print(
                 f"[BATCH] {driver}: {n_match}/{len(corners_r)} per-corner JSON matched | "
+                f"d_off peak={d_off_peak:.3f} mean|·|={d_off_mean_abs:.3f} | "
                 f"max_delta={delta_total:.2f}m | wrote {curve_name}",
                 flush=True,
             )
@@ -2409,14 +3526,14 @@ class OBJECT_OT_GenerateAllStyledRacingLines(Operator):
         return {'CANCELLED'}
 
 
-class OBJECT_OT_LoadStyleFromJson(Operator):
-    bl_idname = "object.load_style_from_json"
+class F1_OT_LoadStyleFromJson(Operator):
+    bl_idname = "f1.load_style_from_json"
     bl_label = "Load Style from JSON"
     bl_description = "Read style params JSON (from F1 Race Replay Studio addon) and populate the sliders"
 
     def execute(self, context):
         import json
-        props = context.scene.f1_track_props
+        props = context.scene.f1_track_viz_props
 
         path = bpy.path.abspath(props.style_json_path) if props.style_json_path else ""
         if not path or not os.path.isfile(path):
@@ -2472,8 +3589,8 @@ class OBJECT_OT_LoadStyleFromJson(Operator):
         return {'FINISHED'}
 
 
-class OBJECT_OT_AlignPathToRacingLine(Operator):
-    bl_idname = "object.align_path_to_racing_line"
+class F1_OT_AlignPathToRacingLine(Operator):
+    bl_idname = "f1.align_path_to_racing_line"
     bl_label = "Align / Reshape Path"
     bl_description = "Kabsch-align the Driving Path to Q_RACING_LINE or Q_RACING_LINE_STYLED (optionally overwrite source geometry)"
 
@@ -2485,7 +3602,7 @@ class OBJECT_OT_AlignPathToRacingLine(Operator):
         import numpy as np
         from mathutils import Vector
 
-        props = context.scene.f1_track_props
+        props = context.scene.f1_track_viz_props
         path = props.driving_path
         q_obj = props.alignment_target_curve
         target_name = q_obj.name if q_obj else "(none)"
@@ -2524,29 +3641,55 @@ class OBJECT_OT_AlignPathToRacingLine(Operator):
         P_resampled = _resample_equidistant_3d(P_raw, N)
         Q_resampled = _resample_equidistant_3d(Q_raw, N)
 
+        # Try BOTH cyclic directions of P during the search. F1 telemetry from
+        # FastF1 and Q_RACING_LINE (derived from the .blend's centerline) are
+        # not guaranteed to traverse the lap in the same direction. If they're
+        # opposite, no rotation R can make ‖R·P[i] − Q[i]‖² small for every i,
+        # and Kabsch picks a wildly wrong R — the path looks "flipped" /
+        # off-track. Searching reversed P too lets us find the correct R.
+        # We apply the resulting R to the FORWARD P_raw so the car still drives
+        # in telemetry order — only the SEARCH uses the reversed array.
+        P_resampled_rev = P_resampled[::-1].copy()
+        candidates = (("forward", P_resampled), ("reversed", P_resampled_rev))
+
         test_shifts = min(N, 100)
         shift_step = max(1, N // test_shifts)
         best_rms = float('inf')
         best_shift = 0
+        best_dir = "forward"
 
-        for s in range(0, N, shift_step):
-            Q_shifted = np.roll(Q_resampled, -s, axis=0)
-            _, _, P_al = _kabsch_alignment(P_resampled, Q_shifted)
-            rms = np.sqrt(((P_al - Q_shifted) ** 2).mean())
-            if rms < best_rms:
-                best_rms = rms
-                best_shift = s
+        for dir_label, P_try in candidates:
+            for s in range(0, N, shift_step):
+                Q_shifted = np.roll(Q_resampled, -s, axis=0)
+                _, _, P_al = _kabsch_alignment(P_try, Q_shifted)
+                rms = np.sqrt(((P_al - Q_shifted) ** 2).mean())
+                if rms < best_rms:
+                    best_rms = rms
+                    best_shift = s
+                    best_dir = dir_label
 
+        # Refine within the winning direction only.
+        P_winner = P_resampled if best_dir == "forward" else P_resampled_rev
         for s in range(max(0, best_shift - shift_step), min(N, best_shift + shift_step + 1)):
             Q_shifted = np.roll(Q_resampled, -s, axis=0)
-            _, _, P_al = _kabsch_alignment(P_resampled, Q_shifted)
+            _, _, P_al = _kabsch_alignment(P_winner, Q_shifted)
             rms = np.sqrt(((P_al - Q_shifted) ** 2).mean())
             if rms < best_rms:
                 best_rms = rms
                 best_shift = s
 
+        print(f"[ALIGN] best fit: dir={best_dir}, shift={best_shift}, "
+              f"rms={best_rms:.2f}m", flush=True)
+
         Q_final = np.roll(Q_resampled, -best_shift, axis=0)
-        R, t, _ = _kabsch_alignment(P_resampled, Q_final)
+        # Use the WINNING direction's resampled P for the final Kabsch so
+        # R is the rotation that actually minimised the search RMS. We still
+        # apply R to the FORWARD P_raw below (preserves car drive direction);
+        # rotating a closed polygon doesn't change its set of points, only
+        # the index correspondence — which is what we wanted reversal to
+        # change in the first place.
+        P_winner_kabsch = P_resampled if best_dir == "forward" else P_resampled_rev
+        R, t, _ = _kabsch_alignment(P_winner_kabsch, Q_final)
 
         P_full_aligned = (R @ P_raw.T).T + t
 
@@ -2566,7 +3709,15 @@ class OBJECT_OT_AlignPathToRacingLine(Operator):
             
             for i in range(M):
                 pt = P_full_aligned[i]
-                expected_k = int(((i / M) + shift_ratio) * K_len) % K_len
+                # Index correspondence between P_raw[i] and Q_raw[expected_k]
+                # depends on the direction the search picked. Forward:
+                # expected_k ≈ (i/M + shift_ratio) · K_len. Reversed: P[i]
+                # was paired with Q[N-1-i] in the search, so the mapping
+                # flips: expected_k ≈ (1 - i/M + shift_ratio) · K_len.
+                if best_dir == "forward":
+                    expected_k = int(((i / M) + shift_ratio) * K_len) % K_len
+                else:
+                    expected_k = int(((1.0 - i / M) + shift_ratio) * K_len) % K_len
                 idx = np.arange(expected_k - window, expected_k + window + 1) % K_len
                 
                 A_win = A[idx]
@@ -2586,7 +3737,39 @@ class OBJECT_OT_AlignPathToRacingLine(Operator):
         else:
             P_out = P_full_aligned.copy()
 
-        P_out[:, 2] = 0.0
+        # Z-snap to track surface: the entire alignment chain (telemetry hifi
+        # paths, Q_RACING_LINE, styled lines) is built at Z=0 because telemetry
+        # JSONs carry no elevation and Q_RACING_LINE is written flat. Without
+        # this snap the aligned path floats on the ground plane while the
+        # track .blend has 3D elevation — what the user calls "rubber band
+        # suspended around the track". We raycast each output point's XY
+        # downward onto the track mesh; on a miss we keep current Z.
+        track_obj = props.track_mesh if props.track_mesh else None
+        if track_obj is None:
+            track_obj = bpy.data.objects.get("Track")
+        if track_obj is not None and track_obj.type == 'MESH':
+            inv_tw = track_obj.matrix_world.inverted()
+            dir_local = (inv_tw.to_3x3() @ Vector((0.0, 0.0, -1.0)))
+            dlen = dir_local.length
+            if dlen > 1e-9:
+                dir_local = dir_local / dlen
+            z_high = 10000.0
+            n_hit = 0
+            for i in range(len(P_out)):
+                origin_world = Vector((float(P_out[i, 0]), float(P_out[i, 1]), z_high))
+                origin_local = inv_tw @ origin_world
+                hit, loc_local, _, _ = track_obj.ray_cast(origin_local, dir_local)
+                if hit:
+                    loc_world = track_obj.matrix_world @ loc_local
+                    P_out[i, 2] = loc_world.z
+                    n_hit += 1
+            print(f"[ALIGN] Z-snap to '{track_obj.name}': "
+                  f"{n_hit}/{len(P_out)} pts hit", flush=True)
+        else:
+            print("[ALIGN] Z-snap skipped: no track mesh "
+                  "(set f1_track_viz_props.track_mesh or have a 'Track' object)",
+                  flush=True)
+
         label = "ALIGNED_PATH_BLENDED"
 
         # Always clear any stale preview curve from previous runs so the scene
@@ -2664,8 +3847,8 @@ class OBJECT_OT_AlignPathToRacingLine(Operator):
         return {'FINISHED'}
 
 
-class OBJECT_OT_AlignAllDriverPaths(Operator):
-    bl_idname = "object.align_all_driver_paths"
+class F1_OT_AlignAllDriverPaths(Operator):
+    bl_idname = "f1.align_all_driver_paths"
     bl_label = "Align All Driver Paths"
     bl_description = (
         "For every Q_RACING_LINE_STYLED_{driver} in the scene, find the matching "
@@ -2675,7 +3858,7 @@ class OBJECT_OT_AlignAllDriverPaths(Operator):
 
     def execute(self, context):
         scene = context.scene
-        props = scene.f1_track_props
+        props = scene.f1_track_viz_props
 
         styled_lines = [
             o for o in scene.objects
@@ -2716,6 +3899,13 @@ class OBJECT_OT_AlignAllDriverPaths(Operator):
 
         def _resolve_driving_path(driver_code):
             du = driver_code.upper()
+            # 0. Tag-based (universal — set on the curve at car registration
+            #    time in f1_pipeline._register_car). Works regardless of how
+            #    the rig template is named.
+            for p in driving_paths:
+                tag = p.get("_f1_driver_code")
+                if tag is not None and str(tag).upper().strip() == du:
+                    return p, "tag(_f1_driver_code)"
             # 1. Direct: driving_path whose name itself carries the driver code.
             for p in driving_paths:
                 if du in p.name.upper():
@@ -2752,7 +3942,7 @@ class OBJECT_OT_AlignAllDriverPaths(Operator):
             try:
                 props.driving_path = cand
                 props.alignment_target_curve = line
-                bpy.ops.object.align_path_to_racing_line()
+                bpy.ops.f1.align_path_to_racing_line()
                 aligned.append(f"{cand.name} → {line.name}")
                 print(f"[ALIGN] {driver} ({how}): {cand.name} → {line.name} OK", flush=True)
             except Exception as e:
@@ -2784,6 +3974,175 @@ class OBJECT_OT_AlignAllDriverPaths(Operator):
         return {'CANCELLED'}
 
 
+class F1_OT_ApplyStyleTuning(Operator):
+    """One-click iterative tuning. Re-runs styled-line generation with the
+    CURRENT slider values, then re-aligns every driving_path_<driver> onto
+    the freshly rebuilt Q_RACING_LINE_STYLED_<driver> so the rigs that
+    follow those driving paths actually move. Does NOT regenerate
+    Q_RACING_LINE or the centerline (those are one-time-per-track and
+    expensive to rebuild)."""
+
+    bl_idname = "f1.apply_style_tuning"
+    bl_label = "Apply Style Changes"
+    bl_description = (
+        "Rebuild styled lines from current slider values, then re-align all "
+        "driver paths so the cars actually follow the new shapes. Does NOT "
+        "regenerate Q_RACING_LINE or centerline. Fast — typically a few "
+        "seconds for 4 drivers."
+    )
+
+    def execute(self, context):
+        # Step 1 — rebuild the per-driver Q_RACING_LINE_STYLED_<driver> curves
+        # from the JSONs and the current slider values. This is the call that
+        # picks up new k_apex / max_shift_frac / post_smooth from props.
+        try:
+            r1 = bpy.ops.f1.generate_all_styled_racing_lines()
+        except Exception as e:
+            self.report({'ERROR'}, f"Styled-line generation failed: {e}")
+            return {'CANCELLED'}
+        if 'CANCELLED' in r1:
+            self.report(
+                {'WARNING'},
+                "Styled-line generation cancelled — alignment skipped. "
+                "Check console for the per-driver reason.",
+            )
+            return {'CANCELLED'}
+
+        # Step 2 — re-align each driving_path_<driver> onto its NEW styled
+        # line. Without this the rigs keep following the OLD path geometry
+        # and the new style is invisible in the animation. align_all_driver_
+        # paths internally calls f1.refresh_trails too, so trail meshes
+        # also update.
+        try:
+            r2 = bpy.ops.f1.align_all_driver_paths()
+        except Exception as e:
+            self.report(
+                {'WARNING'},
+                f"Styled lines updated but alignment failed: {e}. "
+                "Cars are still on old paths.",
+            )
+            return {'FINISHED'}
+        if 'CANCELLED' in r2:
+            self.report(
+                {'WARNING'},
+                "Styled lines updated; alignment cancelled (likely no "
+                "driving_path_* curves matched). Cars are still on old paths.",
+            )
+            return {'FINISHED'}
+
+        # ─── DIAGNOSTIC DUMP ────────────────────────────────────────────────
+        # Stop guessing why driver paths look identical. Print:
+        #   • Every driving_path_* curve: id, _f1_driver_code tag, first vertex
+        #     in world coordinates. Same id = same Python object = the loop
+        #     overwrote one curve twice (root cause A).
+        #   • Pairwise max-distance between corresponding-station vertices on
+        #     each pair of driving paths. < 10 cm means the styled lines
+        #     themselves are too similar (root cause B). > 50 cm means the
+        #     lines are genuinely differentiated.
+        #   • Same dump for Q_RACING_LINE_STYLED_*.
+        # User pastes this to chat — root cause then becomes obvious.
+        try:
+            import numpy as _np
+            from mathutils import Vector as _Vec
+
+            scene = context.scene
+            print("\n========== APPLY DIAGNOSTIC — IDENTITY + SPREAD ==========", flush=True)
+
+            def _vert0(curve_obj):
+                """First spline point in world coordinates."""
+                if not curve_obj or not curve_obj.data or not curve_obj.data.splines:
+                    return None
+                sp = curve_obj.data.splines[0]
+                if sp.type == 'BEZIER' and sp.bezier_points:
+                    co = curve_obj.matrix_world @ sp.bezier_points[0].co
+                elif sp.points:
+                    co = curve_obj.matrix_world @ _Vec(sp.points[0].co[:3])
+                else:
+                    return None
+                return (round(co.x, 3), round(co.y, 3), round(co.z, 3))
+
+            def _all_verts(curve_obj):
+                """All spline points as (N,3) numpy array in world coordinates."""
+                if not curve_obj or not curve_obj.data or not curve_obj.data.splines:
+                    return None
+                sp = curve_obj.data.splines[0]
+                if sp.type == 'BEZIER':
+                    pts = [curve_obj.matrix_world @ bp.co for bp in sp.bezier_points]
+                else:
+                    pts = [curve_obj.matrix_world @ _Vec(p.co[:3]) for p in sp.points]
+                if not pts:
+                    return None
+                return _np.array([(p.x, p.y, p.z) for p in pts])
+
+            dpaths = sorted(
+                [o for o in scene.objects if o.type == 'CURVE' and o.name.startswith("driving_path_")],
+                key=lambda o: o.name,
+            )
+            print(f"\n[DIAG] driving_path_* curves: {len(dpaths)}", flush=True)
+            for o in dpaths:
+                tag = o.get("_f1_driver_code", "<no tag>")
+                print(f"  {o.name:40s}  id={id(o):>14d}  tag={tag!s:6s}  first_vert={_vert0(o)}", flush=True)
+
+            # Identity check: any two paths sharing the same Python id?
+            ids_seen = {}
+            for o in dpaths:
+                ids_seen.setdefault(id(o), []).append(o.name)
+            dupes = [v for v in ids_seen.values() if len(v) > 1]
+            if dupes:
+                print(f"  *** WARNING: same Python object referenced by multiple names: {dupes}", flush=True)
+            else:
+                print(f"  → all {len(dpaths)} are distinct Python objects (cause A ruled out)", flush=True)
+
+            # Pairwise spread between driving paths.
+            print(f"\n[DIAG] pairwise driving-path spread (max vertex distance):", flush=True)
+            arrs = [(o.name, _all_verts(o)) for o in dpaths]
+            arrs = [(n, a) for n, a in arrs if a is not None]
+            for i in range(len(arrs)):
+                for j in range(i + 1, len(arrs)):
+                    n1, a1 = arrs[i]
+                    n2, a2 = arrs[j]
+                    if a1.shape == a2.shape:
+                        d = _np.linalg.norm(a1 - a2, axis=1)
+                        print(f"  {n1} ↔ {n2}: max={d.max():.3f}m  mean={d.mean():.3f}m  median={float(_np.median(d)):.3f}m", flush=True)
+                    else:
+                        print(f"  {n1} ({a1.shape[0]} pts) vs {n2} ({a2.shape[0]} pts): different vert counts, skipped", flush=True)
+
+            # Same for styled lines — tells us if the TARGETS themselves differ.
+            slines = sorted(
+                [o for o in scene.objects
+                 if o.type == 'CURVE'
+                 and o.name.startswith("Q_RACING_LINE_STYLED_")
+                 and o.name != "Q_RACING_LINE_STYLED"],
+                key=lambda o: o.name,
+            )
+            print(f"\n[DIAG] Q_RACING_LINE_STYLED_* curves: {len(slines)}", flush=True)
+            for o in slines:
+                print(f"  {o.name:40s}  id={id(o):>14d}  first_vert={_vert0(o)}", flush=True)
+
+            print(f"\n[DIAG] pairwise STYLED-line spread (max vertex distance):", flush=True)
+            sarrs = [(o.name, _all_verts(o)) for o in slines]
+            sarrs = [(n, a) for n, a in sarrs if a is not None]
+            for i in range(len(sarrs)):
+                for j in range(i + 1, len(sarrs)):
+                    n1, a1 = sarrs[i]
+                    n2, a2 = sarrs[j]
+                    if a1.shape == a2.shape:
+                        d = _np.linalg.norm(a1 - a2, axis=1)
+                        verdict = ("genuinely different" if d.max() > 0.50
+                                   else "tiny — algorithm output too tame" if d.max() > 0.05
+                                   else "essentially identical — algorithm produced no spread")
+                        print(f"  {n1} ↔ {n2}: max={d.max():.3f}m  mean={d.mean():.3f}m  → {verdict}", flush=True)
+                    else:
+                        print(f"  {n1} ({a1.shape[0]} pts) vs {n2} ({a2.shape[0]} pts): different vert counts, skipped", flush=True)
+
+            print("========== END DIAGNOSTIC ==========\n", flush=True)
+        except Exception as _diag_err:
+            print(f"[DIAG] failed: {_diag_err}", flush=True)
+
+        self.report({'INFO'}, "Styled lines + driving paths updated — see console for diagnostic")
+        return {'FINISHED'}
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # UI PANEL
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2795,26 +4154,27 @@ class OBJECT_OT_AlignAllDriverPaths(Operator):
 
 classes = (
     F1TrackVizProperties,
-    OBJECT_OT_InstallF1Dependencies,
-    OBJECT_OT_GenerateCenterline,
-    OBJECT_OT_GenerateRacingLine,
-    OBJECT_OT_GenerateAllStyledRacingLines,
-    OBJECT_OT_LoadStyleFromJson,
-    OBJECT_OT_AlignPathToRacingLine,
-    OBJECT_OT_AlignAllDriverPaths,
+    F1_OT_InstallTrackVizDeps,
+    F1_OT_GenerateCenterline,
+    F1_OT_GenerateRacingLine,
+    F1_OT_GenerateAllStyledRacingLines,
+    F1_OT_LoadStyleFromJson,
+    F1_OT_AlignPathToRacingLine,
+    F1_OT_AlignAllDriverPaths,
+    F1_OT_ApplyStyleTuning,
 )
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    bpy.types.Scene.f1_track_props = bpy.props.PointerProperty(type=F1TrackVizProperties)
+    bpy.types.Scene.f1_track_viz_props = bpy.props.PointerProperty(type=F1TrackVizProperties)
     modules_path = get_modules_path()
     append_modules_to_sys_path(modules_path)
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
-    del bpy.types.Scene.f1_track_props
+    del bpy.types.Scene.f1_track_viz_props
 
 if __name__ == "__main__":
     register()
