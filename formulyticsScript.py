@@ -18,7 +18,9 @@ warnings.simplefilter(action='ignore')
 # ==========================================
 # 0. DATABASE CONNECTION
 # ==========================================
-DB_DIR = r"C:\Users\91910\Downloads\openclaw-pipeline\database"
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_BUNDLED_DB = os.path.join(_SCRIPT_DIR, "data", "openclaw")
+DB_DIR = _BUNDLED_DB if os.path.isdir(_BUNDLED_DB) else r"C:\Users\91910\Downloads\openclaw-pipeline\database"
 CALENDAR_DB = {}
 DRIVERS_DB = {}
 SEASON_DB = {}
@@ -108,7 +110,8 @@ class F1VideoBaker:
         self.ref_config = configs[0]
         self.loaded_sessions = {}
         
-        font_dir = r"C:\Users\91910\Downloads\Formula1"
+        _bundled_fonts = os.path.join(_SCRIPT_DIR, "fonts")
+        font_dir = _bundled_fonts if os.path.isdir(_bundled_fonts) else r"C:\Users\91910\Downloads\Formula1"
         try:
             self.font_title = ImageFont.truetype(os.path.join(font_dir, "Formula1-Bold_web_0.ttf.ttf"), 42)
             self.font_sub = ImageFont.truetype(os.path.join(font_dir, "Formula1-Regular_web_0.ttf.ttf"), 26)

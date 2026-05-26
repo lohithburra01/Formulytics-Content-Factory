@@ -70,10 +70,13 @@ class F1_Database_Manager:
 
     def __init__(self, context=None):
         blend_path = bpy.data.filepath
-        if not blend_path:
-            self.root = "c:/Users/91910/Downloads/F1_Builder_Context/F1_Pipeline_Assets"
-        else:
+        if blend_path:
             self.root = os.path.join(os.path.dirname(blend_path), "F1_Pipeline_Assets")
+        else:
+            # Fallback when no .blend is open: walk up from this addon file to the repo root.
+            # operators/ -> launch_control/ -> launch_control_auto_car_rig/ -> launch_control_auto_car_rig/ -> repo root
+            addon_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+            self.root = os.path.join(addon_root, "F1_Pipeline_Assets")
 
     def get_car_path(self, year, team, code):
         return os.path.join(self.root, "cars", str(year), team, f"{code}.blend")
@@ -271,6 +274,18 @@ def _generate_single_car(item):
     car.sim_wheels = sim_wheels
     car.sim_track_to = sim_track_to
 
+    # Tag the driving_path (and the rig) with the driver code so downstream
+    # alignment can resolve curves by tag instead of substring-matching names.
+    # This is the universal fallback when rig templates don't include the
+    # driver suffix (e.g. Bahrain rigs come in as 'Mclaren' without '_Norris',
+    # or VER falls back to the placeholder 'LC Porsche 944 Turbo' rig).
+    driver_code = str(item.get("driver", "")).upper().strip()
+    if driver_code:
+        if driving_path is not None:
+            driving_path["_f1_driver_code"] = driver_code
+        if rig_obj is not None:
+            rig_obj["_f1_driver_code"] = driver_code
+
     scene.car_collection = car_coll          # make LC's find_selected() return THIS car
 
     # --- 4. APPLY TELEMETRY JSON ---
@@ -322,6 +337,103 @@ def _apply_saved_alignment_to_scene(scene, track_id):
     print(f"[F1 Studio] Loaded saved alignment for '{track_id}'")
 
 
+def _clean_driving_path_seams(scene, *, short_seg_ratio=0.20, flip_angle_deg=90.0):
+    """Post-alignment fix: scan every driving_path_* curve for a vertex that is
+    BOTH unusually close to its neighbour AND tangent-reversing relative to that
+    neighbour. Such vertices appear as a 1-frame 180° flip (the lap-seam wrap
+    vertex from the alignment Kabsch+resample) and Blender renders the
+    follow-path-constrained car as briefly upside-down at that spot.
+
+    Removes the bad vertex and sets the neighbouring bezier handles to AUTO so
+    Blender re-derives a smooth wrap. Does NOT touch the alignment operator —
+    only the curve points it produced.
+
+    Heuristic: vertex i is bad if min(seg_len[i-1->i], seg_len[i->i+1]) is
+    < short_seg_ratio × mean_seg AND the tangent angle at i exceeds
+    flip_angle_deg (default 90° — anything past that is an actual reversal,
+    not a sharp corner)."""
+    import math
+    cleaned_total = 0
+    for obj in scene.objects:
+        if not obj.name.startswith("driving_path_"):
+            continue
+        if obj.type != 'CURVE' or not obj.data.splines:
+            continue
+        sp = obj.data.splines[0]
+        if sp.type != 'BEZIER':
+            continue
+        bps = sp.bezier_points
+        n = len(bps)
+        if n < 6:
+            continue
+
+        coords = [obj.matrix_world @ bp.co for bp in bps]
+        seg_len = [(coords[(i + 1) % n] - coords[i]).length for i in range(n)]
+        mean_seg = sum(seg_len) / n
+        if mean_seg < 1e-6:
+            continue
+        threshold = mean_seg * float(short_seg_ratio)
+        cos_thresh = math.cos(math.radians(float(flip_angle_deg)))
+
+        bad = []
+        for i in range(n):
+            v_prev = coords[i] - coords[(i - 1) % n]
+            v_next = coords[(i + 1) % n] - coords[i]
+            lp = v_prev.length
+            ln = v_next.length
+            if lp < 1e-6 or ln < 1e-6:
+                bad.append(i)
+                continue
+            cos_a = v_prev.dot(v_next) / (lp * ln)
+            short = (lp < threshold) or (ln < threshold)
+            if cos_a < cos_thresh and short:
+                bad.append(i)
+
+        if not bad:
+            continue
+
+        keep = [i for i in range(n) if i not in set(bad)]
+        if len(keep) < 4:
+            print(f"[SEAM-CLEAN] {obj.name}: would-be-removed {len(bad)} vtx but <4 would remain — skipping")
+            continue
+
+        keep_data = []
+        for i in keep:
+            bp = bps[i]
+            keep_data.append((
+                bp.co.copy(), bp.handle_left.copy(), bp.handle_right.copy(),
+                bp.handle_left_type, bp.handle_right_type,
+            ))
+
+        bad_set = set(bad)
+        cyclic = sp.use_cyclic_u
+        obj.data.splines.remove(sp)
+        new_sp = obj.data.splines.new('BEZIER')
+        new_sp.bezier_points.add(len(keep_data) - 1)
+        for j, (co, hl, hr, hlt, hrt) in enumerate(keep_data):
+            new_bp = new_sp.bezier_points[j]
+            new_bp.co = co
+            new_bp.handle_left = hl
+            new_bp.handle_right = hr
+            orig_i = keep[j]
+            prev_was_removed = ((orig_i - 1) % n) in bad_set
+            next_was_removed = ((orig_i + 1) % n) in bad_set
+            new_bp.handle_left_type  = 'AUTO' if prev_was_removed else hlt
+            new_bp.handle_right_type = 'AUTO' if next_was_removed else hrt
+        new_sp.use_cyclic_u = cyclic
+
+        cleaned_total += len(bad)
+        print(
+            f"[SEAM-CLEAN] {obj.name}: removed {len(bad)} reversing vertex(es) at {bad} "
+            f"(mean_seg={mean_seg:.3f}m, threshold={threshold:.3f}m)"
+        )
+
+    if cleaned_total == 0:
+        print("[SEAM-CLEAN] No reversing seam vertices found in any driving_path_* curve.")
+    else:
+        print(f"[SEAM-CLEAN] Total vertices removed across all driving paths: {cleaned_total}")
+
+
 def _pipeline_finish():
     """Final housekeeping after all cars are processed."""
     global _pipeline_original_edit_all, _pipeline_first_event
@@ -357,12 +469,17 @@ def _pipeline_finish():
     print(f"[F1 Studio] ═══ ALL {len(_pipeline_queue)} CARS COMPLETE ═══")
 
     # ─── AUTO-CHAIN: track viz pipeline ──────────────────────────────────────
-    # After all cars + driving paths are loaded and track-aligned, automatically
-    # produce per-driver styled racing lines and align each driver's path to
-    # their own styled line. Two operators (provided by the F1 Track Visualizer
-    # standalone addon) get called via bpy.ops:
-    #   1. object.generate_all_styled_racing_lines
-    #   2. object.align_all_driver_paths   (also refreshes trails)
+    # After all cars + driving paths are loaded and track-aligned, automatically:
+    #   0. object.export_driver_style  (writes per-driver style JSONs from the
+    #      current queue's telemetry into <db.root>/style_params/)
+    #   0b. pin f1_track_viz_props.style_json_path to one of the freshly-
+    #       written JSONs so the styled-line generator's GP+year filter
+    #       skips stale JSONs from other tracks
+    #   1. f1.generate_all_styled_racing_lines
+    #   2. f1.align_all_driver_paths   (also refreshes trails)
+    # bl_idnames for (1) and (2) live in the f1.* namespace (not object.*) to
+    # avoid colliding with the still-installed standalone f1_track_visualizer
+    # addon which the user keeps for a separate workflow.
     #
     # Centerline + Q_RACING_LINE generation are NOT auto-run here — those are
     # one-time-per-track setup steps that need manual parameter input (track
@@ -372,21 +489,60 @@ def _pipeline_finish():
         print("[F1 Studio] ╔══════════════════════════════════════════════════════════")
         print("[F1 Studio] ║ AUTO-CHAIN SKIPPED: Q_RACING_LINE not in scene.")
         print("[F1 Studio] ║ This is a one-time-per-track setup step:")
-        print("[F1 Studio] ║   - F1 Track Visualizer panel → Generate Centerline")
-        print("[F1 Studio] ║   - F1 Track Visualizer panel → Generate Racing Line")
+        print("[F1 Studio] ║   - F1 Track Setup panel → Generate Centerline")
+        print("[F1 Studio] ║   - F1 Track Setup panel → Generate Racing Line")
         print("[F1 Studio] ║ Save the .blend afterwards. Then click Generate Scene")
         print("[F1 Studio] ║ again — styled lines + alignment will run automatically.")
         print("[F1 Studio] ╚══════════════════════════════════════════════════════════")
     else:
-        print("[F1 Studio] auto-chain: styled lines → align all driver paths")
+        print("[F1 Studio] auto-chain: export style JSON → styled lines → align")
+        # 0. write fresh per-driver style JSONs for the current queue
         try:
-            bpy.ops.object.generate_all_styled_racing_lines()
+            bpy.ops.object.export_driver_style()
+        except Exception as e:
+            print(f"[F1 Studio] auto-chain: export_driver_style failed (continuing with existing JSONs): {e}")
+        # 0b. pin GP+year filter to the current queue so stale JSONs from
+        # other tracks are ignored. Read the most recent JSON in style_params/
+        # that matches the queue's GP+year and set it as style_json_path —
+        # the styled-line generator reads source.grand_prix / source.season
+        # off that file and uses them as a filter.
+        try:
+            queue = scene.f1_lap_queue
+            track_viz_props = getattr(scene, 'f1_track_viz_props', None)
+            if len(queue) > 0 and track_viz_props is not None:
+                first = queue[0]
+                gp_slug = str(first.event).lower().replace(' ', '_')
+                year_str = str(first.year)
+                style_dir = os.path.join(F1_Database_Manager().root, 'style_params')
+                pattern = os.path.join(style_dir, f"*_{gp_slug}_{year_str}_*.json")
+                import glob as _glob
+                matches = sorted(_glob.glob(pattern), key=os.path.getmtime, reverse=True)
+                if matches:
+                    track_viz_props.style_json_path = matches[0]
+                    print(f"[F1 Studio] auto-chain: filter pinned via {os.path.basename(matches[0])}")
+                else:
+                    track_viz_props.style_json_path = ""
+                    print(f"[F1 Studio] auto-chain: no JSON matched {gp_slug}/{year_str}; "
+                          "filter cleared (will process every JSON)")
+        except Exception as e:
+            print(f"[F1 Studio] auto-chain: filter pin failed (continuing): {e}")
+        # 1. styled lines
+        try:
+            bpy.ops.f1.generate_all_styled_racing_lines()
         except Exception as e:
             print(f"[F1 Studio] auto-chain: generate_all_styled_racing_lines failed: {e}")
+        # 2. align driving paths to per-driver styled lines
         try:
-            bpy.ops.object.align_all_driver_paths()
+            bpy.ops.f1.align_all_driver_paths()
         except Exception as e:
             print(f"[F1 Studio] auto-chain: align_all_driver_paths failed: {e}")
+        # 3. clean any seam-reversal vertex left by the alignment Kabsch+resample
+        # (a 180° tangent flip at the lap wrap with a sub-cm segment, which
+        # Blender renders as the follow-path car briefly going upside-down).
+        try:
+            _clean_driving_path_seams(scene)
+        except Exception as e:
+            print(f"[F1 Studio] auto-chain: seam-clean failed (non-fatal): {e}")
         print("[F1 Studio] auto-chain DONE — driver paths aligned to per-driver styled lines")
 
 
