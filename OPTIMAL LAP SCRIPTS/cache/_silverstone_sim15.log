@@ -1,0 +1,28 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[5.96,7.56] l=[5.96,7.56]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=6.413 mean|a|=4.452 (7.49s)
+  iter 1: max|a|=3.768 mean|a|=2.384 (8.49s)
+  iter 2: max|a|=2.702 mean|a|=1.270 (7.91s)
+  iter 3: max|a|=1.959 mean|a|=0.675 (8.13s)
+  iter 4: max|a|=1.410 mean|a|=0.370 (8.21s)
+  iter 5: max|a|=0.871 mean|a|=0.204 (8.18s)
+  iter 6: max|a|=0.514 mean|a|=0.109 (9.51s)
+  iter 7: max|a|=0.298 mean|a|=0.059 (9.04s)
+  iter 8: max|a|=0.162 mean|a|=0.031 (8.75s)
+  converged at iter 8
+[iqp] 2901 pts, 5803 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=6.70m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 538/800 straight stations
+[sim] refinement slack: max=3.95e-03 (522/800 stations relaxed)
+[sim] |κ|max: 0.0607 (IQP seed) → 0.0465 (refined)
+[sim] raceline: 2903 pts, 5807 m, |κ|max=0.0465
+[sim] S/F line at raceline idx 635/2903 (frac 21.9%, |κ|=0.0016) — reference_2026_silverstone_fp1.csv x-corr peak=1643
+[sim] wrote raceline -> F1_Pipeline_Assets/tracks/british_grand_prix_raceline.json
+  closure iter 0: v0=76.7 vN=76.3 d=0.30 T_lap=86.939s
+  closure iter 1: v0=76.7 vN=76.3 d=0.30 T_lap=86.471s
+  closure converged at iter 1
+[sim] lap: 86.471s (bang-bang) -> 86.833s (jerk-limited), +0.362s for realism
+[sim] wrote 2605 rows -> F1_Pipeline_Assets/exports/silverstone_2026_synthetic.csv
+[sanity] T_lap=86.83s  v=[80,319] km/h  superclip frames=331  gain_med=25.2  drop_med=37.0 km/h/s

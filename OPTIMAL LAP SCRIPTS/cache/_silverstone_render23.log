@@ -1,0 +1,54 @@
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2605 samples, lap_time=86.800s, v=[80,319] km/h, soc=yes, mode=yes
+[kerbs] outer=831 corner zones, inner=807 corner zones
+[corridor.iqp] widths: right=[4.96,6.56]  left=[4.96,6.56]
+[raceline] loaded precomputed: 2903 pts, track_length=5807 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-733,891] Y[-711,546]
+[diag] visual   X[-743,906] Y[-716,548]
+[render] 2604 frames at 30fps (86.80s)
+  frame 60/2604
+  frame 120/2604
+  frame 180/2604
+  frame 240/2604
+  frame 300/2604
+  frame 360/2604
+  frame 420/2604
+  frame 480/2604
+  frame 540/2604
+  frame 600/2604
+  frame 660/2604
+  frame 720/2604
+  frame 780/2604
+  frame 840/2604
+  frame 900/2604
+  frame 960/2604
+  frame 1020/2604
+  frame 1080/2604
+  frame 1140/2604
+  frame 1200/2604
+  frame 1260/2604
+  frame 1320/2604
+  frame 1380/2604
+  frame 1440/2604
+  frame 1500/2604
+  frame 1560/2604
+  frame 1620/2604
+  frame 1680/2604
+  frame 1740/2604
+  frame 1800/2604
+  frame 1860/2604
+  frame 1920/2604
+  frame 1980/2604
+  frame 2040/2604
+  frame 2100/2604
+  frame 2160/2604
+  frame 2220/2604
+  frame 2280/2604
+  frame 2340/2604
+  frame 2400/2604
+  frame 2460/2604
+  frame 2520/2604
+  frame 2580/2604
+  frame 2604/2604
+[render] saved -> british_grand_prix_2026_optimal_lap.mp4
