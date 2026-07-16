@@ -1,0 +1,117 @@
+[transfer] catalunya    kind=Q   rate=1.00 pairs= 6 t25=  71.55 t26=  75.04 vtop 328->341 shift=+0.8%
+[transfer] austria      kind=FP1 rate=1.00 pairs= 6 t25=  63.97 t26=  67.84 vtop 323->325 shift=+1.1%
+[transfer] silverstone  kind=FP1 rate=1.00 pairs= 8 t25=  84.89 t26=  89.64 vtop 324->316 shift=+0.4%
+[transfer] miami        kind=Q   rate=0.86 pairs= 6 t25=  86.52 t26=  87.80 vtop 339->343 shift=-0.1%
+[transfer] china        kind=Q   rate=0.88 pairs= 8 t25=  90.72 t26=  92.06 vtop 330->332 shift=-0.8%
+[transfer] r(v25) at [80, 140, 200, 260, 320] = [0.985, 0.928, 0.904, 0.904, 0.904]
+[transfer] lap_delta_pct mean=+2.61% sd=1.97 per={'catalunya': 4.884, 'miami': 1.476, 'china': 1.483}
+[transfer] vtop_delta mean=+6.3 km/h per={'catalunya': 13.08, 'miami': 3.94, 'china': 2.0}
+[transfer] FP1 check austria: r residual median -0.045 (6 pairs)  lap_d +6.05%  vtop_d +2.7
+[transfer] FP1 check silverstone: r residual median +0.000 (8 pairs)  lap_d +5.59%  vtop_d -8.1
+[transfer] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\transfer_loo_canada.json
+[predict] using transfer WITHOUT canada (leave-one-out)
+[predict] canada: t25=70.90s  lap_band=[71.47,75.54]s  vtop 332->338  rho=1.2235  corners=6 (hs>170: 0)
+[predict]   s=  309.2 (0.071)  v25=  80.0 -> v26=  78.8
+[predict]   s=  720.0 (0.166)  v25= 146.0 -> v26= 135.1
+[predict]   s= 1240.5 (0.286)  v25= 101.0 -> v26=  97.5
+[predict]   s= 1988.4 (0.459)  v25= 140.0 -> v26= 129.9
+[predict]   s= 2671.3 (0.617)  v25=  65.0 -> v26=  64.0
+[predict]   s= 3867.0 (0.893)  v25= 134.0 -> v26= 125.1
+[predict] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\predicted_loo_canada.json
+[autofit] canada it0: cda=0.750 cl=4.600 lap=73.44s vtop=320.6 (f1=-17.7) tier[v25>=130] f2=-9.7
+[autofit] canada it1: cda=0.638 cl=5.000 lap=72.05s vtop=331.2 (f1=-7.1) tier[v25>=130] f2=-7.0
+[autofit] sim sanity-failed at iter2 rc=10:
+[sim] wrote 2104 rows -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_canada_sim.csv
+[sanity] T_lap=70.10s  v=[79,340] km/h  superclip frames=132  gain_med=28.2  drop_med=62.1 km/h/s
+[sanity] FAIL: DROP rate median 62.1 km/h/s outside [28,60] — check braking aero / trail-brake (real 2026 ~37-48)
+[autofit] backing off to cda=0.601 cl=5.400
+[autofit] sim sanity-failed at iter3 rc=10:
+[sim] wrote 2134 rows -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_canada_sim.csv
+[sanity] T_lap=71.11s  v=[78,336] km/h  superclip frames=137  gain_med=28.8  drop_med=60.7 km/h/s
+[sanity] FAIL: DROP rate median 60.7 km/h/s outside [28,60] — check braking aero / trail-brake (real 2026 ~37-48)
+[autofit] backing off to cda=0.619 cl=5.200
+[autofit] canada it4: cda=0.619 cl=5.200 lap=71.54s vtop=333.2 (f1=-5.1) tier[v25>=130] f2=-5.8  RAIL-VIOLATION
+[autofit] canada: converged=False cda=0.619 cl=5.200 lap=71.54s  low-speed residual median=+13.9 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_canada.json
+[backtest] canada: fails=2 corr=PASS lap_rail=FAIL lap_band=PASS top=PASS corners=FAIL
+[transfer] canada       kind=Q   rate=1.00 pairs= 6 t25=  70.90 t26=  72.58 vtop 332->332 shift=+0.1%
+[transfer] austria      kind=FP1 rate=1.00 pairs= 6 t25=  63.97 t26=  67.84 vtop 323->325 shift=+1.1%
+[transfer] silverstone  kind=FP1 rate=1.00 pairs= 8 t25=  84.89 t26=  89.64 vtop 324->316 shift=+0.4%
+[transfer] miami        kind=Q   rate=0.86 pairs= 6 t25=  86.52 t26=  87.80 vtop 339->343 shift=-0.1%
+[transfer] china        kind=Q   rate=0.88 pairs= 8 t25=  90.72 t26=  92.06 vtop 330->332 shift=-0.8%
+[transfer] r(v25) at [80, 140, 200, 260, 320] = [0.976, 0.975, 0.904, 0.904, 0.904]
+[transfer] lap_delta_pct mean=+1.78% sd=0.51 per={'canada': 2.368, 'miami': 1.476, 'china': 1.483}
+[transfer] vtop_delta mean=+1.8 km/h per={'canada': -0.42, 'miami': 3.94, 'china': 2.0}
+[transfer] FP1 check austria: r residual median -0.052 (6 pairs)  lap_d +6.05%  vtop_d +2.7
+[transfer] FP1 check silverstone: r residual median -0.002 (8 pairs)  lap_d +5.59%  vtop_d -8.1
+[transfer] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\transfer_loo_catalunya.json
+[predict] using transfer WITHOUT catalunya (leave-one-out)
+[predict] catalunya: t25=71.55s  lap_band=[72.12,73.55]s  vtop 328->330  rho=1.2098  corners=6 (hs>170: 0)
+[predict]   s=  844.8 (0.182)  v25= 162.0 -> v26= 153.7
+[predict]   s= 1722.9 (0.371)  v25= 167.0 -> v26= 157.5
+[predict]   s= 2123.4 (0.457)  v25= 107.0 -> v26= 104.4
+[predict]   s= 2552.1 (0.549)  v25= 165.0 -> v26= 156.0
+[predict]   s= 3491.0 (0.752)  v25= 119.0 -> v26= 116.0
+[predict]   s= 3771.8 (0.812)  v25= 129.0 -> v26= 125.8
+[predict] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\predicted_loo_catalunya.json
+[autofit] catalunya it0: cda=0.750 cl=4.600 lap=73.57s vtop=325.0 (f1=-4.8) tier[v25>=130] f2=-18.9
+[autofit] catalunya it1: cda=0.718 cl=5.000 lap=72.00s vtop=329.4 (f1=-0.4) tier[v25>=130] f2=-15.7  RAIL-VIOLATION
+[autofit] catalunya it2: cda=0.715 cl=5.800 lap=69.94s vtop=331.8 (f1=+2.0) tier[v25>=130] f2=-8.5  RAIL-VIOLATION
+[autofit] catalunya it3: cda=0.717 cl=6.500 lap=68.43s vtop=331.9 (f1=+2.1) tier[v25>=130] f2=-1.3  RAIL-VIOLATION
+[autofit] catalunya it4: cda=0.731 cl=6.500 lap=68.48s vtop=330.6 (f1=+0.8) tier[v25>=130] f2=-1.3  RAIL-VIOLATION
+[autofit] catalunya: converged=False cda=0.731 cl=6.500 lap=68.48s  low-speed residual median=+2.8 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_catalunya.json
+[backtest] catalunya: fails=4 corr=PASS lap_rail=FAIL lap_band=FAIL top=FAIL corners=FAIL
+[transfer] canada       kind=Q   rate=1.00 pairs= 6 t25=  70.90 t26=  72.58 vtop 332->332 shift=+0.1%
+[transfer] catalunya    kind=Q   rate=1.00 pairs= 6 t25=  71.55 t26=  75.04 vtop 328->341 shift=+0.8%
+[transfer] silverstone  kind=FP1 rate=1.00 pairs= 8 t25=  84.89 t26=  89.64 vtop 324->316 shift=+0.4%
+[transfer] miami        kind=Q   rate=0.86 pairs= 6 t25=  86.52 t26=  87.80 vtop 339->343 shift=-0.1%
+[transfer] china        kind=Q   rate=0.88 pairs= 8 t25=  90.72 t26=  92.06 vtop 330->332 shift=-0.8%
+[transfer] r(v25) at [80, 140, 200, 260, 320] = [0.975, 0.945, 0.904, 0.904, 0.904]
+[transfer] lap_delta_pct mean=+2.55% sd=1.61 per={'canada': 2.368, 'catalunya': 4.884, 'miami': 1.476, 'china': 1.483}
+[transfer] vtop_delta mean=+4.7 km/h per={'canada': -0.42, 'catalunya': 13.08, 'miami': 3.94, 'china': 2.0}
+[transfer] FP1 check silverstone: r residual median +0.003 (8 pairs)  lap_d +5.59%  vtop_d -8.1
+[transfer] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\transfer_loo_austria.json
+[predict] using transfer WITHOUT austria (leave-one-out)
+[predict] austria: t25=63.97s  lap_band=[64.48,67.66]s  vtop 322->326  rho=1.147  corners=6 (hs>170: 3)
+[predict]   s=  438.1 (0.102)  v25= 150.0 -> v26= 140.8
+[predict]   s= 1383.0 (0.321)  v25=  74.0 -> v26=  72.1
+[predict]   s= 2201.3 (0.511)  v25= 112.0 -> v26= 107.4
+[predict]   s= 2722.2 (0.632)  v25= 207.0 -> v26= 187.1
+[predict]   s= 3027.3 (0.702)  v25= 233.0 -> v26= 210.6
+[predict]   s= 3982.2 (0.924)  v25= 201.0 -> v26= 181.6
+[predict] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\predicted_loo_austria.json
+[autofit] austria it0: cda=0.750 cl=4.600 lap=65.23s vtop=314.6 (f1=-11.9) tier[v25>170] f2=+12.7
+[autofit] austria it1: cda=0.671 cl=4.200 lap=66.02s vtop=319.9 (f1=-6.6) tier[v25>170] f2=+3.5
+[autofit] austria it2: cda=0.572 cl=4.049 lap=66.07s vtop=326.9 (f1=+0.4) tier[v25>170] f2=+0.4
+[autofit] austria: converged=True cda=0.572 cl=4.049 lap=66.07s  low-speed residual median=+9.0 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_austria.json
+[backtest] austria: fails=0 corr=PASS lap_rail=PASS lap_band=PASS top=info corners=PASS
+[transfer] canada       kind=Q   rate=1.00 pairs= 6 t25=  70.90 t26=  72.58 vtop 332->332 shift=+0.1%
+[transfer] catalunya    kind=Q   rate=1.00 pairs= 6 t25=  71.55 t26=  75.04 vtop 328->341 shift=+0.8%
+[transfer] austria      kind=FP1 rate=1.00 pairs= 6 t25=  63.97 t26=  67.84 vtop 323->325 shift=+1.1%
+[transfer] miami        kind=Q   rate=0.86 pairs= 6 t25=  86.52 t26=  87.80 vtop 339->343 shift=-0.1%
+[transfer] china        kind=Q   rate=0.88 pairs= 8 t25=  90.72 t26=  92.06 vtop 330->332 shift=-0.8%
+[transfer] r(v25) at [80, 140, 200, 260, 320] = [0.975, 0.945, 0.904, 0.904, 0.904]
+[transfer] lap_delta_pct mean=+2.55% sd=1.61 per={'canada': 2.368, 'catalunya': 4.884, 'miami': 1.476, 'china': 1.483}
+[transfer] vtop_delta mean=+4.7 km/h per={'canada': -0.42, 'catalunya': 13.08, 'miami': 3.94, 'china': 2.0}
+[transfer] FP1 check austria: r residual median -0.046 (6 pairs)  lap_d +6.05%  vtop_d +2.7
+[transfer] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\transfer_loo_silverstone.json
+[predict] using transfer WITHOUT silverstone (leave-one-out)
+[predict] silverstone: t25=84.89s  lap_band=[85.57,89.79]s  vtop 324->329  rho=1.2075  corners=8 (hs>170: 4)
+[predict]   s=  893.8 (0.153)  v25= 110.0 -> v26= 105.6
+[predict]   s= 1032.4 (0.177)  v25=  89.0 -> v26=  86.4
+[predict]   s= 2008.2 (0.345)  v25= 180.0 -> v26= 165.2
+[predict]   s= 2161.6 (0.371)  v25= 116.0 -> v26= 111.0
+[predict]   s= 3171.1 (0.544)  v25= 304.0 -> v26= 274.7
+[predict]   s= 3992.1 (0.685)  v25= 230.0 -> v26= 207.8
+[predict]   s= 5029.9 (0.863)  v25= 239.0 -> v26= 216.0
+[predict]   s= 5474.8 (0.940)  v25= 106.0 -> v26= 102.0
+[predict] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\predicted_loo_silverstone.json
+[autofit] silverstone it0: cda=0.750 cl=4.600 lap=85.20s vtop=327.4 (f1=-1.3) tier[v25>170] f2=-15.2  RAIL-VIOLATION
+[autofit] silverstone it1: cda=0.741 cl=5.000 lap=84.03s vtop=330.7 (f1=+2.0) tier[v25>170] f2=-4.8  RAIL-VIOLATION
+[autofit] silverstone it2: cda=0.747 cl=5.184 lap=83.68s vtop=328.6 (f1=-0.1) tier[v25>170] f2=+1.4  RAIL-VIOLATION
+[autofit] silverstone: converged=False cda=0.747 cl=5.184 lap=83.68s  low-speed residual median=+11.7 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_silverstone.json
+[backtest] silverstone: fails=3 corr=FAIL lap_rail=FAIL lap_band=FAIL top=info corners=PASS
+[backtest] v1: total FAILs across 4 tracks: 9 -> report D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\backtest_report.md
