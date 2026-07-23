@@ -1,0 +1,50 @@
+[elev] 700 pts, 204.4-239.0 m ASL (span 34.5 m) — openf1 location.z session 9924 drv 4 lap 8 (2025 Qualifying)
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2292 samples, lap_time=76.355s, v=[99,322] km/h, soc=yes, mode=yes
+[kerbs] outer=837 corner zones, inner=803 corner zones
+[corridor.iqp] widths: right=[4.53,5.55]  left=[4.53,5.55]
+[raceline] loaded precomputed: 2150 pts, track_length=4301 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-440,462] Y[-426,556]
+[diag] visual   X[-451,463] Y[-427,559]
+[render] 2291 frames at 30fps (76.36s)
+  frame 60/2291
+  frame 120/2291
+  frame 180/2291
+  frame 240/2291
+  frame 300/2291
+  frame 360/2291
+  frame 420/2291
+  frame 480/2291
+  frame 540/2291
+  frame 600/2291
+  frame 660/2291
+  frame 720/2291
+  frame 780/2291
+  frame 840/2291
+  frame 900/2291
+  frame 960/2291
+  frame 1020/2291
+  frame 1080/2291
+  frame 1140/2291
+  frame 1200/2291
+  frame 1260/2291
+  frame 1320/2291
+  frame 1380/2291
+  frame 1440/2291
+  frame 1500/2291
+  frame 1560/2291
+  frame 1620/2291
+  frame 1680/2291
+  frame 1740/2291
+  frame 1800/2291
+  frame 1860/2291
+  frame 1920/2291
+  frame 1980/2291
+  frame 2040/2291
+  frame 2100/2291
+  frame 2160/2291
+  frame 2220/2291
+  frame 2280/2291
+  frame 2291/2291
+[render] saved -> hungarian_grand_prix_2026_optimal_lap.mp4
