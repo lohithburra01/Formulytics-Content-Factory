@@ -1,0 +1,1445 @@
+"""
+raceline_video.py
+
+Spatial path:  IQP min-curvature ideal racing line, computed once from the
+               track outline JSON.
+Animation:     Plays VER's real telemetry (time / distance / speed) on top
+               of that path, like the formulytics lap-comparison script —
+               just with one driver, on the optimal line.
+
+Inputs:
+  --outline       <track>_outline.json  (from extract_track_outline.py)
+  --telemetry-csv VER_telemetry.csv     (REQUIRED; columns: frame,time_s,distance,speed,...)
+
+Output: <track>_optimal_lap.mp4
+
+Requires:
+  pip install numpy scipy opencv-python Pillow trajectory-planning-helpers cvxopt
+"""
+
+import argparse
+import csv
+import json
+import math
+import os
+import sys
+import time
+import types
+
+# trajectory_planning_helpers' __init__ eagerly imports opt_min_curv (needs
+# quadprog). We use cvxopt for the QP, so stub quadprog out.
+if 'quadprog' not in sys.modules:
+    _stub = types.ModuleType('quadprog')
+    _stub.solve_qp = lambda *a, **kw: (_ for _ in ()).throw(RuntimeError("quadprog stub"))
+    sys.modules['quadprog'] = _stub
+
+import numpy as np
+import cv2
+from PIL import Image, ImageDraw, ImageFont
+from scipy.interpolate import splprep, splev
+from scipy.ndimage import gaussian_filter1d
+from scipy.sparse import csc_matrix
+from scipy.sparse.linalg import spsolve
+from cvxopt import matrix as cvx_matrix, solvers as cvx_solvers
+cvx_solvers.options['show_progress'] = False
+
+
+# =============================================================
+# Constants
+# =============================================================
+
+# Corridor / IQP — fast solve (~5-8 s per iter at N=800).
+N_CORRIDOR_POINTS = 800       # IQP corridor density (heavily smoothed, INSET applied)
+N_VISUAL_POINTS   = 4000      # visual edges density (lightly smoothed, NO inset → wider than IQP corridor)
+CORR_SMOOTH_S     = 30.0      # heavy smoothing for IQP corridor
+VISUAL_SMOOTH_S   = 10.0      # light smoothing for rendered edges (close to raw shape)
+INSET_M           = 1.0       # IQP-corridor inset on each side — line center
+                              #   stays ~1 m in from the edge, i.e. the car
+                              #   (half-width ~0.95 m) runs to the white line /
+                              #   kerb but not past it (wall-safe at Monaco).
+                              #   1.3 left it too far off the road; <1.0 puts
+                              #   the car over the line into the barrier.
+VISUAL_OUTSET_M   = 0.0       # push rendered edges outward this far → visual always wider than IQP corridor
+KAPPA_BOUND       = 0.4
+VEH_WIDTH         = 2.0
+RACELINE_STEPSIZE = 2.0
+IQP_ITERS         = 30
+ALPHA_TOL         = 0.10
+IQP_DAMP          = 0.5    # damp the alpha step so the iteration settles instead
+                          # of oscillating to the corridor edge and back (the
+                          # undamped full-step version never converged in 5 iters
+                          # and left phantom R~5 m kinks on near-straight track)
+SAFETY_MARGIN     = 0.15
+IQP_OUTPUT_SMOOTH = 0.8       # gaussian sigma on cur_ref before final splprep
+
+# Render
+WIDTH, HEIGHT     = 1080, 1920
+DEFAULT_FPS       = 30
+DEFAULT_ZOOM      = 30.0
+DEFAULT_TRAIL     = 180
+TRACK_FILL        = (40, 40, 40)
+TRACK_EDGE        = (255, 255, 255)
+EDGE_THICKNESS    = 4
+RACELINE_COLOR    = (90, 90, 90)
+TRAIL_THICKNESS   = 18
+DOT_COLOR         = (255, 255, 255)
+DOT_RADIUS        = 28
+WATERMARK_TEXT    = "@formulytics"
+
+# Kerbs — solid white trapezoidal attachments OUTSIDE each corner edge.
+# Drawn beyond the white edge line, in the runoff (outer) or infield (inner).
+KERB_KAPPA_THRESH = 0.005    # |kappa| > this = corner zone (radius < 200m)
+KERB_DEPTH_M      = 1.5      # how far OUT of the track edge the kerb extends
+KERB_ZONE_DILATE  = 10       # extend each corner zone by this many polyline pts (smooth transitions)
+KERB_TAPER_M      = 0.8      # absolute arc length of the trapezium taper at each end (metres) — does NOT scale with kerb length
+KERB_BLOCK_M      = 0.8      # length of each white block in the middle section
+KERB_GAP_M        = 0.8      # length of each empty (hole) section between blocks
+KERB_COLOR        = (240, 240, 240)    # solid white BGR
+
+# Layout — Instagram Reels + YouTube Shorts safe zones. The bottom ~250 px
+# (below ~1670) is covered by platform UI (captions/actions/home bar): nothing
+# critical may live there. HUD cluster compacted so the 3D elevation band
+# fits fully inside the safe area.
+TITLE_LINE_1      = "THE OPTIMAL LAP"
+TITLE_Y_1         = 320
+TITLE_Y_2         = 400
+CAMERA_Y_FRAC     = 0.45
+SPEED_Y           = 1112
+KMH_Y_OFFSET      = 78
+LAP_Y             = 1240
+WATERMARK_Y       = 1288
+MAP_SIZE          = 240
+MAP_Y_TOP         = 460
+MAP_X_RIGHT_INSET = 40
+
+# HUD — 2026 power-mode label
+MODE_LABEL_Y         = 1050
+
+MODE_COLORS = {
+    "DEPLOY":    (60, 220, 100),
+    "SUPERCLIP": (255, 140, 0),
+    "REGEN":     (255, 230, 0),
+}
+
+# 3D elevation flyover (only when --elevation-json is given): the elevation-
+# lifted track rendered as a true 3D object in the bottom third — altitude-
+# colored ribbon (sequential orange ramp), SOLID extrusion walls down to the
+# base, no grid/background. Camera = drone: follows the car with lag (never
+# locked), continuously rotating, oblique angle so the hills read. The car on
+# this view and the dot on the 2D map are the same telemetry sample per frame.
+EL3D_Y0           = 1310              # top row of the viewport on the frame
+EL3D_H            = HEIGHT - EL3D_Y0  # canvas runs to the frame bottom...
+EL3D_CY_FRAC      = 0.25              # ...but content centers in the SAFE part
+                                      # (rows 1310-1670); below stays black
+EL3D_FADE         = 70                # soft blend rows at the top edge
+EL3D_EXAG         = 2.6               # vertical exaggeration (contrast boost)
+# ...but 2.6 was tuned against Spa's 102 m span, and it does NOT transfer. The
+# drop walls are the only thing conveying height, and their on-screen size is
+#     px = EL3D_FOCAL * span * EXAG / EL3D_DIST
+# At Zandvoort (span 8.2 m) that is 6.8 px vs Spa's 84.2 px — a sliver no amount
+# of lighting can reveal. Exaggeration is therefore NORMALISED to each track's
+# own span to hold the on-screen relief constant:
+#     exag = EL3D_TARGET_RELIEF / span     (Spa: 265/102 = 2.6, byte-identical)
+# Display only: does not touch the physics, the raceline, or the reported lap.
+# Spa's own figure (265 = 102 m x 2.6) proved too literal for a COMPACT track:
+# at 32x Zandvoort's walls became occluding slabs and the ribbon read as a blob,
+# because an 828 m-wide layout overlaps itself in the 3D view where Spa's long
+# spread-out layout does not. Tuned down by eye on preview frames.
+EL3D_TARGET_RELIEF = float(os.environ.get("EL3D_TARGET_RELIEF", "110.0"))
+EL3D_EXAG_RANGE    = (2.6, 40.0)      # clamp so freak spans stay sane
+EL3D_HALF_W       = 10.0              # ribbon half width (m, widened for reach)
+EL3D_ELEV_ANGLE   = 0.2618            # 15 deg — low skyline angle: highs/lows pop
+EL3D_YAW_OFFSET   = 0.0               # camera azimuth = car azimuth + this:
+                                      # the orbit turns WITH the car, at the
+                                      # car's angular speed, so the car is
+                                      # always on the near side of the object
+EL3D_DIST         = 3400.0            # FIXED orbit radius around the track
+                                      # center: constant scale, no zoom, whole
+                                      # circuit framed (drone circles, never dives)
+EL3D_FOCAL        = 1080.0            # focal length in px (sized so the whole
+                                      # object stays inside the safe band at
+                                      # EVERY yaw of the car-locked orbit)
+EL3D_WALL_BGR     = (8, 23, 42)       # SOLID wall color (deep brown #2A1708)
+# Side lighting for the drop walls. The walls are the ONLY thing that conveys
+# height, and painting them one flat near-black tone (EL3D_WALL_BGR) made the
+# relief unreadable — the ribbon looked like a flat squiggle. They are now lit
+# by a directional lamp whose azimuth is held at a FIXED OFFSET FROM THE CAMERA
+# yaw, so as the orbit follows the car the near-side walls stay lit from the
+# same screen direction and the relief reads identically all lap. The top
+# surface (altitude ramp) is untouched.
+EL3D_WALL_LIT     = (34, 100, 184)    # fully-lit wall (BGR), warm to match ramp
+EL3D_WALL_AMB     = 0.30              # ambient floor: unlit walls stay readable
+EL3D_LIGHT_AZ     = math.radians(58)  # lamp azimuth relative to camera yaw
+EL3D_CAR_RING     = (12, 137, 232)    # orange ring around the white car dot
+EL3D_TRAIL_N      = 40
+
+# ---------------------------------------------------------------------------
+# Banking cross-section panel (--banking-json). Front view looking ALONG the
+# track: the road is a slab tilted by the REAL surveyed banking at the car's
+# current station, so the tilt changes as the car moves. Drawn at TRUE 1:1
+# angle — 19 deg is dramatic enough in a front view without exaggeration, and
+# an honest angle keeps the panel a factual depiction of the circuit.
+# Fed ONLY from the display-only channel (cache/_make_banking_display.py),
+# never from the fitted physics channel.
+# ---------------------------------------------------------------------------
+BNK_Y0            = 1310              # same safe band the 3D flyover used
+BNK_H             = HEIGHT - BNK_Y0
+BNK_CY_FRAC       = 0.30              # slab pivot height within the panel
+BNK_ROAD_W        = 560               # slab width in px (the road, edge to edge)
+BNK_ROAD_T        = 30                # slab thickness in px
+BNK_ROAD_BGR      = (58, 58, 58)      # asphalt
+BNK_EDGE_BGR      = (255, 255, 255)   # white track edge lines
+BNK_KERB_W        = 46                # kerb block length at each edge
+BNK_LEVEL_BGR     = (70, 70, 70)      # dashed level reference
+BNK_ARC_BGR       = (12, 137, 232)    # angle arc + readout accent
+BNK_CAR_RING      = (12, 137, 232)    # ring around the white car dot
+BNK_CAR_R         = 13
+BNK_FADE          = 70
+
+
+def _el3d_ramp(t):
+    """Sequential altitude ramp, dark->bright brand orange (BGR). Endpoints
+    pushed apart so the high/low contrast carries at small size."""
+    lo, hi = (52, 26, 6), (255, 196, 110)         # RGB endpoints
+    r = lo[0] + (hi[0] - lo[0]) * t
+    g = lo[1] + (hi[1] - lo[1]) * t
+    b = lo[2] + (hi[2] - lo[2]) * t
+    return (int(b), int(g), int(r))
+
+
+# =============================================================
+# Stage 1: Outline → corridor + widths
+# =============================================================
+
+def signed_area(poly):
+    x, y = poly[:, 0], poly[:, 1]
+    return 0.5 * float(np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y))
+
+
+def smooth_resample_loop(poly, n_out, smooth_s):
+    """Smoothing periodic spline + uniform arc-length resample."""
+    poly = np.asarray(poly, dtype=float)
+    if not np.allclose(poly[0], poly[-1]):
+        poly_closed = np.vstack([poly, poly[0]])
+    else:
+        poly_closed = poly
+    seg = np.linalg.norm(np.diff(poly_closed, axis=0), axis=1)
+    keep = np.concatenate([[True], seg > 1e-6])
+    poly_closed = poly_closed[keep]
+    if not np.allclose(poly_closed[0], poly_closed[-1]):
+        poly_closed = np.vstack([poly_closed, poly_closed[0]])
+    seg = np.linalg.norm(np.diff(poly_closed, axis=0), axis=1)
+    cum = np.concatenate([[0.0], np.cumsum(seg)])
+    u_norm = cum / cum[-1]
+    tck, _ = splprep([poly_closed[:, 0], poly_closed[:, 1]],
+                     u=u_norm, s=smooth_s, per=True, k=3)
+    u_new = np.linspace(0.0, 1.0, n_out, endpoint=False)
+    rx, ry = splev(u_new, tck)
+    return np.column_stack([rx, ry])
+
+
+def offset_loop_outward(poly, dist, is_outer):
+    """Push every point of a CCW closed polyline AWAY FROM THE ROAD by `dist`
+    metres. For the track-outer edge, that means along the right-normal
+    (outward of the outer loop). For the track-inner edge, that means along
+    the left-normal (toward the infield, i.e., inward of the inner loop).
+    Both operations enlarge the visual road corridor."""
+    poly = np.asarray(poly, dtype=float)
+    n = len(poly)
+    out = np.zeros_like(poly)
+    for i in range(n):
+        d = poly[(i + 3) % n] - poly[(i - 3) % n]
+        nm = np.linalg.norm(d)
+        if nm < 1e-8:
+            out[i] = poly[i]
+            continue
+        t = d / nm
+        if is_outer:
+            normal = np.array([ t[1], -t[0]])   # right normal -> outward of CCW outer loop
+        else:
+            normal = np.array([-t[1],  t[0]])   # left normal  -> into infield (CCW inner)
+        out[i] = poly[i] + dist * normal
+    return out
+
+
+def compute_kerb_polygons(poly, is_outer):
+    """Build closed white trapezoidal polygons sitting OUTSIDE the track edge
+    along each corner zone. Inner side of each polygon hugs the track edge;
+    outer side is the same edge offset OUTWARD (away from road) by
+    KERB_DEPTH_M, with a small taper at each end so the polygon looks like a
+    trapezium fitted around the corner from outside.
+
+    Returns a list of np.ndarray closed polygons (each shape (M,2)), suitable
+    for cv2.fillPoly."""
+    poly = np.asarray(poly, dtype=float)
+    n = len(poly)
+    if n < 6:
+        return []
+
+    # Discrete curvature with 6-point span.
+    kappa = np.zeros(n)
+    for i in range(n):
+        a = poly[(i - 3) % n]
+        b = poly[i]
+        c = poly[(i + 3) % n]
+        ab = b - a
+        bc = c - b
+        cross = ab[0] * bc[1] - ab[1] * bc[0]
+        nab = np.linalg.norm(ab)
+        nbc = np.linalg.norm(bc)
+        nac = np.linalg.norm(c - a)
+        denom = nab * nbc * nac
+        kappa[i] = 0.0 if denom < 1e-9 else 2.0 * cross / denom
+
+    abs_k = gaussian_filter1d(np.tile(np.abs(kappa), 3), sigma=10)[n:2 * n]
+    in_corner = abs_k > KERB_KAPPA_THRESH
+
+    # Dilate corner zones (extend by KERB_ZONE_DILATE points each side) for
+    # smooth transitions where curvature is just below threshold but the
+    # corner is still in progress.
+    if KERB_ZONE_DILATE > 0:
+        k = 2 * KERB_ZONE_DILATE + 1
+        kernel = np.ones(k, dtype=int)
+        dilated = np.convolve(np.tile(in_corner.astype(int), 3), kernel, mode='same') > 0
+        in_corner = dilated[n:2 * n]
+
+    if not in_corner.any():
+        return []
+    if in_corner.all():
+        return []  # whole track is one corner zone — no kerbs (shouldn't happen)
+
+    # Shift array so a non-corner index sits at 0; eliminates wrap-around runs.
+    shift = int(np.where(~in_corner)[0][0])
+    poly_s = np.roll(poly, -shift, axis=0)
+    in_corner_s = np.roll(in_corner, -shift)
+
+    # Find contiguous corner runs in the shifted array.
+    runs = []
+    i = 0
+    while i < n:
+        if in_corner_s[i]:
+            j = i
+            while j < n and in_corner_s[j]:
+                j += 1
+            runs.append((i, j))
+            i = j
+        else:
+            i += 1
+
+    polygons = []
+    for start, end in runs:
+        L = end - start
+        if L < 3:
+            continue
+        edge_pts = poly_s[start:end]
+
+        # Outward normals (away from road) along this zone.
+        normals = np.zeros_like(edge_pts)
+        for k_local in range(L):
+            i_poly = start + k_local
+            d = poly_s[(i_poly + 3) % n] - poly_s[(i_poly - 3) % n]
+            nm = np.linalg.norm(d)
+            if nm < 1e-8:
+                normals[k_local] = np.array([1.0, 0.0])
+                continue
+            t = d / nm
+            if is_outer:
+                normals[k_local] = np.array([ t[1], -t[0]])    # right normal of CCW outer = away from road
+            else:
+                normals[k_local] = np.array([-t[1],  t[0]])    # left normal of CCW inner = into infield = away from road
+
+        # Per-point arc length within this zone.
+        seg_in_zone = np.linalg.norm(np.diff(edge_pts, axis=0), axis=1)
+        arc_in_zone = np.concatenate([[0.0], np.cumsum(seg_in_zone)])  # length L
+        zone_arc_total = float(arc_in_zone[-1])
+
+        def make_segment_polygon(idx_lo, idx_hi, depth_fn):
+            """Build a closed kerb polygon from edge index lo..hi inclusive,
+            using `depth_fn(arc)` to set the outward kerb depth at each pt."""
+            if idx_hi <= idx_lo:
+                return None
+            seg_pts = edge_pts[idx_lo:idx_hi + 1]
+            seg_norm = normals[idx_lo:idx_hi + 1]
+            seg_depths = np.array([depth_fn(arc_in_zone[idx_lo + k]) for k in range(idx_hi - idx_lo + 1)])
+            outer_pts = seg_pts + seg_norm * seg_depths[:, None]
+            return np.vstack([seg_pts, outer_pts[::-1]])
+
+        # If zone is too short for taper-in + middle + taper-out, just draw a
+        # single small tapered polygon spanning the whole zone.
+        if zone_arc_total <= 2 * KERB_TAPER_M:
+            def short_depth(a):
+                d = min(a, zone_arc_total - a)
+                return KERB_DEPTH_M * (d / KERB_TAPER_M)
+            poly_seg = make_segment_polygon(0, L - 1, short_depth)
+            if poly_seg is not None:
+                polygons.append(poly_seg)
+            continue
+
+        # Boundaries (in zone arc length).
+        a_taper_in_end  = KERB_TAPER_M
+        a_taper_out_beg = zone_arc_total - KERB_TAPER_M
+
+        # Convert arc-position to nearest index in arc_in_zone.
+        idx_taper_in_end  = int(np.searchsorted(arc_in_zone, a_taper_in_end))
+        idx_taper_out_beg = int(np.searchsorted(arc_in_zone, a_taper_out_beg))
+        idx_taper_in_end  = min(idx_taper_in_end, L - 1)
+        idx_taper_out_beg = max(idx_taper_out_beg, 0)
+
+        # 1. Taper-in triangle (depth: 0 at start → KERB_DEPTH_M at idx_taper_in_end).
+        def depth_in(a):
+            return KERB_DEPTH_M * min(1.0, a / KERB_TAPER_M)
+        poly_seg = make_segment_polygon(0, idx_taper_in_end, depth_in)
+        if poly_seg is not None:
+            polygons.append(poly_seg)
+
+        # 2. Middle: alternating white blocks and empty gaps. Each block is
+        #    KERB_BLOCK_M long; each gap is KERB_GAP_M long. Same metric size
+        #    regardless of corner length.
+        a = a_taper_in_end
+        block_idx = 0
+        while a < a_taper_out_beg - 1e-6:
+            if block_idx % 2 == 0:
+                # White block.
+                a_end = min(a + KERB_BLOCK_M, a_taper_out_beg)
+                k_lo = int(np.searchsorted(arc_in_zone, a))
+                k_hi = int(np.searchsorted(arc_in_zone, a_end))
+                k_lo = max(0, min(k_lo, L - 1))
+                k_hi = max(0, min(k_hi, L - 1))
+                poly_seg = make_segment_polygon(k_lo, k_hi, lambda _a: KERB_DEPTH_M)
+                if poly_seg is not None:
+                    polygons.append(poly_seg)
+                a = a_end
+            else:
+                # Gap (no polygon drawn).
+                a += KERB_GAP_M
+            block_idx += 1
+
+        # 3. Taper-out triangle (depth: KERB_DEPTH_M at idx_taper_out_beg → 0 at end).
+        def depth_out(a):
+            d_from_end = zone_arc_total - a
+            return KERB_DEPTH_M * min(1.0, d_from_end / KERB_TAPER_M)
+        poly_seg = make_segment_polygon(idx_taper_out_beg, L - 1, depth_out)
+        if poly_seg is not None:
+            polygons.append(poly_seg)
+
+    return polygons
+
+
+def compute_curvature(poly):
+    """Discrete curvature for a closed polyline."""
+    n = len(poly)
+    kappa = np.zeros(n)
+    for i in range(n):
+        a = poly[(i - 1) % n]
+        b = poly[i]
+        c = poly[(i + 1) % n]
+        ab = b - a
+        bc = c - b
+        cross = ab[0] * bc[1] - ab[1] * bc[0]
+        nab = np.linalg.norm(ab)
+        nbc = np.linalg.norm(bc)
+        nac = np.linalg.norm(c - a)
+        denom = nab * nbc * nac
+        kappa[i] = 0.0 if denom < 1e-9 else 2.0 * cross / denom
+    return kappa
+
+
+def align_raceline_to_telemetry(raceline, ver_d, ver_v):
+    """Find the parameter offset (and direction) that makes the IDEAL line's
+    curvature pattern align with VER's slow-corner pattern. Without this the
+    raceline's index-0 is wherever Blender's boundary walk happened to start,
+    while VER's distance-0 is the start/finish line — completely unrelated.
+
+    Strategy: corners are slow on telemetry AND high-curvature on the
+    raceline. Resample both onto a common 0..1 lap-fraction grid, then
+    circularly cross-correlate |κ(p)| with 1/v(p). Try forward and reversed
+    raceline direction; pick whichever has the higher correlation peak.
+    Roll the raceline so its index-0 matches VER's distance-0.
+    """
+    n = len(raceline)
+    n_grid = 1024
+
+    rl_seg = np.linalg.norm(np.roll(raceline, -1, axis=0) - raceline, axis=1)
+    rl_arc = np.concatenate([[0.0], np.cumsum(rl_seg)])
+    rl_frac = rl_arc[:-1] / rl_arc[-1]
+    kappa = np.abs(compute_curvature(raceline))
+    grid = np.linspace(0.0, 1.0, n_grid, endpoint=False)
+    kappa_grid = np.interp(grid, rl_frac, kappa)
+
+    ver_frac = ver_d / ver_d[-1]
+    inv_speed = 1.0 / np.maximum(ver_v, 1.0)
+    inv_speed_grid = np.interp(grid, ver_frac, inv_speed)
+
+    def normalize(a):
+        a = a - a.mean()
+        s = a.std()
+        return a / s if s > 1e-9 else a
+    k_n = normalize(kappa_grid)
+    s_n = normalize(inv_speed_grid)
+
+    # Circular cross-correlation via FFT.
+    # corr_fwd[k] = sum_i k_n[i] * s_n[(i+k) % n_grid]
+    K = np.fft.fft(k_n)
+    S = np.fft.fft(s_n)
+    corr_fwd = np.fft.ifft(K * np.conj(S)).real   # peak at lag = -shift_we_want
+    corr_rev = np.fft.ifft(np.conj(K) * np.conj(S)).real   # for reversed raceline
+
+    # The "shift" we need to apply: argmax of cross-correlation gives the lag
+    # that maximizes alignment. We want to convert grid lag → raceline-pts lag.
+    if corr_rev.max() > corr_fwd.max():
+        raceline = raceline[::-1].copy()
+        kappa = kappa[::-1]
+        rl_frac = 1.0 - rl_frac[::-1]   # not needed below, but keep semantics
+        peak_lag = int(np.argmax(corr_rev))
+        peak_val = float(corr_rev.max())
+        direction = "REVERSED"
+    else:
+        peak_lag = int(np.argmax(corr_fwd))
+        peak_val = float(corr_fwd.max())
+        direction = "forward"
+
+    # Convert lag (in n_grid samples) → raceline-pts shift.
+    # In our convention the lag is the offset to apply to the raceline's
+    # parameter so that raceline_new[i] aligns with VER's i.
+    shift_frac = peak_lag / n_grid
+    shift_n = int(round(shift_frac * n)) % n
+    raceline_aligned = np.roll(raceline, -shift_n, axis=0)
+
+    print(f"[align] direction={direction}  shift={shift_n}/{n} pts "
+          f"({shift_frac * 100:.1f}% of lap)  corr_peak={peak_val:.2f}")
+    return raceline_aligned
+
+
+def align_loops(outer, inner):
+    if signed_area(outer) < 0: outer = outer[::-1]
+    if signed_area(inner) < 0: inner = inner[::-1]
+    d2 = np.sum((inner - outer[0]) ** 2, axis=1)
+    j0 = int(np.argmin(d2))
+    inner = np.roll(inner, -j0, axis=0)
+    return outer, inner
+
+def _pair_inner_to_outer(outer, inner):
+    """For each outer station, the NEAREST inner point.
+
+    Replaces the old index-based pairing (outer[i] <-> inner[i]), which assumed
+    both edges advance at the same arc-length rate. That assumption fails at
+    tight corners: at a hairpin the inner edge is far shorter than the outer, so
+    uniform-arc resampling drifts the index pairing right around the corner
+    (Monaco: paired gap up to 38.7 m vs the real 9 m width). The drifted midpoint
+    then lands OUTSIDE the real track and the racing line follows it off-track.
+    Nearest-point pairing is drift-proof and leaves wide/flowing tracks (Canada)
+    tracing essentially the same centerline curve."""
+    from scipy.spatial import cKDTree
+    return inner[cKDTree(inner).query(outer)[1]]
+
+
+def build_centerline_and_widths(outer, inner, inset_m=None):
+    """Centerline = midpoint of each outer station and its NEAREST inner point;
+    widths = signed projection onto the local left-normal. (Nearest-point
+    pairing — see _pair_inner_to_outer — not the old, drift-prone index pairing.)
+
+    inset_m: per-side corridor inset in metres. None → the module default
+    INSET_M (1.0, wall-safe for street circuits like Monaco). Pass 0.0 for
+    run-off circuits where the line legitimately uses the full track + kerbs."""
+    eff_inset = INSET_M if inset_m is None else inset_m
+    n = len(outer)
+    inner = _pair_inner_to_outer(outer, inner)
+
+    centerline = 0.5 * (outer + inner)
+
+    tang = np.zeros_like(centerline)
+    for i in range(n):
+        d = centerline[(i + 3) % n] - centerline[(i - 3) % n]
+        nm = np.linalg.norm(d)
+        tang[i] = d / nm if nm > 1e-8 else np.array([1.0, 0.0])
+    left_normal = np.column_stack([-tang[:, 1], tang[:, 0]])
+
+    off_outer = np.einsum('ij,ij->i', outer - centerline, left_normal)
+    off_inner = np.einsum('ij,ij->i', inner - centerline, left_normal)
+
+    w_left  = np.maximum(off_outer, off_inner)
+    w_right = -np.minimum(off_outer, off_inner)
+
+    w_left  = np.maximum(w_left  - eff_inset, VEH_WIDTH / 2.0 + 0.5)
+    w_right = np.maximum(w_right - eff_inset, VEH_WIDTH / 2.0 + 0.5)
+    w_left  = gaussian_filter1d(np.tile(w_left,  3), sigma=3)[n:2 * n]
+    w_right = gaussian_filter1d(np.tile(w_right, 3), sigma=3)[n:2 * n]
+
+    return centerline, w_right, w_left
+
+
+def build_centerline_and_widths_noinset(outer, inner):
+    n = len(outer)
+    inner = _pair_inner_to_outer(outer, inner)
+    centerline = 0.5 * (outer + inner)
+    tang = np.zeros_like(centerline)
+    for i in range(n):
+        d = centerline[(i + 3) % n] - centerline[(i - 3) % n]
+        nm = np.linalg.norm(d)
+        tang[i] = d / nm if nm > 1e-8 else np.array([1.0, 0.0])
+    left_normal = np.column_stack([-tang[:, 1], tang[:, 0]])
+    off_outer = np.einsum('ij,ij->i', outer - centerline, left_normal)
+    off_inner = np.einsum('ij,ij->i', inner - centerline, left_normal)
+    w_left  = np.maximum(np.maximum(off_outer, off_inner), VEH_WIDTH / 2.0)
+    w_right = np.maximum(-np.minimum(off_outer, off_inner), VEH_WIDTH / 2.0)
+    w_left  = gaussian_filter1d(np.tile(w_left,  3), sigma=3)[n:2 * n]
+    w_right = gaussian_filter1d(np.tile(w_right, 3), sigma=3)[n:2 * n]
+    return centerline, w_right, w_left
+
+
+def clamp_raceline_to_corridor(raceline, centerline, w_right, w_left, clearance_m):
+    """Project each raceline pt onto the local left-normal at the nearest
+    centerline station; clamp alpha into [-w_left+c, +w_right-c]. Guarantees
+    the line stays inside the (passed-in) corridor — guard against any
+    bow-out from final spline interpolation."""
+    from scipy.spatial import cKDTree
+    n_c = len(centerline)
+    tree = cKDTree(centerline)
+    out = raceline.copy()
+    n_changed = 0
+    max_correction = 0.0
+    for i in range(len(out)):
+        _, j = tree.query(out[i])
+        d = centerline[(j + 3) % n_c] - centerline[(j - 3) % n_c]
+        nm = float(np.linalg.norm(d))
+        if nm < 1e-8:
+            continue
+        t_hat = d / nm
+        nl = np.array([-t_hat[1], t_hat[0]])
+        alpha = float(np.dot(out[i] - centerline[j], nl))
+        amin = -float(w_left[j])  + clearance_m
+        amax =  float(w_right[j]) - clearance_m
+        if amin > amax:
+            amid = 0.5 * (amin + amax); amin = amax = amid
+        if alpha < amin or alpha > amax:
+            alpha_new = max(amin, min(amax, alpha))
+            out[i] = centerline[j] + alpha_new * nl
+            n_changed += 1
+            max_correction = max(max_correction, abs(alpha_new - alpha))
+    return out, n_changed, max_correction
+
+
+# =============================================================
+# Stage 2: IQP min-curvature racing line (port from addon)
+# =============================================================
+
+def opt_min_curv_sparse(reftrack, normvectors, A, kappa_bound, w_veh):
+    no_points = reftrack.shape[0]
+    no_splines = no_points
+
+    A_ex_b = np.zeros((no_points, no_splines * 4), dtype=float)
+    for i in range(no_splines):
+        A_ex_b[i, i * 4 + 1] = 1.0
+    A_ex_c = np.zeros((no_points, no_splines * 4), dtype=float)
+    for i in range(no_splines):
+        A_ex_c[i, i * 4 + 2] = 2.0
+
+    A_sp = csc_matrix(A)
+    T_c = spsolve(A_sp.T, A_ex_c.T).T
+    T_b = spsolve(A_sp.T, A_ex_b.T).T
+
+    M_x = np.zeros((no_splines * 4, no_points))
+    M_y = np.zeros((no_splines * 4, no_points))
+    for i in range(no_splines):
+        j = i * 4
+        if i < no_points - 1:
+            M_x[j,     i]     = normvectors[i,   0]
+            M_x[j + 1, i + 1] = normvectors[i + 1, 0]
+            M_y[j,     i]     = normvectors[i,   1]
+            M_y[j + 1, i + 1] = normvectors[i + 1, 1]
+        else:
+            M_x[j,     i] = normvectors[i, 0]
+            M_x[j + 1, 0] = normvectors[0, 0]
+            M_y[j,     i] = normvectors[i, 1]
+            M_y[j + 1, 0] = normvectors[0, 1]
+
+    q_x = np.zeros((no_splines * 4, 1))
+    q_y = np.zeros((no_splines * 4, 1))
+    for i in range(no_splines):
+        j = i * 4
+        nxt = (i + 1) % no_points
+        q_x[j, 0] = reftrack[i, 0];  q_x[j + 1, 0] = reftrack[nxt, 0]
+        q_y[j, 0] = reftrack[i, 1];  q_y[j + 1, 0] = reftrack[nxt, 1]
+
+    x_prime = np.eye(no_points) * (T_b @ q_x)
+    y_prime = np.eye(no_points) * (T_b @ q_y)
+    x_prime_sq = x_prime ** 2
+    y_prime_sq = y_prime ** 2
+    x_prime_y_prime = -2.0 * (x_prime @ y_prime)
+
+    curv_den = (x_prime_sq + y_prime_sq) ** 1.5
+    curv_part = np.divide(1.0, curv_den, out=np.zeros_like(curv_den), where=curv_den != 0)
+    curv_part_sq = curv_part ** 2
+
+    P_xx = curv_part_sq @ y_prime_sq
+    P_yy = curv_part_sq @ x_prime_sq
+    P_xy = curv_part_sq @ x_prime_y_prime
+
+    T_nx = T_c @ M_x
+    T_ny = T_c @ M_y
+
+    H = T_nx.T @ (P_xx @ T_nx) + T_ny.T @ (P_xy @ T_nx) + T_ny.T @ (P_yy @ T_ny)
+    H = (H + H.T) * 0.5
+
+    f_x  = 2.0 * (q_x.T @ T_c.T @ P_xx @ T_nx)
+    f_xy = (q_x.T @ T_c.T @ P_xy @ T_ny + q_y.T @ T_c.T @ P_xy @ T_nx)
+    f_y  = 2.0 * (q_y.T @ T_c.T @ P_yy @ T_ny)
+    f = np.squeeze(f_x + f_xy + f_y)
+
+    Q_x = curv_part @ y_prime
+    Q_y = curv_part @ x_prime
+    E_kappa = Q_y @ T_ny - Q_x @ T_nx
+    k_kappa_ref = (Q_y @ (T_c @ q_y)) - (Q_x @ (T_c @ q_x))
+    con_ge = np.ones((no_points, 1)) * kappa_bound - k_kappa_ref
+    con_le = -(np.ones((no_points, 1)) * (-kappa_bound) - k_kappa_ref)
+    con_stack = np.concatenate([con_ge, con_le]).ravel()
+
+    half_veh = w_veh / 2.0
+    dev_max_right = np.maximum(reftrack[:, 2] - half_veh, 0.05)
+    dev_max_left  = np.maximum(reftrack[:, 3] - half_veh, 0.05)
+
+    G = np.vstack([np.eye(no_points), -np.eye(no_points), E_kappa, -E_kappa])
+    h = np.concatenate([dev_max_right, dev_max_left, con_stack])
+
+    H += np.eye(H.shape[0]) * 1e-8
+
+    P_cvx = cvx_matrix(H.astype(np.double))
+    q_cvx = cvx_matrix(f.astype(np.double).reshape(-1))
+    G_cvx = cvx_matrix(G.astype(np.double))
+    h_cvx = cvx_matrix(h.astype(np.double).reshape(-1))
+    sol = cvx_solvers.qp(P_cvx, q_cvx, G_cvx, h_cvx)
+    if sol['status'] != 'optimal':
+        raise RuntimeError(f"cvxopt QP status: {sol['status']}")
+    return np.array(sol['x']).ravel()
+
+
+def run_iqp(centerline, w_right, w_left):
+    import trajectory_planning_helpers as tph
+
+    cur_ref = centerline.copy()
+    cur_wr  = w_right.copy()
+    cur_wl  = w_left.copy()
+
+    print(f"[iqp] sparse IQP, up to {IQP_ITERS} iters at N={len(cur_ref)}")
+    converged = False
+    for it in range(IQP_ITERS):
+        t_it = time.perf_counter()
+        refpath = np.vstack([cur_ref, cur_ref[0]])
+        coeffs_x, coeffs_y, A_mat, _ = tph.calc_splines.calc_splines(
+            path=refpath, use_dist_scaling=True)
+        ind_s = np.arange(len(coeffs_x))
+        t_s = np.zeros(len(coeffs_x))
+        psi, kappa = tph.calc_head_curv_an.calc_head_curv_an(
+            coeffs_x=coeffs_x, coeffs_y=coeffs_y,
+            ind_spls=ind_s, t_spls=t_s,
+            calc_curv=True, calc_dcurv=False)[:2]
+        normvec = tph.calc_normal_vectors.calc_normal_vectors(psi=psi)
+
+        reftrack_it = np.column_stack([cur_ref, cur_wr, cur_wl])
+        try:
+            alpha = opt_min_curv_sparse(reftrack_it, normvec, A_mat, KAPPA_BOUND, VEH_WIDTH)
+        except Exception as e:
+            print(f"  iter {it}: QP failed: {e}")
+            if it == 0: raise
+            break
+
+        alpha = np.clip(alpha,
+                        -cur_wl + VEH_WIDTH / 2.0 + SAFETY_MARGIN,
+                         cur_wr - VEH_WIDTH / 2.0 - SAFETY_MARGIN)
+
+        print(f"  iter {it}: max|a|={np.max(np.abs(alpha)):.3f} "
+              f"mean|a|={np.mean(np.abs(alpha)):.3f} "
+              f"({time.perf_counter() - t_it:.2f}s)")
+
+        da = IQP_DAMP * alpha               # damped step — prevents oscillation
+        cur_ref = cur_ref + normvec * da[:, None]
+        cur_wr  = np.maximum(cur_wr - da, VEH_WIDTH / 2.0 + SAFETY_MARGIN)
+        cur_wl  = np.maximum(cur_wl + da, VEH_WIDTH / 2.0 + SAFETY_MARGIN)
+
+        if np.max(np.abs(da)) < ALPHA_TOL and it >= 1:
+            print(f"  converged at iter {it}")
+            converged = True
+            break
+
+    # Light gaussian on cur_ref kills any high-freq sawtooth between adjacent
+    # IQP stations before the final spline — eliminates "bumps" on the line.
+    if IQP_OUTPUT_SMOOTH > 0:
+        n_ref = len(cur_ref)
+        cx_t = gaussian_filter1d(np.tile(cur_ref[:, 0], 3), sigma=IQP_OUTPUT_SMOOTH)[n_ref:2 * n_ref]
+        cy_t = gaussian_filter1d(np.tile(cur_ref[:, 1], 3), sigma=IQP_OUTPUT_SMOOTH)[n_ref:2 * n_ref]
+        cur_ref = np.column_stack([cx_t, cy_t])
+
+    rl_closed = np.vstack([cur_ref, cur_ref[0]])
+    arc = np.concatenate([[0.0],
+            np.cumsum(np.linalg.norm(np.diff(rl_closed, axis=0), axis=1))])
+    total_len = arc[-1]
+    n_out = max(10, int(total_len / RACELINE_STEPSIZE))
+    s_out = max(1.0, len(rl_closed) * 0.005)
+    try:
+        tck, _ = splprep([rl_closed[:, 0], rl_closed[:, 1]], u=arc, s=s_out, per=True)
+    except Exception:
+        tck, _ = splprep([rl_closed[:, 0], rl_closed[:, 1]], u=arc, s=0, per=True)
+    u_new = np.linspace(0, total_len, n_out, endpoint=False)
+    rx, ry = splev(u_new, tck)
+    raceline = np.column_stack([rx, ry])
+
+    print(f"[iqp] {n_out} pts, {total_len:.0f} m, converged={converged}")
+    return raceline, total_len
+
+
+# =============================================================
+# Stage 3: Telemetry  →  animation timing
+# =============================================================
+
+def load_telemetry(csv_path):
+    """Read time_s, distance, speed (km/h → m/s), and optionally soc_pct + mode.
+    Returns: (times, distances, speeds_ms, lap_time, soc_or_None, mode_or_None)."""
+    rows = []
+    has_soc = has_mode = False
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        has_soc  = "soc_pct" in reader.fieldnames
+        has_mode = "mode"    in reader.fieldnames
+        for r in reader:
+            try:
+                row = {
+                    "t":    float(r["time_s"]),
+                    "d":    float(r["distance"]),
+                    "v":    float(r["speed"]) / 3.6,
+                    "soc":  float(r["soc_pct"]) if has_soc else None,
+                    "mode": r["mode"]             if has_mode else None,
+                }
+                rows.append(row)
+            except (ValueError, KeyError):
+                continue
+    if len(rows) < 50:
+        raise RuntimeError(f"Telemetry too short: {len(rows)} rows")
+    rows.sort(key=lambda r: r["t"])
+    # Dedupe identical timestamps
+    out = [rows[0]]
+    for r in rows[1:]:
+        if r["t"] > out[-1]["t"]:
+            out.append(r)
+    t = np.array([r["t"] for r in out])
+    d = np.array([r["d"] for r in out])
+    v = np.array([r["v"] for r in out])
+    soc  = np.array([r["soc"] for r in out]) if has_soc else None
+    mode = [r["mode"] for r in out]          if has_mode else None
+    lap_time = float(t[-1] - t[0])
+    print(f"[telemetry] {len(t)} samples, lap_time={lap_time:.3f}s, "
+          f"v=[{v.min()*3.6:.0f},{v.max()*3.6:.0f}] km/h, "
+          f"soc={'yes' if has_soc else 'no'}, mode={'yes' if has_mode else 'no'}")
+    return t - t[0], d - d[0], v, lap_time, soc, mode
+
+
+# =============================================================
+# Speed -> color (BGR) heatmap.  Slow=red, mid=yellow, fast=cyan.
+# =============================================================
+
+def speed_color_bgr(t):
+    t = max(0.0, min(1.0, float(t)))
+    if t < 0.5:
+        u = t * 2.0
+        return (0, int(255 * u), 255)
+    u = (t - 0.5) * 2.0
+    return (int(255 * u), 255, int(255 * (1.0 - u)))
+
+
+# =============================================================
+# Stage 4: Render
+# =============================================================
+
+def load_font(size, prefer_bold=True):
+    repo_fonts = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fonts")
+    candidates = [
+        os.path.join(repo_fonts, "Formula1-Bold_web_0.ttf.ttf") if prefer_bold else None,
+        os.path.join(repo_fonts, "Formula1-Regular_web_0.ttf.ttf"),
+        r"C:\Users\91910\Downloads\Formula1\Formula1-Bold_web_0.ttf.ttf" if prefer_bold else None,
+        r"C:\Users\91910\Downloads\Formula1\Formula1-Regular_web_0.ttf.ttf",
+        r"C:\Windows\Fonts\arialbd.ttf" if prefer_bold else None,
+        r"C:\Windows\Fonts\arial.ttf",
+    ]
+    for c in candidates:
+        if c and os.path.exists(c):
+            try:
+                return ImageFont.truetype(c, size)
+            except Exception:
+                continue
+    return ImageFont.load_default()
+
+
+def draw_centered(draw, x, y, text, font, fill):
+    try:
+        bbox = draw.textbbox((0, 0), text, font=font)
+        w = bbox[2] - bbox[0]; h = bbox[3] - bbox[1]
+    except Exception:
+        w, h = draw.textsize(text, font=font)
+    draw.text((x - w / 2, y - h / 2 - 4), text, font=font, fill=fill)
+
+
+def draw_mode_label(draw, cx, y, mode_str, font):
+    color = MODE_COLORS.get(mode_str)
+    if color is None:
+        return
+    draw_centered(draw, cx, y, mode_str, font, color)
+
+
+def render_video(outer, inner, raceline, ver_t, ver_d, ver_v_ms, lap_time,
+                 out_path, track_name, zoom, trail_frames, fps,
+                 outer_kerbs=None, inner_kerbs=None, soc=None, mode=None,
+                 display_lap_time=None, elev=None, bank_disp=None,
+                 bank_lat=None):
+    """ver_t,ver_d,ver_v_ms come from real telemetry. The dot's position at
+    video time `t` is found by:  d_at_t = interp(t, ver_t, ver_d), then
+    d_at_t is mapped to arc-length on `raceline` (linear scale by ratio of
+    raceline length to ver total distance)."""
+    total_frames = int(math.ceil(lap_time * fps))
+    print(f"[render] {total_frames} frames at {fps}fps ({lap_time:.2f}s)")
+
+    v_min_global = float(np.min(ver_v_ms))
+    v_max_global = float(np.max(ver_v_ms))
+    v_span = max(v_max_global - v_min_global, 1e-6)
+
+    all_pts = np.vstack([outer, inner, raceline])
+    track_w = all_pts[:, 0].max() - all_pts[:, 0].min()
+    track_h = all_pts[:, 1].max() - all_pts[:, 1].min()
+    cam_scale = (min(WIDTH, HEIGHT * 0.5) / max(track_w, track_h)) * zoom
+
+    def w2s(pt, cam_x, cam_y):
+        sx = int(WIDTH / 2 + (pt[0] - cam_x) * cam_scale)
+        sy = int(HEIGHT * CAMERA_Y_FRAC - (pt[1] - cam_y) * cam_scale)
+        return sx, sy
+
+    MAP_X = WIDTH - MAP_SIZE - MAP_X_RIGHT_INSET
+    MAP_Y = MAP_Y_TOP
+    # Minimap rotated 45 deg anticlockwise. Rotate every point about the track
+    # centroid, then scale/centre from the ROTATED extents so it still fills
+    # the minimap box.
+    MAP_ROT = math.radians(45.0)
+    _mrc, _mrs = math.cos(MAP_ROT), math.sin(MAP_ROT)
+    map_cx = (all_pts[:, 0].max() + all_pts[:, 0].min()) / 2
+    map_cy = (all_pts[:, 1].max() + all_pts[:, 1].min()) / 2
+
+    def _map_rot(pt):
+        dx = pt[0] - map_cx
+        dy = pt[1] - map_cy
+        return (dx * _mrc - dy * _mrs, dx * _mrs + dy * _mrc)
+
+    _rot_all = np.array([_map_rot(p) for p in all_pts])
+    _rcx = (_rot_all[:, 0].max() + _rot_all[:, 0].min()) / 2
+    _rcy = (_rot_all[:, 1].max() + _rot_all[:, 1].min()) / 2
+    map_scale = MAP_SIZE / max(np.ptp(_rot_all[:, 0]), np.ptp(_rot_all[:, 1])) * 0.95
+
+    def w2map(pt):
+        rx, ry = _map_rot(pt)
+        return (int(MAP_X + MAP_SIZE / 2 + (rx - _rcx) * map_scale),
+                int(MAP_Y + MAP_SIZE / 2 - (ry - _rcy) * map_scale))
+
+    map_outer = np.array([w2map(p) for p in outer], np.int32)
+    map_inner = np.array([w2map(p) for p in inner], np.int32)
+
+    font_title      = load_font(42, True)
+    font_sub        = load_font(26, False)
+    font_speed      = load_font(72, True)
+    font_speed_unit = load_font(28, False)
+    font_wm         = load_font(24, True)
+    font_mode_label = load_font(24, True)
+    font_bank_val   = load_font(46, True)
+    font_bank_lbl   = load_font(22, True)
+    has_mode_hud    = mode is not None
+    # 3D elevation flyover: static geometry precomputed once. Station order ==
+    # driving direction with index 0 at the S/F line (same domain as ver_d).
+    if elev is not None and elev.get("stations"):
+        sta3 = np.asarray(elev["stations"], dtype=float)[::9]      # ~385 pts
+        n3 = len(sta3)
+        _z0 = sta3[:, 2].min()
+        _c0 = sta3[:, :2].mean(axis=0)
+        _span3 = float(sta3[:, 2].max() - _z0)
+        _exag3 = float(np.clip(EL3D_TARGET_RELIEF / max(_span3, 1e-6),
+                               *EL3D_EXAG_RANGE))
+        print(f"[elev] span {_span3:.1f} m -> vertical exaggeration {_exag3:.1f} "
+              f"({EL3D_FOCAL * _span3 * _exag3 / EL3D_DIST:.0f} px of wall)")
+        p3 = np.column_stack([sta3[:, 0] - _c0[0], sta3[:, 1] - _c0[1],
+                              (sta3[:, 2] - _z0) * _exag3])
+        _d3 = np.roll(p3[:, :2], -1, axis=0) - np.roll(p3[:, :2], 1, axis=0)
+        _l3 = np.linalg.norm(_d3, axis=1, keepdims=True)
+        _l3[_l3 == 0] = 1.0
+        _n3 = np.column_stack([-_d3[:, 1], _d3[:, 0]]) / _l3
+        e3L = np.column_stack([p3[:, :2] + _n3 * EL3D_HALF_W, p3[:, 2]])
+        e3R = np.column_stack([p3[:, :2] - _n3 * EL3D_HALF_W, p3[:, 2]])
+        b3L = e3L.copy(); b3L[:, 2] = 0.0
+        b3R = e3R.copy(); b3R[:, 2] = 0.0
+        _tz = p3[:, 2] / max(float(p3[:, 2].max()), 1e-6)
+        rib_col = [_el3d_ramp(t) for t in _tz]
+        el3d_ctr = np.array([0.0, 0.0, float(p3[:, 2].mean())])
+        # Per-station azimuth of the track around the center, unwrapped and
+        # smoothed: the camera yaw follows THIS at the car's position, so the
+        # orbit moves with the car (its direction, its angular speed) and the
+        # local azimuth wiggles of complexes don't jiggle the camera.
+        from scipy.ndimage import gaussian_filter1d as _g1d
+        _phi_raw = np.unwrap(np.arctan2(p3[:, 1], p3[:, 0]))
+        _trend = _phi_raw[0] + (_phi_raw[-1] - _phi_raw[0]) * (
+            np.arange(n3) / max(n3 - 1, 1))
+        el3d_phi = _trend + _g1d(_phi_raw - _trend, 12.0, mode="wrap")
+        _phi_span = 2.0 * math.pi * (1.0 if _phi_raw[-1] >= _phi_raw[0] else -1.0)
+        el3d_phi_ext = np.append(el3d_phi, el3d_phi[0] + _phi_span)
+        el3d_trail = []
+    elif elev is not None:
+        print("[elev] json has no 'stations' — 3D flyover disabled", file=sys.stderr)
+        elev = None
+
+    # Banking panel inputs. Angles are the REAL surveyed profile (display-only);
+    # kappa supplies turn direction so the slab tilts the correct way.
+    bank_deg_arr = None
+    bank_lat_arr = None
+    if bank_disp is not None:
+        bank_deg_arr = np.asarray(bank_disp["banking_deg"], dtype=float)
+        if bank_lat is not None and len(bank_lat):
+            bank_lat_arr = np.asarray(bank_lat, dtype=float)
+        print(f"[bank] panel active: peak {bank_deg_arr.max():.1f} deg, "
+              f"car lateral {'from racing line' if bank_lat_arr is not None else 'CENTRED (no line data)'}")
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(out_path, fourcc, fps, (WIDTH, HEIGHT))
+
+    # Pre-compute raceline arc-length grid for d -> position interp.
+    rl = raceline
+    rl_seg = np.linalg.norm(np.roll(rl, -1, axis=0) - rl, axis=1)
+    rl_arc = np.concatenate([[0.0], np.cumsum(rl_seg)])  # len = N+1
+    rl_total_arc = float(rl_arc[-1])
+    ver_total_d = float(ver_d[-1])
+    arc_scale = rl_total_arc / max(ver_total_d, 1e-6)
+
+    def pos_at_arc(s):
+        """Position on raceline at cumulative arc length s (clamped/wrapped)."""
+        s_mod = s % rl_total_arc
+        idx = int(np.searchsorted(rl_arc, s_mod)) - 1
+        idx = max(0, min(idx, len(rl) - 1))
+        seg_len = rl_arc[idx + 1] - rl_arc[idx]
+        frac = 0.0 if seg_len <= 0 else (s_mod - rl_arc[idx]) / seg_len
+        a = rl[idx]; b = rl[(idx + 1) % len(rl)]
+        return a + frac * (b - a)
+
+    trail = []  # list of (x, y, v_ms) in world coords
+
+    title_line1 = TITLE_LINE_1
+    title_line2 = track_name.upper()
+
+    for f in range(total_frames):
+        t = f / fps
+        if t > ver_t[-1]: t = ver_t[-1]
+
+        # VER's distance + speed at video time t (real data, no model)
+        d_now = float(np.interp(t, ver_t, ver_d))
+        v_now = float(np.interp(t, ver_t, ver_v_ms))
+        s_on_rl = d_now * arc_scale
+        pos = pos_at_arc(s_on_rl)
+        cam_x, cam_y = float(pos[0]), float(pos[1])
+
+        frame = np.zeros((HEIGHT, WIDTH, 3), dtype=np.uint8)
+
+        # Track
+        outer_s = np.array([w2s(p, cam_x, cam_y) for p in outer], np.int32)
+        inner_s = np.array([w2s(p, cam_x, cam_y) for p in inner], np.int32)
+        cv2.fillPoly(frame, [outer_s], TRACK_FILL)
+        cv2.fillPoly(frame, [inner_s], (0, 0, 0))
+
+        # Kerbs — solid white trapezoids attached OUTSIDE the track edge at each corner.
+        for kerb_polys in (outer_kerbs or [], inner_kerbs or []):
+            for polygon in kerb_polys:
+                pts_s = np.array([w2s((p[0], p[1]), cam_x, cam_y) for p in polygon], np.int32)
+                cv2.fillPoly(frame, [pts_s], KERB_COLOR, lineType=cv2.LINE_AA)
+
+        cv2.polylines(frame, [outer_s.reshape((-1, 1, 2))], True, TRACK_EDGE,
+                      thickness=EDGE_THICKNESS, lineType=cv2.LINE_AA)
+        cv2.polylines(frame, [inner_s.reshape((-1, 1, 2))], True, TRACK_EDGE,
+                      thickness=EDGE_THICKNESS, lineType=cv2.LINE_AA)
+
+        # Ideal racing line (subtle)
+        rl_s = np.array([w2s(p, cam_x, cam_y) for p in rl], np.int32)
+        cv2.polylines(frame, [rl_s.reshape((-1, 1, 2))], True, RACELINE_COLOR,
+                      thickness=3, lineType=cv2.LINE_AA)
+
+        # Trail with speed heatmap
+        trail.append((float(pos[0]), float(pos[1]), v_now))
+        if len(trail) > trail_frames: trail.pop(0)
+        if len(trail) > 1:
+            for k in range(len(trail) - 1):
+                p0 = trail[k]; p1 = trail[k + 1]
+                v_avg = 0.5 * (p0[2] + p1[2])
+                t_norm = (v_avg - v_min_global) / v_span
+                col = speed_color_bgr(t_norm)
+                x0, y0 = w2s((p0[0], p0[1]), cam_x, cam_y)
+                x1, y1 = w2s((p1[0], p1[1]), cam_x, cam_y)
+                cv2.line(frame, (x0, y0), (x1, y1), col,
+                         thickness=TRAIL_THICKNESS, lineType=cv2.LINE_AA)
+
+        # Dot
+        sx, sy = w2s(pos, cam_x, cam_y)
+        t_now_norm = (v_now - v_min_global) / v_span
+        dot_col = speed_color_bgr(t_now_norm)
+        cv2.circle(frame, (sx, sy), DOT_RADIUS, dot_col, -1, cv2.LINE_AA)
+        cv2.circle(frame, (sx, sy), DOT_RADIUS, (255, 255, 255), 4, cv2.LINE_AA)
+
+        # Minimap
+        cv2.fillPoly(frame, [map_outer], TRACK_FILL)
+        cv2.fillPoly(frame, [map_inner], (0, 0, 0))
+        cv2.polylines(frame, [map_outer.reshape((-1, 1, 2))], True, (120, 120, 120),
+                      thickness=2, lineType=cv2.LINE_AA)
+        cv2.polylines(frame, [map_inner.reshape((-1, 1, 2))], True, (120, 120, 120),
+                      thickness=2, lineType=cv2.LINE_AA)
+        mx, my = w2map(pos)
+        cv2.circle(frame, (mx, my), 9, dot_col, -1, cv2.LINE_AA)
+        cv2.circle(frame, (mx, my), 9, (255, 255, 255), 2, cv2.LINE_AA)
+
+        # 3D elevation flyover: drone camera (lagged follow + slow rotation),
+        # painter-sorted solid geometry, rendered to its own canvas then
+        # blended into the bottom of the frame (no grid, no background).
+        if elev is not None:
+            frac_now = (d_now % max(ver_total_d, 1e-6)) / max(ver_total_d, 1e-6)
+            _fx = frac_now * n3
+            _i0 = int(_fx) % n3
+            _u = _fx - int(_fx)
+            car3 = p3[_i0] + (p3[(_i0 + 1) % n3] - p3[_i0]) * _u
+            yaw = float(np.interp(_fx, np.arange(n3 + 1), el3d_phi_ext)) \
+                + EL3D_YAW_OFFSET
+            _ce, _se = math.cos(EL3D_ELEV_ANGLE), math.sin(EL3D_ELEV_ANGLE)
+            cam3 = el3d_ctr + np.array([math.cos(yaw) * _ce,
+                                        math.sin(yaw) * _ce, _se]) * EL3D_DIST
+            fwd = el3d_ctr - cam3
+            fwd = fwd / max(np.linalg.norm(fwd), 1e-9)
+            rgt = np.cross(fwd, np.array([0.0, 0.0, 1.0]))
+            rgt = rgt / max(np.linalg.norm(rgt), 1e-9)
+            upv = np.cross(rgt, fwd)
+
+            # Lambert shading for the drop walls. Wall outward normals are
+            # +/- the ribbon's lateral normal, so one dot product per side gives
+            # the whole lap. Light rides with the camera (see EL3D_LIGHT_AZ).
+            _lxy = np.array([math.cos(yaw + EL3D_LIGHT_AZ),
+                             math.sin(yaw + EL3D_LIGHT_AZ)])
+            _lamL = _n3 @ _lxy
+            _shL = EL3D_WALL_AMB + (1.0 - EL3D_WALL_AMB) * np.clip(_lamL, 0.0, 1.0)
+            _shR = EL3D_WALL_AMB + (1.0 - EL3D_WALL_AMB) * np.clip(-_lamL, 0.0, 1.0)
+
+            def _wall_col(sh):
+                return (int(EL3D_WALL_LIT[0] * sh),
+                        int(EL3D_WALL_LIT[1] * sh),
+                        int(EL3D_WALL_LIT[2] * sh))
+
+            def _proj(V):
+                rel = np.atleast_2d(V) - cam3
+                zc = np.maximum(rel @ fwd, 1.0)
+                sx = WIDTH * 0.5 + EL3D_FOCAL * (rel @ rgt) / zc
+                sy = EL3D_H * EL3D_CY_FRAC - EL3D_FOCAL * (rel @ upv) / zc
+                return np.column_stack([sx, sy]), zc
+
+            canvas3 = np.zeros((EL3D_H, WIDTH, 3), dtype=np.uint8)
+            sTL, zTL = _proj(e3L)
+            sTR, zTR = _proj(e3R)
+            sBL, _ = _proj(b3L)
+            sBR, _ = _proj(b3R)
+            quads = []
+            for q in range(n3):
+                q2 = (q + 1) % n3
+                xs = (sTL[q][0], sTL[q2][0], sTR[q][0], sTR[q2][0])
+                ys = (sTL[q][1], sTL[q2][1], sTR[q][1], sTR[q2][1])
+                if (max(xs) < -60 or min(xs) > WIDTH + 60
+                        or max(ys) < -60 or min(ys) > EL3D_H + 60):
+                    continue
+                dq = 0.25 * (zTL[q] + zTL[q2] + zTR[q] + zTR[q2])
+                quads.append((dq + 4.0, np.array(
+                    [sTL[q], sTL[q2], sBL[q2], sBL[q]], np.int32),
+                    _wall_col(0.5 * (_shL[q] + _shL[q2]))))
+                quads.append((dq + 4.0, np.array(
+                    [sTR[q], sTR[q2], sBR[q2], sBR[q]], np.int32),
+                    _wall_col(0.5 * (_shR[q] + _shR[q2]))))
+                quads.append((dq, np.array(
+                    [sTL[q], sTL[q2], sTR[q2], sTR[q]], np.int32), rib_col[q]))
+            quads.sort(key=lambda x: -x[0])
+            for _, _poly, _col in quads:
+                cv2.fillPoly(canvas3, [_poly], _col)
+            el3d_trail.append(car3.copy())
+            if len(el3d_trail) > EL3D_TRAIL_N:
+                el3d_trail.pop(0)
+            if len(el3d_trail) > 1:
+                tp3, _ = _proj(np.asarray(el3d_trail))
+                cv2.polylines(canvas3, [tp3.astype(np.int32).reshape((-1, 1, 2))],
+                              False, (255, 255, 255), 2, cv2.LINE_AA)
+            cp3, _ = _proj(car3)
+            _cx, _cy = int(cp3[0][0]), int(cp3[0][1])
+            cv2.circle(canvas3, (_cx, _cy), 12, (255, 255, 255), -1, cv2.LINE_AA)
+            cv2.circle(canvas3, (_cx, _cy), 12, EL3D_CAR_RING, 3, cv2.LINE_AA)
+            reg3 = frame[EL3D_Y0:EL3D_Y0 + EL3D_H]
+            _fade = np.linspace(0.0, 1.0, EL3D_FADE)[:, None, None]
+            reg3[:EL3D_FADE] = (reg3[:EL3D_FADE] * (1.0 - _fade)
+                                + canvas3[:EL3D_FADE] * _fade).astype(np.uint8)
+            reg3[EL3D_FADE:] = canvas3[EL3D_FADE:]
+
+        # Banking cross-section panel: front view looking ALONG the track, the
+        # road slab tilted at the TRUE surveyed banking for the car's station.
+        if bank_disp is not None:
+            _bdeg = bank_deg_arr
+            _nb = len(_bdeg)
+            _fr = (d_now % max(ver_total_d, 1e-6)) / max(ver_total_d, 1e-6)
+            _bi = _fr * _nb
+            _b0 = int(_bi) % _nb
+            _bu = _bi - int(_bi)
+            deg_now = float(_bdeg[_b0] + (_bdeg[(_b0 + 1) % _nb] - _bdeg[_b0]) * _bu)
+            # FIXED convention: the INSIDE of the corner is always drawn on the
+            # left and is always the low side, so phi is always negative and the
+            # slab can never flip. (Deriving the side from signed curvature made
+            # it flip every time noisy near-zero kappa changed sign, which read
+            # as twitching on the straights.)
+            phi = -math.radians(deg_now)
+
+            cvB = np.zeros((BNK_H, WIDTH, 3), dtype=np.uint8)
+            cx, cy = WIDTH * 0.5, BNK_H * BNK_CY_FRAC
+            for gx in range(-BNK_ROAD_W // 2 - 90, BNK_ROAD_W // 2 + 91, 34):
+                cv2.line(cvB, (int(cx + gx), int(cy)), (int(cx + gx + 16), int(cy)),
+                         BNK_LEVEL_BGR, 2, cv2.LINE_AA)
+
+            def _rot(x, y):
+                return (int(cx + x * math.cos(phi) - y * math.sin(phi)),
+                        int(cy + x * math.sin(phi) + y * math.cos(phi)))
+
+            hw, ht = BNK_ROAD_W * 0.5, BNK_ROAD_T * 0.5
+            slab = np.array([_rot(-hw, -ht), _rot(hw, -ht),
+                             _rot(hw, ht), _rot(-hw, ht)], np.int32)
+            cv2.fillPoly(cvB, [slab], BNK_ROAD_BGR)
+            cv2.polylines(cvB, [slab], True, BNK_EDGE_BGR, 3, cv2.LINE_AA)
+            for k_i in range(6):                      # kerb blocks, both edges
+                x0 = -hw + k_i * (BNK_KERB_W / 3.0)
+                if k_i % 2 == 0:
+                    cv2.fillPoly(cvB, [np.array(
+                        [_rot(x0, -ht), _rot(x0 + BNK_KERB_W / 3.0, -ht),
+                         _rot(x0 + BNK_KERB_W / 3.0, ht), _rot(x0, ht)],
+                        np.int32)], (255, 255, 255))
+                x1 = hw - (k_i + 1) * (BNK_KERB_W / 3.0)
+                if k_i % 2 == 0:
+                    cv2.fillPoly(cvB, [np.array(
+                        [_rot(x1, -ht), _rot(x1 + BNK_KERB_W / 3.0, -ht),
+                         _rot(x1 + BNK_KERB_W / 3.0, ht), _rot(x1, ht)],
+                        np.int32)], (255, 255, 255))
+            # Car sits where the racing line ACTUALLY is across the road:
+            # bank_lat is -1 at the inner edge, +1 at the outer. Inside is drawn
+            # left, so the sign maps straight through.
+            lat_now = 0.0
+            if bank_lat_arr is not None and len(bank_lat_arr):
+                _li = _fr * len(bank_lat_arr)
+                _l0 = int(_li) % len(bank_lat_arr)
+                _lu = _li - int(_li)
+                lat_now = float(bank_lat_arr[_l0] + (
+                    bank_lat_arr[(_l0 + 1) % len(bank_lat_arr)]
+                    - bank_lat_arr[_l0]) * _lu)
+            car_x = lat_now * hw * 0.86
+            ccar = _rot(car_x, -ht - BNK_CAR_R)
+            cv2.circle(cvB, ccar, BNK_CAR_R, (255, 255, 255), -1, cv2.LINE_AA)
+            cv2.circle(cvB, ccar, BNK_CAR_R, BNK_CAR_RING, 3, cv2.LINE_AA)
+            if deg_now > 3.0:                          # angle arc vs level
+                cv2.ellipse(cvB, (int(cx), int(cy)), (120, 120), 0.0,
+                            180.0 - deg_now, 180.0, BNK_ARC_BGR, 3, cv2.LINE_AA)
+            regB = frame[BNK_Y0:BNK_Y0 + BNK_H]
+            _fadeB = np.linspace(0.0, 1.0, BNK_FADE)[:, None, None]
+            regB[:BNK_FADE] = (regB[:BNK_FADE] * (1.0 - _fadeB)
+                               + cvB[:BNK_FADE] * _fadeB).astype(np.uint8)
+            regB[BNK_FADE:] = cvB[BNK_FADE:]
+
+        # Text overlays
+        img_pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        draw = ImageDraw.Draw(img_pil)
+        draw_centered(draw, WIDTH // 2, TITLE_Y_1, title_line1, font_title, (255, 255, 255))
+        draw_centered(draw, WIDTH // 2, TITLE_Y_2, title_line2, font_sub, (200, 200, 200))
+        if bank_disp is not None:
+            _by = BNK_Y0 + int(BNK_H * BNK_CY_FRAC) + 168
+            draw_centered(draw, WIDTH // 2, _by, "BANKING",
+                          font_bank_lbl, (150, 150, 150))
+            draw_centered(draw, WIDTH // 2, _by + 30, f"{deg_now:.1f}°",
+                          font_bank_val, (232, 137, 12))
+            _ly = BNK_Y0 + int(BNK_H * BNK_CY_FRAC) - 10
+            draw_centered(draw, WIDTH // 2 - BNK_ROAD_W // 2 - 74, _ly,
+                          "INSIDE", font_bank_lbl, (110, 110, 110))
+            draw_centered(draw, WIDTH // 2 + BNK_ROAD_W // 2 + 74, _ly,
+                          "OUTSIDE", font_bank_lbl, (110, 110, 110))
+        speed_kmh = int(round(v_now * 3.6))
+        draw_centered(draw, WIDTH // 2, SPEED_Y, f"{speed_kmh}", font_speed, (255, 255, 255))
+        draw_centered(draw, WIDTH // 2, SPEED_Y + KMH_Y_OFFSET, "KM/H", font_speed_unit, (200, 200, 200))
+        if has_mode_hud:
+            idx_m = max(0, min(len(mode) - 1,
+                               int(np.searchsorted(ver_t, t, side="right")) - 1))
+            draw_mode_label(draw, WIDTH // 2, MODE_LABEL_Y, mode[idx_m], font_mode_label)
+        # The DISPLAYED lap time can be overridden (e.g. to show a realistic 2026
+        # value) independently of the animation duration, which is set by the real
+        # telemetry timing. Motion is unchanged; only the printed label differs.
+        _dlt = display_lap_time if display_lap_time is not None else lap_time
+        lap_str = f"LAP TIME  {int(_dlt // 60):d}:{_dlt % 60:06.3f}"
+        draw_centered(draw, WIDTH // 2, LAP_Y, lap_str, font_sub, (180, 180, 180))
+        draw_centered(draw, WIDTH // 2, WATERMARK_Y, WATERMARK_TEXT, font_wm, (150, 150, 150))
+        out.write(cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR))
+
+        if (f + 1) % 60 == 0 or f == total_frames - 1:
+            print(f"  frame {f + 1}/{total_frames}")
+
+    out.release()
+    print(f"[render] saved -> {out_path}")
+
+
+# =============================================================
+# Main
+# =============================================================
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--outline", required=True, help="Path to <track>_outline.json")
+    ap.add_argument("--raceline", required=False, default=None,
+                    help="Precomputed raceline JSON (from sim_2026_lap.py). "
+                         "If omitted, IQP is run inline (Miami-compatible path).")
+    ap.add_argument("--telemetry-csv", required=True,
+                    help="REQUIRED: real telemetry CSV (frame,time_s,distance,speed,...). "
+                         "Drives the animation timing AND the speed readout.")
+    ap.add_argument("--track-name", default=None, help="Subtitle text (track name)")
+    ap.add_argument("--out", default=None, help="Output MP4 path")
+    ap.add_argument("--zoom", type=float, default=DEFAULT_ZOOM)
+    ap.add_argument("--trail-frames", type=int, default=DEFAULT_TRAIL)
+    ap.add_argument("--fps", type=int, default=DEFAULT_FPS)
+    ap.add_argument("--display-laptime", type=float, default=None,
+                    help="Override the LAP TIME label (seconds); animation timing "
+                         "is unchanged. Use to show a realistic 2026 lap time.")
+    ap.add_argument("--elevation-json", default=None,
+                    help="Elevation data from cache/_fetch_elevation.py (needs "
+                         "'stations'). Adds the 3D elevation flyover in the "
+                         "bottom third: rotating drone camera loosely following "
+                         "the car, solid extrusion walls, no background. "
+                         "Omit = no flyover.")
+    ap.add_argument("--banking-json", default=None,
+                    help="DISPLAY-ONLY banking profile from "
+                         "cache/_make_banking_display.py. Replaces the 3D "
+                         "flyover with a front-view cross-section of the road, "
+                         "tilted at the TRUE surveyed banking for the car's "
+                         "current station. NOT the fitted physics channel.")
+    args = ap.parse_args()
+
+    bank_disp = None
+    if args.banking_json:
+        with open(args.banking_json, encoding="utf-8") as f:
+            bank_disp = json.load(f)
+        if bank_disp.get("kind") != "display_only":
+            print("[bank] refusing: --banking-json is not a display_only "
+                  "profile (the fitted physics channel must never be shown)",
+                  file=sys.stderr)
+            return 2
+        _bd = bank_disp["banking_deg"]
+        print(f"[bank] display profile: {len(_bd)} stations, peak "
+              f"{max(_bd):.1f} deg, baseline {bank_disp['baseline_deg']:.1f} deg")
+        print(f"[bank] source: {bank_disp.get('source','?')}")
+
+    elev = None
+    if args.elevation_json:
+        with open(args.elevation_json, encoding="utf-8") as f:
+            elev = json.load(f)
+        print(f"[elev] {len(elev['dist_frac'])} pts, "
+              f"{elev['alt_min_m']}-{elev['alt_max_m']} m ASL "
+              f"(span {elev['span_m']} m) — {elev.get('source', '?')}")
+
+    with open(args.outline, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    outer_raw = np.array(data["outer"], dtype=float)
+    inner_raw = np.array(data["inner"], dtype=float)
+    print(f"[load] outer={len(outer_raw)} pts, inner={len(inner_raw)} pts")
+
+    ver_t, ver_d, ver_v, ver_lap, soc, mode = load_telemetry(args.telemetry_csv)
+
+    # IQP corridor: heavily smoothed, INSET applied via build_centerline_and_widths.
+    outer_corr = smooth_resample_loop(outer_raw, N_CORRIDOR_POINTS, CORR_SMOOTH_S)
+    inner_corr = smooth_resample_loop(inner_raw, N_CORRIDOR_POINTS, CORR_SMOOTH_S)
+    outer_corr, inner_corr = align_loops(outer_corr, inner_corr)
+
+    # Visual edges: lightly smoothed raw outline.
+    # The VISUAL_OUTSET_M outward push exists only for the Miami inline-IQP path,
+    # where the outline is a hand-separated Blender mesh with inward jags and the
+    # rendered road must stay wider than the heavily-smoothed IQP corridor.
+    # For the synthetic/precomputed-raceline path (Canada) the outline is a clean
+    # SVG-derived loop with no jags — outsetting it there only pushes the drawn
+    # edge metres away from the apex the racing line is built to touch, so the
+    # outset is skipped and the road is drawn at its true width.
+    visual_outset = 0.0 if args.raceline else VISUAL_OUTSET_M
+    outer_visual = smooth_resample_loop(outer_raw, N_VISUAL_POINTS, VISUAL_SMOOTH_S)
+    inner_visual = smooth_resample_loop(inner_raw, N_VISUAL_POINTS, VISUAL_SMOOTH_S)
+    outer_visual, inner_visual = align_loops(outer_visual, inner_visual)
+    if visual_outset > 0.0:
+        outer_visual = offset_loop_outward(outer_visual, visual_outset, is_outer=True)
+        inner_visual = offset_loop_outward(inner_visual, visual_outset, is_outer=False)
+
+    # Kerbs at corners on both edges — solid white trapezoids OUTSIDE the road.
+    outer_kerbs = compute_kerb_polygons(outer_visual, is_outer=True)
+    inner_kerbs = compute_kerb_polygons(inner_visual, is_outer=False)
+    print(f"[kerbs] outer={len(outer_kerbs)} corner zones, inner={len(inner_kerbs)} corner zones")
+
+    centerline_iqp, w_right_iqp, w_left_iqp = build_centerline_and_widths(outer_corr, inner_corr)
+    print(f"[corridor.iqp] widths: right=[{w_right_iqp.min():.2f},{w_right_iqp.max():.2f}]  "
+          f"left=[{w_left_iqp.min():.2f},{w_left_iqp.max():.2f}]")
+
+    if args.raceline:
+        with open(args.raceline, encoding="utf-8") as f:
+            rl_data = json.load(f)
+        raceline = np.array(rl_data["raceline"], dtype=float)
+        raceline_kappa = np.asarray(rl_data.get("kappa", []), dtype=float)
+        print(f"[raceline] loaded precomputed: {len(raceline)} pts, "
+              f"track_length={rl_data['track_length_m']:.0f} m")
+    else:
+        raceline, _ = run_iqp(centerline_iqp, w_right_iqp, w_left_iqp)
+        raceline_kappa = np.array([])
+
+    # Banking panel: where the car actually sits ACROSS the road, per raceline
+    # station, normalised to -1 (inner edge) .. +1 (outer edge). The panel used
+    # to fake this from the bank angle, which made the dot slide around and jump
+    # sides — it now comes from the real line. outer/inner are index-aligned by
+    # construction (svg_to_outline emits them station-for-station).
+    bank_lat = None
+    if bank_disp is not None:
+        from scipy.spatial import cKDTree
+        from scipy.ndimage import gaussian_filter1d as _gf
+        _cl = 0.5 * (outer_raw + inner_raw)
+        _span = outer_raw - inner_raw
+        _hw = 0.5 * np.linalg.norm(_span, axis=1)
+        _nrm = _span / np.maximum(np.linalg.norm(_span, axis=1, keepdims=True), 1e-9)
+        _idx = cKDTree(_cl).query(raceline)[1]
+        _off = np.einsum("ij,ij->i", raceline - _cl[_idx], _nrm[_idx])
+        bank_lat = np.clip(_off / np.maximum(_hw[_idx], 1e-6), -1.0, 1.0)
+        bank_lat = _gf(bank_lat, 6.0, mode="wrap")     # kill nearest-station hop
+        print(f"[bank] lateral line position: {bank_lat.min():+.2f}..{bank_lat.max():+.2f} "
+              f"(-1 inner edge, +1 outer edge)")
+
+    # Critical: align the raceline's parameter origin (and possibly its direction)
+    # with VER's lap. Without this, dot-position vs. speed-readout is desynced
+    # because Blender's boundary walk starts at an arbitrary point.
+    if soc is None:   # real telemetry → cross-correlate to find S/F offset
+        raceline = align_raceline_to_telemetry(raceline, ver_d, ver_v)
+    else:
+        print("[align] synthetic CSV detected — alignment skipped")
+
+    # No post-hoc corridor clamp: the min-time builder now keeps the line inside
+    # the corridor by construction (correct projection-based α-seed in
+    # sim_2026_lap.build_raceline), so stapling stray points to the edge — which
+    # only ever produced kinks — is neither needed nor wanted.
+    rl_minx, rl_maxx = raceline[:,0].min(), raceline[:,0].max()
+    rl_miny, rl_maxy = raceline[:,1].min(), raceline[:,1].max()
+    ov_minx, ov_maxx = outer_visual[:,0].min(), outer_visual[:,0].max()
+    ov_miny, ov_maxy = outer_visual[:,1].min(), outer_visual[:,1].max()
+    print(f"[diag] raceline X[{rl_minx:.0f},{rl_maxx:.0f}] Y[{rl_miny:.0f},{rl_maxy:.0f}]")
+    print(f"[diag] visual   X[{ov_minx:.0f},{ov_maxx:.0f}] Y[{ov_miny:.0f},{ov_maxy:.0f}]")
+
+    track_name = args.track_name or os.path.splitext(os.path.basename(args.outline))[0]
+    out_path = args.out or f"{os.path.splitext(os.path.basename(args.outline))[0]}_optimal_lap.mp4"
+
+    render_video(
+        outer_visual, inner_visual, raceline,
+        ver_t, ver_d, ver_v, ver_lap,
+        out_path, track_name, args.zoom, args.trail_frames, args.fps,
+        outer_kerbs=outer_kerbs, inner_kerbs=inner_kerbs,
+        soc=soc, mode=mode, display_lap_time=args.display_laptime,
+        elev=elev, bank_disp=bank_disp, bank_lat=bank_lat
+    )
+
+
+if __name__ == "__main__":
+    main()
