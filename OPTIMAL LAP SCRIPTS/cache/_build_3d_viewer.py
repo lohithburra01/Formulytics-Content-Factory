@@ -26,6 +26,7 @@ from _track_registry import REPO_ROOT, TRACKS  # noqa: E402
 
 SIM_CSV = {
     "spa": "F1_Pipeline_Assets/exports/spa_2026_synthetic.csv",
+    "monza": "F1_Pipeline_Assets/exports/monza_2026_synthetic.csv",
 }
 
 VENDOR = os.path.join(REPO_ROOT, "vendor")

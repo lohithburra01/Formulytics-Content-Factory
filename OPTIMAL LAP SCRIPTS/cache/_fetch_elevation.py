@@ -15,9 +15,10 @@ Output JSON:
   dist_frac[N], elev_m[N]          absolute altitude on a uniform lap grid
   stations[[x,y,z], ...]           raceline stations lifted to 3D (metres,
                                    sim/video coordinate frame) — the 3D model
-Validation gates (Spa): span 85..115 m, peak in frac 0.20..0.40 (Les Combes),
-closure |z_end - z_start| < 8 m before detrend. A PNG profile is written for
-eyeballing next to the JSON.
+Validation gates (track-agnostic): span 2..150 m (rejects a dead z-channel or a
+dropped dm->m scaling; the summit can be anywhere, so peak location is NOT
+gated), closure |z_end - z_start| < 8 m before detrend. A PNG profile is written
+for eyeballing next to the JSON.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
@@ -41,14 +43,28 @@ GRID_N = 700
 
 def get(endpoint, **params):
     url = f"{BASE}/{endpoint}?" + urllib.parse.urlencode(params, safe="><=:+")
-    for attempt in range(4):
+    for attempt in range(6):
         try:
             with urllib.request.urlopen(url, timeout=90) as r:
                 return json.load(r)
-        except Exception as e:                        # noqa: BLE001
-            if attempt == 3:
+        except Exception as e:               # noqa: BLE001
+            if attempt == 5:
                 raise
-            print(f"[elev] retry {attempt+1} on {endpoint}: {e}", flush=True)
+            # 429 = rate limited: retrying immediately is guaranteed to fail
+            # again (that is how the first 2025 Monza fetch was lost, right
+            # after the live-session lockout lifted). Back off exponentially
+            # and honour Retry-After when the server sends one.
+            wait = 5.0 * (2 ** attempt)
+            if getattr(e, "code", None) == 429:
+                ra = None
+                try:
+                    ra = float(e.headers.get("Retry-After"))
+                except Exception:                    # noqa: BLE001
+                    pass
+                wait = max(wait, ra or 30.0)
+            print(f"[elev] retry {attempt+1} on {endpoint} in {wait:.0f}s: {e}",
+                  flush=True)
+            time.sleep(wait)
     return []
 
 
@@ -65,19 +81,40 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--track", required=True, choices=sorted(TRACKS))
     ap.add_argument("--year", type=int, default=2025)
-    ap.add_argument("--country", default="Belgium")
+    # Country comes from the registry so --track alone picks the right session.
+    # (Was hardcoded "Belgium" from the Spa-first version: any other --track
+    # silently fetched Spa's elevation and wrote it under the new track's name.)
+    ap.add_argument("--country", default=None)
+    # Multi-GP countries (Italy: Imola + Monza, US: Miami/Austin/Vegas) return
+    # several meetings for one country_name; sessions[0] is the earliest, i.e.
+    # the WRONG circuit. Registry 'circuit' (or this flag) picks the right one.
+    ap.add_argument("--circuit", default=None,
+                    help='circuit_short_name filter, e.g. "Monza"')
     ap.add_argument("--session", default="Qualifying")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
     spec = TRACKS[args.track]
+    country = args.country or spec.get("country")
+    if not country:
+        print(f"[elev] no country for track {args.track}", file=sys.stderr)
+        return 2
     out_path = args.out or os.path.join(
         REPO_ROOT, "F1_Pipeline_Assets", "tracks",
         os.path.basename(spec["outline"]).replace("_outline.json", "_elevation.json"))
 
-    sessions = get("sessions", year=args.year, country_name=args.country,
+    circuit = args.circuit or spec.get("circuit")
+    sessions = get("sessions", year=args.year, country_name=country,
                    session_name=args.session)
+    if circuit:
+        sessions = [s for s in sessions
+                    if s.get("circuit_short_name", "").lower() == circuit.lower()]
     if not sessions:
         print("[elev] no session", file=sys.stderr); return 2
+    names = {s.get("circuit_short_name") for s in sessions}
+    if len(names) > 1:
+        print(f"[elev] ambiguous circuits {sorted(names)} — pass --circuit or "
+              f"add 'circuit' to the registry entry", file=sys.stderr)
+        return 2
     sk = sessions[0]["session_key"]
     lap = fastest_lap(sk)
     drv, dur = lap["driver_number"], float(lap["lap_duration"])
@@ -104,6 +141,17 @@ def main() -> int:
     dist_c = np.concatenate([[0.0], np.cumsum(0.5 * (vc[1:] + vc[:-1]) * np.diff(tc))])
     total = float(dist_c[-1])
 
+    # Cross-track sanity: the fetched lap must BE this track's lap. A wrong
+    # session (wrong country / a multi-GP country picking the other circuit)
+    # is internally consistent and sails through the span/closure gates, so
+    # compare the integrated lap distance against the registry length.
+    want = float(spec["length_m"])
+    if not (0.95 * want <= total <= 1.05 * want):
+        print(f"[elev] VALIDATION FAILED: lap distance {total:.0f} m is not "
+              f"{args.track} ({want:.0f} m +-5%) — wrong session? "
+              f"got '{sessions[0].get('circuit_short_name')}'", file=sys.stderr)
+        return 2
+
     tl = np.array([(datetime.fromisoformat(p["date"]) - t0).total_seconds()
                    for p in loc])
     z = np.array([float(p["z"]) for p in loc]) / 10.0          # dm -> m ASL
@@ -124,10 +172,16 @@ def main() -> int:
     print(f"[elev] alt {elev.min():.1f}..{elev.max():.1f} m ASL  span {span:.1f} m  "
           f"peak@{peak_frac:.2f}  low@{low_frac:.2f}  closure {closure:+.1f} m  "
           f"lap dist {total:.0f} m")
-    ok = 85.0 <= span <= 115.0 and 0.20 <= peak_frac <= 0.40 and abs(closure) < 8.0
+    # Track-agnostic physical-plausibility gates (was Spa-specific: span
+    # 85..115 m, peak_frac 0.20..0.40 for Les Combes). Real F1 elevation spans
+    # run ~5 m (flat Miami/Monza) to ~102 m (Spa); the summit sits wherever the
+    # track's high point is, so peak_frac is NOT gated. Reject only impossible
+    # data: a near-dead span (<2 m), an implausibly large span (>150 m — e.g. a
+    # dropped dm->m /10), or a lap that fails to close in elevation (>8 m).
+    ok = 2.0 <= span <= 150.0 and abs(closure) < 8.0
     if not ok:
-        print("[elev] VALIDATION FAILED (span/peak/closure outside Spa gates) — "
-              "not writing", file=sys.stderr)
+        print(f"[elev] VALIDATION FAILED (span {span:.1f} m outside [2,150] or "
+              f"closure {closure:+.1f} m >= 8) — not writing", file=sys.stderr)
         return 1
 
     # lift the raceline stations to 3D (station order == driving direction,

@@ -16,7 +16,7 @@ Usage:
   python fetch_openf1_lap.py --year 2026 --country Spain --session "Practice 1" \
       --out F1_Pipeline_Assets/exports/reference_2026_spain_q.csv
 """
-import argparse, csv, json, os, sys, urllib.parse, urllib.request
+import argparse, csv, json, os, sys, time, urllib.parse, urllib.request
 from datetime import datetime, timedelta
 
 BASE = "https://api.openf1.org/v1"
@@ -24,14 +24,28 @@ BASE = "https://api.openf1.org/v1"
 
 def get(endpoint, **params):
     url = f"{BASE}/{endpoint}?" + urllib.parse.urlencode(params, safe="><=")
-    for attempt in range(4):
+    for attempt in range(6):
         try:
             with urllib.request.urlopen(url, timeout=90) as r:
                 return json.load(r)
         except Exception as e:               # noqa: BLE001
-            if attempt == 3:
+            if attempt == 5:
                 raise
-            print(f"[openf1] retry {attempt+1} on {endpoint}: {e}", flush=True)
+            # 429 = rate limited: retrying immediately is guaranteed to fail
+            # again (that is how the first 2025 Monza fetch was lost, right
+            # after the live-session lockout lifted). Back off exponentially
+            # and honour Retry-After when the server sends one.
+            wait = 5.0 * (2 ** attempt)
+            if getattr(e, "code", None) == 429:
+                ra = None
+                try:
+                    ra = float(e.headers.get("Retry-After"))
+                except Exception:                    # noqa: BLE001
+                    pass
+                wait = max(wait, ra or 30.0)
+            print(f"[openf1] retry {attempt+1} on {endpoint} in {wait:.0f}s: {e}",
+                  flush=True)
+            time.sleep(wait)
     return []
 
 

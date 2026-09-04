@@ -1,0 +1,53 @@
+{
+ "track": "monza",
+ "rho": 1.2061,
+ "t25_s": 79.121,
+ "lap_band_s": [
+  79.754,
+  83.532
+ ],
+ "vtop_target_kmh": 350.4,
+ "corners": [
+  {
+   "s_m": 936.1,
+   "s_frac": 0.16179,
+   "v25_kmh": 73.0,
+   "v26_target_kmh": 70.6
+  },
+  {
+   "s_m": 2106.2,
+   "s_frac": 0.36403,
+   "v25_kmh": 111.0,
+   "v26_target_kmh": 106.0
+  },
+  {
+   "s_m": 2503.3,
+   "s_frac": 0.43266,
+   "v25_kmh": 208.0,
+   "v26_target_kmh": 192.6
+  },
+  {
+   "s_m": 2827.3,
+   "s_frac": 0.48866,
+   "v25_kmh": 190.0,
+   "v26_target_kmh": 176.5
+  },
+  {
+   "s_m": 3901.0,
+   "s_frac": 0.67423,
+   "v25_kmh": 195.0,
+   "v26_target_kmh": 180.9
+  },
+  {
+   "s_m": 5124.9,
+   "s_frac": 0.88576,
+   "v25_kmh": 217.0,
+   "v26_target_kmh": 201.0
+  }
+ ],
+ "cda0": 0.75,
+ "cl0": 4.6,
+ "ref_used": "2025_q",
+ "transfer": "transfer_2026.json",
+ "warnings": []
+}

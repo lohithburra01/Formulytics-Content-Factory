@@ -7,52 +7,61 @@
   320.0
  ],
  "r_knots": [
-  0.97477,
-  0.94527,
-  0.90369,
-  0.90369,
-  0.90369
+  0.96709,
+  0.94294,
+  0.9261,
+  0.9261,
+  0.9261
  ],
  "lap_delta_pct": {
-  "mean": 2.552567825523478,
-  "sd": 1.6095070029912082,
+  "mean": 2.9941735850566715,
+  "sd": 1.290306673452226,
   "per_track": {
    "canada": 2.368,
    "catalunya": 4.884,
    "miami": 1.476,
-   "china": 1.483
+   "china": 1.483,
+   "spa": 3.691,
+   "hungary": 3.093,
+   "zandvoort": 3.965
   }
  },
  "vtop_delta_kmh": {
-  "mean": 4.651693928474842,
-  "sd": 5.896673352217996,
+  "mean": 2.37919953437969,
+  "sd": 8.677734671355363,
   "per_track": {
    "canada": -0.42,
    "catalunya": 13.08,
    "miami": 3.94,
-   "china": 2.0
+   "china": 2.0,
+   "spa": -4.47,
+   "hungary": 13.04,
+   "zandvoort": -10.52
   }
  },
  "pairs_used": [
   "canada",
   "catalunya",
   "miami",
-  "china"
+  "china",
+  "spa",
+  "hungary",
+  "zandvoort"
  ],
  "excluded": null,
  "fp1_validation": {
   "austria": {
-   "r_residual_median": -0.04563384761617478,
+   "r_residual_median": -0.067288777728582,
    "n_pairs": 6,
    "lap_delta_pct": 6.049616232355283,
    "vtop_delta_kmh": 2.69664878699939
   },
   "silverstone": {
-   "r_residual_median": 0.003147847067060061,
+   "r_residual_median": -0.008142592340011634,
    "n_pairs": 8,
    "lap_delta_pct": 5.591810771332988,
    "vtop_delta_kmh": -8.101604431426097
   }
  },
- "n_corner_points": 26
+ "n_corner_points": 50
 }
