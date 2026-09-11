@@ -1,0 +1,60 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[elev] 2000 pts, 0.0-24.48 m ASL (span 24.48 m) — F1 official archive, 2026 Madring FP1+FP2, mean of the push laps (73 push laps; Z/10); mapped onto the optimal line
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2771 samples, lap_time=92.329s, v=[70,328] km/h, soc=yes, mode=yes
+[kerbs] outer=1089 corner zones, inner=1080 corner zones
+[corridor.iqp] widths: right=[4.07,5.08]  left=[4.07,5.08]
+[raceline] loaded precomputed: 2665 pts, track_length=5316 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-1036,781] Y[-821,310]
+[diag] visual   X[-1042,791] Y[-827,313]
+[render] 2770 frames at 30fps (92.33s)
+[elev] span 24.5 m -> vertical exaggeration 4.5 (35 px of wall)
+  frame 60/2770
+  frame 120/2770
+  frame 180/2770
+  frame 240/2770
+  frame 300/2770
+  frame 360/2770
+  frame 420/2770
+  frame 480/2770
+  frame 540/2770
+  frame 600/2770
+  frame 660/2770
+  frame 720/2770
+  frame 780/2770
+  frame 840/2770
+  frame 900/2770
+  frame 960/2770
+  frame 1020/2770
+  frame 1080/2770
+  frame 1140/2770
+  frame 1200/2770
+  frame 1260/2770
+  frame 1320/2770
+  frame 1380/2770
+  frame 1440/2770
+  frame 1500/2770
+  frame 1560/2770
+  frame 1620/2770
+  frame 1680/2770
+  frame 1740/2770
+  frame 1800/2770
+  frame 1860/2770
+  frame 1920/2770
+  frame 1980/2770
+  frame 2040/2770
+  frame 2100/2770
+  frame 2160/2770
+  frame 2220/2770
+  frame 2280/2770
+  frame 2340/2770
+  frame 2400/2770
+  frame 2460/2770
+  frame 2520/2770
+  frame 2580/2770
+  frame 2640/2770
+  frame 2700/2770
+  frame 2760/2770
+  frame 2770/2770
+[render] saved -> .\madring_2026_optimal_lap.mp4

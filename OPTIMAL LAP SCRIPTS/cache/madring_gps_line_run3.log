@@ -1,0 +1,25 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+laps: timed 593, usable 593, push 73 (fp1 36, fp2 37)
+{'it': 0, 'max_shift_m': 3.1027, 'rms_offset_m': 0.842, 'outliers': 0, 'length_m': 5330.27}
+{'it': 1, 'max_shift_m': 0.2391, 'rms_offset_m': 0.067, 'outliers': 0, 'length_m': 5342.88}
+{'it': 2, 'max_shift_m': 0.0456, 'rms_offset_m': 0.051, 'outliers': 0, 'length_m': 5343.53}
+{'it': 3, 'max_shift_m': 0.0203, 'rms_offset_m': 0.05, 'outliers': 0, 'length_m': 5343.61}
+{'it': 4, 'max_shift_m': 0.0143, 'rms_offset_m': 0.05, 'outliers': 0, 'length_m': 5343.63}
+timing line at s = 5336.1 {'start_mad_m': 2.740988577961616, 'end_mad_m': 3.6302005762872795, 'start_vs_end_m': 0.8343698400640278}
+speed traces: 70 kept, 3 rejected | per-lap RMS offset from path median 0.033 m | speed-integrated distance / path length median 1.0003 (IQR 0.9995-1.0008) | along-track position jitter median 2.6 m
+outline checks {'outer_simple': True, 'inner_simple': True, 'outer_contains_inner': True, 'corridor_valid': True, 'stations_inside': 2672, 'stations': 2672}
+
+SVG vs measured radius at each FP1 minimum (R_need = radius the sim grip model needs for FP1's speed)
+  frac  fp1_kmh  R_need  R_svg  R_gps  top10_min_kmh
+0.0928    101.1    32.9   27.0   25.1          105.5
+0.2886    111.1    38.2   40.9   22.8          113.2
+0.3546     85.4    24.9   32.6   13.4           88.7
+0.4404    203.0    82.4   61.7   60.6          204.5
+0.6128    149.0    57.9   39.5   35.3          146.6
+0.7402    101.0    32.9   31.7   22.0          100.5
+0.7920    215.0    87.1   62.9   56.0          207.4
+0.8858     78.1    21.4   17.7   17.0           78.8
+0.9132    116.1    40.8   47.9   30.1          117.1
+0.9704    132.0    49.2   45.1   35.3          130.5
+
+wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\madring_gps_line and D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\tracks\madring_grand_prix_outline_gps.json
