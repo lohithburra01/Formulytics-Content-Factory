@@ -1,0 +1,21 @@
+{
+  "svg": "D:\\f1_hot_lap\\OPTIMAL LAP SCRIPTS\\Baku_Formula_One_circuit_map.svg",
+  "position_source": "D:\\f1_hot_lap\\OPTIMAL LAP SCRIPTS\\cache\\baku_2025_q_position.csv",
+  "route": "SVG filled-ribbon medial axis guided by 2025 Q position order",
+  "raster_scale": 3,
+  "position_registration_svg_units": {
+    "median": 0.31243816526026724,
+    "p95": 1.2358877377435118,
+    "maximum": 2.0325071348656585
+  },
+  "longest_anchor_segment_svg_units": 16.013876853447535,
+  "raw_route_svg_units": 2064.082514214757,
+  "scaled_length_m": 6003.0,
+  "width_m": {
+    "min": 7.6,
+    "median": 12.39678478240967,
+    "max": 13.000000000000002
+  },
+  "direction": "anti-clockwise",
+  "stations": 2000
+}
