@@ -1,0 +1,12 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.614 CL_CORNER=4.970 RHO=1.2202
+[sim] outline loaded: outer=2000 inner=2000
+[sim] raceline supplied (cache/sepang/t1_h45.json); optimiser and S/F anchoring skipped - the file is already S/F-aligned
+[sim] raceline: 2736 pts, 5471 m, |κ|max=0.0635
+[sim] wrote raceline -> cache/sepang/t1_h45_rl.json
+  closure iter 0: v0=85.7 vN=85.6 d=0.06 T_lap=91.997s
+  closure iter 1: v0=85.7 vN=85.6 d=0.06 T_lap=91.306s
+  closure converged at iter 1
+[sim] lap: 91.306s (bang-bang) -> 91.913s (jerk-limited), +0.607s for realism
+[sim] wrote 2758 rows -> cache/sepang/t1_h45.csv
+[sanity] T_lap=91.91s  v=[83,327] km/h  superclip frames=163  gain_med=27.9  drop_med=43.8 km/h/s

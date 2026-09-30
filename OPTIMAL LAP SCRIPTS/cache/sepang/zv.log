@@ -1,0 +1,30 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.563 CL_CORNER=4.968 RHO=1.2185
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[5.88,7.07] l=[5.88,7.07]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=5.890 mean|a|=4.180 (8.02s)
+  iter 1: max|a|=3.256 mean|a|=2.193 (7.77s)
+  iter 2: max|a|=2.703 mean|a|=1.181 (7.89s)
+  iter 3: max|a|=1.900 mean|a|=0.618 (8.80s)
+  iter 4: max|a|=0.950 mean|a|=0.309 (8.91s)
+  iter 5: max|a|=0.475 mean|a|=0.154 (8.82s)
+  iter 6: max|a|=0.237 mean|a|=0.078 (9.32s)
+  iter 7: max|a|=0.119 mean|a|=0.038 (8.89s)
+  converged at iter 7
+[iqp] 2086 pts, 4174 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=6.31m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 425/800 straight stations
+[sim] refinement slack: max=1.76e-03 (529/800 stations relaxed)
+[sim] adaptive de-wobble: 542/2087 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.1079 (IQP seed) → 0.0810 (refined)
+[sim] raceline: 2087 pts, 4176 m, |κ|max=0.0810
+[sim] S/F line at raceline idx 40/2087 (frac 1.9%, |κ|=0.0001) — reference_2025_zandvoort_q.csv x-corr peak=1563
+[sim] banking: 175/2087 stations banked, peak 8.62° (effective) at arc frac 0.185
+[sim] wrote raceline -> cache/sepang/zv_rl.json
+  closure iter 0: v0=91.3 vN=91.2 d=0.06 T_lap=71.382s
+  closure iter 1: v0=90.9 vN=90.9 d=0.03 T_lap=70.810s
+  closure converged at iter 1
+[sim] lap: 70.810s (bang-bang) -> 71.339s (jerk-limited), +0.528s for realism
+[sim] wrote 2141 rows -> cache/sepang/zv.csv
+[sanity] T_lap=71.34s  v=[89,331] km/h  superclip frames=95  gain_med=24.5  drop_med=42.3 km/h/s

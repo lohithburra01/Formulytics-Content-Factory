@@ -1,0 +1,56 @@
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2754 samples, lap_time=91.739s, v=[83,327] km/h, soc=yes, mode=yes
+[kerbs] outer=882 corner zones, inner=856 corner zones
+[corridor.iqp] widths: right=[5.90,7.08]  left=[5.90,7.08]
+[raceline] loaded precomputed: 2736 pts, track_length=5471 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-498,660] Y[-450,494]
+[diag] visual   X[-500,674] Y[-464,505]
+[render] 2753 frames at 30fps (91.74s)
+  frame 60/2753
+  frame 120/2753
+  frame 180/2753
+  frame 240/2753
+  frame 300/2753
+  frame 360/2753
+  frame 420/2753
+  frame 480/2753
+  frame 540/2753
+  frame 600/2753
+  frame 660/2753
+  frame 720/2753
+  frame 780/2753
+  frame 840/2753
+  frame 900/2753
+  frame 960/2753
+  frame 1020/2753
+  frame 1080/2753
+  frame 1140/2753
+  frame 1200/2753
+  frame 1260/2753
+  frame 1320/2753
+  frame 1380/2753
+  frame 1440/2753
+  frame 1500/2753
+  frame 1560/2753
+  frame 1620/2753
+  frame 1680/2753
+  frame 1740/2753
+  frame 1800/2753
+  frame 1860/2753
+  frame 1920/2753
+  frame 1980/2753
+  frame 2040/2753
+  frame 2100/2753
+  frame 2160/2753
+  frame 2220/2753
+  frame 2280/2753
+  frame 2340/2753
+  frame 2400/2753
+  frame 2460/2753
+  frame 2520/2753
+  frame 2580/2753
+  frame 2640/2753
+  frame 2700/2753
+  frame 2753/2753
+[render] saved -> malaysian_grand_prix_2026_optimal_lap.mp4
