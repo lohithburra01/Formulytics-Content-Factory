@@ -1,0 +1,37 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.614 CL_CORNER=4.970 RHO=1.2241
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[5.64,7.11] l=[5.64,7.11]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=5.961 mean|a|=3.309 (40.39s)
+  iter 1: max|a|=3.470 mean|a|=2.111 (38.60s)
+  iter 2: max|a|=3.006 mean|a|=1.357 (44.37s)
+  iter 3: max|a|=1.742 mean|a|=0.764 (49.05s)
+  iter 4: max|a|=1.333 mean|a|=0.426 (45.60s)
+  iter 5: max|a|=1.078 mean|a|=0.254 (45.79s)
+  iter 6: max|a|=0.849 mean|a|=0.160 (41.44s)
+  iter 7: max|a|=0.661 mean|a|=0.108 (40.67s)
+  iter 8: max|a|=0.510 mean|a|=0.078 (43.12s)
+  iter 9: max|a|=0.391 mean|a|=0.060 (30.55s)
+  iter 10: max|a|=0.299 mean|a|=0.048 (31.17s)
+  iter 11: max|a|=0.240 mean|a|=0.040 (32.37s)
+  iter 12: max|a|=0.228 mean|a|=0.034 (31.22s)
+  iter 13: max|a|=0.216 mean|a|=0.030 (30.72s)
+  iter 14: max|a|=0.206 mean|a|=0.026 (30.48s)
+  iter 15: max|a|=0.196 mean|a|=0.024 (31.39s)
+  converged at iter 15
+[iqp] 2674 pts, 5349 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=6.26m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 553/800 straight stations
+[sim] refinement slack: max=2.89e-03 (507/800 stations relaxed)
+[sim] adaptive de-wobble: 497/2677 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.1426 (IQP seed) → 0.1382 (refined)
+[sim] raceline: 2677 pts, 5355 m, |κ|max=0.1382
+[sim] S/F line at raceline idx 2609/2677 (frac 97.5%, |κ|=0.0001) — reference_2025_bahrain_q.csv x-corr peak=1613
+[sim] wrote raceline -> cache/bahrain/in05_rl.json
+  closure iter 0: v0=86.4 vN=86.3 d=0.06 T_lap=90.157s
+  closure iter 1: v0=86.4 vN=86.3 d=0.06 T_lap=89.315s
+  closure converged at iter 1
+[sim] lap: 89.315s (bang-bang) -> 89.846s (jerk-limited), +0.531s for realism
+[sim] wrote 2696 rows -> cache/bahrain/in05.csv
+[sanity] T_lap=89.85s  v=[59,334] km/h  superclip frames=140  gain_med=29.2  drop_med=55.3 km/h/s

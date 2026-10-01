@@ -1,0 +1,58 @@
+[elev] 700 pts, -16.1-0.3 m ASL (span 16.4 m) — openf1 location.z session 10010 drv 81 lap 14 (2025 Qualifying)
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2767 samples, lap_time=92.186s, v=[74,317] km/h, soc=yes, mode=yes
+[kerbs] outer=746 corner zones, inner=709 corner zones
+[corridor.iqp] widths: right=[5.14,6.61]  left=[5.14,6.61]
+[raceline] loaded precomputed: 2682 pts, track_length=5366 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-481,708] Y[-378,392]
+[diag] visual   X[-490,719] Y[-381,402]
+[render] 2766 frames at 30fps (92.19s)
+  frame 60/2766
+  frame 120/2766
+  frame 180/2766
+  frame 240/2766
+  frame 300/2766
+  frame 360/2766
+  frame 420/2766
+  frame 480/2766
+  frame 540/2766
+  frame 600/2766
+  frame 660/2766
+  frame 720/2766
+  frame 780/2766
+  frame 840/2766
+  frame 900/2766
+  frame 960/2766
+  frame 1020/2766
+  frame 1080/2766
+  frame 1140/2766
+  frame 1200/2766
+  frame 1260/2766
+  frame 1320/2766
+  frame 1380/2766
+  frame 1440/2766
+  frame 1500/2766
+  frame 1560/2766
+  frame 1620/2766
+  frame 1680/2766
+  frame 1740/2766
+  frame 1800/2766
+  frame 1860/2766
+  frame 1920/2766
+  frame 1980/2766
+  frame 2040/2766
+  frame 2100/2766
+  frame 2160/2766
+  frame 2220/2766
+  frame 2280/2766
+  frame 2340/2766
+  frame 2400/2766
+  frame 2460/2766
+  frame 2520/2766
+  frame 2580/2766
+  frame 2640/2766
+  frame 2700/2766
+  frame 2760/2766
+  frame 2766/2766
+[render] saved -> bahrain_grand_prix_2026_optimal_lap.mp4

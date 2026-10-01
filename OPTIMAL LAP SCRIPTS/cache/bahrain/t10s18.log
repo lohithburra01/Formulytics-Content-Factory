@@ -1,0 +1,44 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.614 CL_CORNER=4.970 RHO=1.2241
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[6.51,7.65] l=[6.51,7.65]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=6.494 mean|a|=3.622 (20.16s)
+  iter 1: max|a|=4.054 mean|a|=2.369 (20.54s)
+  iter 2: max|a|=2.866 mean|a|=1.434 (22.18s)
+  iter 3: max|a|=1.797 mean|a|=0.830 (22.66s)
+  iter 4: max|a|=1.557 mean|a|=0.465 (24.66s)
+  iter 5: max|a|=1.258 mean|a|=0.279 (24.56s)
+  iter 6: max|a|=0.987 mean|a|=0.182 (25.71s)
+  iter 7: max|a|=0.761 mean|a|=0.124 (24.53s)
+  iter 8: max|a|=0.581 mean|a|=0.091 (24.17s)
+  iter 9: max|a|=0.441 mean|a|=0.070 (25.73s)
+  iter 10: max|a|=0.336 mean|a|=0.058 (25.80s)
+  iter 11: max|a|=0.305 mean|a|=0.049 (28.18s)
+  iter 12: max|a|=0.294 mean|a|=0.042 (28.03s)
+  iter 13: max|a|=0.283 mean|a|=0.038 (28.65s)
+  iter 14: max|a|=0.272 mean|a|=0.034 (28.84s)
+  iter 15: max|a|=0.260 mean|a|=0.031 (27.26s)
+  iter 16: max|a|=0.250 mean|a|=0.029 (28.07s)
+  iter 17: max|a|=0.239 mean|a|=0.026 (29.38s)
+  iter 18: max|a|=0.229 mean|a|=0.025 (28.23s)
+  iter 19: max|a|=0.219 mean|a|=0.023 (10.85s)
+  iter 20: max|a|=0.210 mean|a|=0.022 (10.35s)
+  iter 21: max|a|=0.201 mean|a|=0.021 (10.05s)
+  iter 22: max|a|=0.193 mean|a|=0.020 (9.81s)
+  converged at iter 22
+[iqp] 2667 pts, 5335 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=6.82m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 557/800 straight stations
+[sim] refinement slack: max=2.96e-03 (481/800 stations relaxed)
+[sim] adaptive de-wobble: 535/2672 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.1413 (IQP seed) → 0.0759 (refined)
+[sim] raceline: 2672 pts, 5345 m, |κ|max=0.0759
+[sim] S/F line at raceline idx 2608/2672 (frac 97.6%, |κ|=0.0000) — reference_2025_bahrain_q.csv x-corr peak=1716
+[sim] wrote raceline -> cache/bahrain/t10s18_rl.json
+  closure iter 0: v0=86.6 vN=86.6 d=0.06 T_lap=89.263s
+  closure iter 1: v0=86.6 vN=86.6 d=0.06 T_lap=88.414s
+  closure converged at iter 1
+[sim] lap: 88.414s (bang-bang) -> 88.967s (jerk-limited), +0.553s for realism
+[sim] wrote 2670 rows -> cache/bahrain/t10s18.csv
+[sanity] T_lap=88.97s  v=[72,334] km/h  superclip frames=141  gain_med=28.5  drop_med=54.8 km/h/s
