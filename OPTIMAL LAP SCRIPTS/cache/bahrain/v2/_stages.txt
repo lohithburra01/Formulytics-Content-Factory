@@ -1,0 +1,8 @@
+echo === Stage 1: min-time line (v1 knobs), refit knobs 0.777/4.200, re-polish (v2a) ===
+"%PYTHON%" "%ROOT%cache\bahrain\_opt_line_2026.py" --base "%BASE%" --outline "%OUTLINE%" --cda 0.8005 --cl 4.4693 --rho 1.2242 --out "%V2%\opt" || exit /b 1
+"%PYTHON%" "%ROOT%cache\bahrain\_opt_line_2026.py" --base "%BASE%" --outline "%OUTLINE%" --cda 0.777 --cl 4.200 --rho 1.2242 --steps 1,0.5,0.25 --init-knots "%V2%\opt_knots.npy" --out "%V2%\opt2" || exit /b 1
+echo === Stage 2: inside-apex touch (user: line must hit every apex), margin 0.3, then knob fixed point (v2b) ===
+"%PYTHON%" "%ROOT%cache\bahrain\_opt_line_2026.py" --base "%BASE%" --outline "%OUTLINE%" --cda 0.777 --cl 4.200 --rho 1.2242 --margin 0.3 --apex-w 0.3 --init-knots "%V2%\opt2_knots.npy" --out "%V2%\opt3" || exit /b 1
+"%PYTHON%" "%ROOT%cache\bahrain\_opt_line_2026.py" --base "%BASE%" --outline "%OUTLINE%" --cda 0.777 --cl 4.200 --rho 1.2242 --margin 0.3 --apex-w 1.5 --steps 0.5,0.25 --init-knots "%V2%\opt3_knots.npy" --out "%V2%\opt4" || exit /b 1
+"%PYTHON%" "%ROOT%cache\bahrain\_opt_line_2026.py" --base "%BASE%" --outline "%OUTLINE%" --cda 0.787 --cl 3.400 --rho 1.2242 --margin 0.3 --apex-w 1.5 --steps 1,0.5,0.25 --init-knots "%V2%\opt4_knots.npy" --out "%V2%\opt5" || exit /b 1
+"%PYTHON%" "%ROOT%cache\bahrain\_autofit_rl_in.py" "%V2%\opt5_rl.json" --track bahrain || exit /b 1
