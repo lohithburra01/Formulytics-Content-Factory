@@ -1,0 +1,12 @@
+[telemetry] 324 samples, lap_time=89.158s, v=[65,316] km/h, soc=no, mode=yes
+[telemetry] 2792 samples, lap_time=93.008s, v=[66,321] km/h, soc=yes, mode=yes
+  frame 300/2851
+  frame 600/2851
+  frame 900/2851
+  frame 1200/2851
+  frame 1500/2851
+  frame 1800/2851
+  frame 2100/2851
+  frame 2400/2851
+  frame 2700/2851
+[dual-v3] saved -> singapore_2025_vs_2026.mp4  (2851 frames)

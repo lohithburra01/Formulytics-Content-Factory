@@ -1,0 +1,26 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[3.93,4.09] l=[3.93,4.09]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=2.941 mean|a|=2.086 (8.24s)
+  iter 1: max|a|=1.757 mean|a|=1.112 (8.10s)
+  iter 2: max|a|=1.095 mean|a|=0.606 (8.72s)
+  iter 3: max|a|=0.595 mean|a|=0.295 (8.89s)
+  iter 4: max|a|=0.311 mean|a|=0.146 (8.48s)
+  iter 5: max|a|=0.145 mean|a|=0.073 (8.12s)
+  converged at iter 5
+[iqp] 2446 pts, 4893 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=3.46m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 521/800 straight stations
+[sim] refinement slack: max=2.80e-03 (508/800 stations relaxed)
+[sim] adaptive de-wobble: 582/2451 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0630 (IQP seed) → 0.0515 (refined)
+[sim] raceline: 2451 pts, 4902 m, |κ|max=0.0515
+[sim] S/F line at raceline idx 2/2451 (frac 0.1%, |κ|=0.0001) — reference_2025_singapore_q.csv x-corr peak=1720
+[sim] wrote raceline -> cache/singapore/w10_rl.json
+  closure iter 0: v0=77.2 vN=77.1 d=0.13 T_lap=90.497s
+  closure iter 1: v0=77.2 vN=77.1 d=0.13 T_lap=90.122s
+  closure converged at iter 1
+[sim] lap: 90.122s (bang-bang) -> 90.791s (jerk-limited), +0.669s for realism
+[sim] wrote 2724 rows -> cache/singapore/w10.csv
+[sanity] T_lap=90.79s  v=[76,306] km/h  superclip frames=182  gain_med=29.7  drop_med=47.0 km/h/s
