@@ -1,0 +1,15 @@
+req         WARNING 	DEFAULT CACHE ENABLED! (74.02 MB) C:\Users\91910\AppData\Local\Temp\fastf1
+core           INFO 	Loading data for Singapore Grand Prix - Sprint Qualifying [v3.9.0.dev2]
+req            INFO 	Using cached data for session_info
+req            INFO 	Using cached data for driver_info
+core        WARNING 	Sprint Qualifying is not supported by Ergast! Limited results are calculated from timing data.
+req            INFO 	Using cached data for session_status_data
+req            INFO 	Using cached data for track_status_data
+req            INFO 	Using cached data for _extended_timing_data
+req            INFO 	Using cached data for timing_app_data
+core           INFO 	Processing timing data...
+req            INFO 	Using cached data for car_data
+req            INFO 	Using cached data for position_data
+core        WARNING 	Cannot calculate qualifying results: missing information about deleted laps. Make sure that race control messages are being loaded.
+logger      WARNING 	Failed to calculate quali results from lap times!
+core           INFO 	Finished loading data for 22 drivers: ['63', '16', '1', '44', '81', '3', '12', '6', '10', '30', '87', '41', '31', '14', '55', '5', '23', '27', '43', '18', '11', '77']
