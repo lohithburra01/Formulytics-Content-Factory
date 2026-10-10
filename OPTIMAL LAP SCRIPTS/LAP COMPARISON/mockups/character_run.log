@@ -1,0 +1,11 @@
+Loading 2026 Singapore Grand Prix SQ ...
+Top 2: VER, RUS
+   VER: 91.156s
+   RUS: 91.276s
+[character] RUS vs VER: top speed x0.9950 (12 straights), corner min speed x1.0104 (12 corners)
+[character] car: CdA 0.5590 -> 0.5674, CL 4.3630 -> 4.4543 (margin 0.3 unchanged)
+[character] optimiser run (a few minutes) -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\lines\singapore_grand_prix\character\RUS_vs_VER_ecdcf51cfd.log
+tops (P1, P2): [[306.8, 305.6], [160.6, 163.0], [261.0, 255.4], [308.0, 308.6], [211.6, 207.9], [189.9, 190.7], [282.1, 278.7], [169.5, 168.6], [217.5, 215.0], [291.3, 289.4], [302.0, 303.7], [255.2, 253.9]]
+mins (P1, P2): [[137.9, 137.9], [89.4, 88.4], [148.2, 149.6], [121.6, 120.4], [78.7, 77.4], [126.4, 134.2], [138.2, 140.0], [108.9, 110.1], [67.0, 68.9], [90.4, 92.1], [111.6, 110.0], [200.7, 203.7]]
+gap mean 0.00 m, p95 0.00 m, max 0.25 m
+mockup -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\mockups\character_lines_VER_vs_RUS.png
