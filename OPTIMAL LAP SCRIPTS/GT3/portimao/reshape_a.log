@@ -1,0 +1,20 @@
+[anchored] it 0: speed RMSE 16.20 km/h  lap 108.243  curv err 2.69/km  max offset 0.0 m  min section gap 59.1 m
+[anchored] it 1: speed RMSE 13.53 km/h  lap 106.768  curv err 3.02/km  max offset 11.9 m  min section gap 57.7 m
+[anchored] it 2: speed RMSE 12.88 km/h  lap 107.223  curv err 3.47/km  max offset 9.5 m  min section gap 56.2 m
+[anchored] it 3: speed RMSE 12.44 km/h  lap 107.072  curv err 2.31/km  max offset 18.2 m  min section gap 55.4 m
+[anchored] it 4: speed RMSE 9.75 km/h  lap 106.137  curv err 2.45/km  max offset 17.9 m  min section gap 55.3 m
+[anchored] it 5: speed RMSE 10.30 km/h  lap 106.022  curv err 2.83/km  max offset 18.1 m  min section gap 55.0 m
+[anchored] it 6: speed RMSE 12.17 km/h  lap 106.390  curv err 3.21/km  max offset 16.9 m  min section gap 54.7 m
+[anchored] it 7: speed RMSE 11.92 km/h  lap 107.061  curv err 2.42/km  max offset 23.0 m  min section gap 54.3 m
+Traceback (most recent call last):
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\portimao\build_gt3_line.py", line 25, in <module>
+    rl, arc, kap, L = S.build_raceline(np.array(o["outer"], float), np.array(o["inner"], float), inset_m=a.inset)
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\sim_2026_lap.py", line 341, in build_raceline
+    iqp_seed_line, _ = run_iqp(cl_qp, wr_safe, wl_safe)
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\raceline_video.py", line 699, in run_iqp
+    alpha = opt_min_curv_sparse(reftrack_it, normvec, A_mat, KAPPA_BOUND, VEH_WIDTH)
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\raceline_video.py", line 671, in opt_min_curv_sparse
+    raise RuntimeError(f"cvxopt QP status: {sol['status']}")
+RuntimeError: cvxopt QP status: unknown
+
+build failed

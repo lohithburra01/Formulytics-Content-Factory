@@ -1,0 +1,46 @@
+[opt] 2306 stations, 193 knots, corridor width median 11.2 m
+[opt] base raw lap 99.514s
+[opt] step 2.0 sweep 0: 99.489s (-0.025) accepted 1 t 14s
+[opt] step 1.0 sweep 0: 99.239s (-0.275) accepted 6 t 35s
+[opt] step 1.0 sweep 1: 98.922s (-0.592) accepted 5 t 46s
+[opt] step 1.0 sweep 2: 98.882s (-0.631) accepted 1 t 57s
+[opt] step 0.5 sweep 0: 98.723s (-0.790) accepted 14 t 79s
+[opt] step 0.5 sweep 1: 98.606s (-0.908) accepted 7 t 90s
+[opt] step 0.5 sweep 2: 98.553s (-0.961) accepted 8 t 100s
+[opt] step 0.5 sweep 3: 98.501s (-1.013) accepted 4 t 111s
+[opt] step 0.5 sweep 4: 98.488s (-1.025) accepted 3 t 122s
+[opt] step 0.5 sweep 5: 98.484s (-1.029) accepted 2 t 133s
+[opt] step 0.5 sweep 6: 98.484s (-1.030) accepted 1 t 144s
+[opt] step 0.25 sweep 0: 98.385s (-1.129) accepted 20 t 165s
+[opt] step 0.25 sweep 1: 98.349s (-1.165) accepted 1 t 175s
+[opt] step 0.25 sweep 2: 98.332s (-1.181) accepted 1 t 184s
+[opt] step 0.25 sweep 3: 98.303s (-1.211) accepted 1 t 193s
+[opt] step 0.25 sweep 4: 98.291s (-1.223) accepted 1 t 202s
+[opt] step 0.25 sweep 5: 98.279s (-1.235) accepted 1 t 211s
+[opt] step 0.25 sweep 6: 98.252s (-1.262) accepted 1 t 220s
+[opt] step 0.25 sweep 7: 98.240s (-1.273) accepted 1 t 229s
+[opt] step 0.25 sweep 8: 98.231s (-1.282) accepted 1 t 238s
+[opt] step 0.25 sweep 9: 98.224s (-1.290) accepted 1 t 247s
+[opt] step 0.25 sweep 10: 98.219s (-1.295) accepted 1 t 256s
+[opt] step 0.25 sweep 11: 98.214s (-1.299) accepted 1 t 265s
+[opt] step 0.25 sweep 12: 98.211s (-1.302) accepted 1 t 274s
+[opt] step 0.25 sweep 13: 98.209s (-1.305) accepted 1 t 283s
+[opt] step 0.25 sweep 14: 98.196s (-1.318) accepted 1 t 292s
+[opt] step 0.25 sweep 15: 98.187s (-1.327) accepted 1 t 301s
+[opt] step 0.25 sweep 16: 98.179s (-1.335) accepted 1 t 310s
+[opt] step 0.25 sweep 17: 98.176s (-1.337) accepted 1 t 319s
+[opt] step 0.25 sweep 18: 98.173s (-1.341) accepted 1 t 328s
+[opt] step 0.25 sweep 19: 98.170s (-1.343) accepted 1 t 337s
+[opt] step 0.25 sweep 20: 98.168s (-1.346) accepted 1 t 345s
+[opt] step 0.25 sweep 21: 98.167s (-1.347) accepted 1 t 354s
+[opt] step 0.25 sweep 22: 98.166s (-1.348) accepted 1 t 363s
+[opt] step 0.25 sweep 23: 98.156s (-1.358) accepted 8 t 372s
+[opt] step 0.25 sweep 24: 98.127s (-1.386) accepted 6 t 381s
+[opt] step 0.25 sweep 25: 98.120s (-1.393) accepted 4 t 390s
+[opt] step 0.25 sweep 26: 98.117s (-1.397) accepted 2 t 399s
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[opt] done: raw 98.117s (base 99.514), smoothed lap 98.491s, viol 0.000 m
