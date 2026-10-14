@@ -101,6 +101,11 @@ KERB_COLOR        = (240, 240, 240)    # solid white BGR
 # critical may live there. HUD cluster compacted so the 3D elevation band
 # fits fully inside the safe area.
 TITLE_LINE_1      = "THE OPTIMAL LAP"
+TAGLINE           = None     # optional 3rd title line (--tagline); None = unchanged layout
+TAGLINE_DY        = 50
+JETS              = None     # optional aircraft flyovers (--flights); None = unchanged
+FENCE_M           = None     # optional barbed-wire fence offset from the road edges (--fence); None = unchanged
+MAX_SECONDS       = None     # optional render cut-off for previews (--max-seconds)
 TITLE_Y_1         = 320
 TITLE_Y_2         = 400
 CAMERA_Y_FRAC     = 0.45
@@ -847,6 +852,13 @@ def render_video(outer, inner, raceline, ver_t, ver_d, ver_v_ms, lap_time,
     d_at_t is mapped to arc-length on `raceline` (linear scale by ratio of
     raceline length to ver total distance)."""
     total_frames = int(math.ceil(lap_time * fps))
+    if MAX_SECONDS is not None:
+        total_frames = min(total_frames, int(MAX_SECONDS * fps))
+    fences = None
+    if FENCE_M is not None:
+        import fence_overlay
+        fences = fence_overlay.build(outer, inner, FENCE_M)
+        print(f"[fence] {len(fences)} fence rings at {FENCE_M} m from the road edges")
     print(f"[render] {total_frames} frames at {fps}fps ({lap_time:.2f}s)")
 
     v_min_global = float(np.min(ver_v_ms))
@@ -990,6 +1002,9 @@ def render_video(outer, inner, raceline, ver_t, ver_d, ver_v_ms, lap_time,
         cv2.polylines(frame, [inner_s.reshape((-1, 1, 2))], True, TRACK_EDGE,
                       thickness=EDGE_THICKNESS, lineType=cv2.LINE_AA)
 
+        if fences:
+            fence_overlay.draw(frame, fences, cam_x, cam_y, cam_scale, CAMERA_Y_FRAC)
+
         # Ideal racing line (subtle)
         rl_s = np.array([w2s(p, cam_x, cam_y) for p in rl], np.int32)
         cv2.polylines(frame, [rl_s.reshape((-1, 1, 2))], True, RACELINE_COLOR,
@@ -1099,6 +1114,8 @@ def render_video(outer, inner, raceline, ver_t, ver_d, ver_v_ms, lap_time,
         draw = ImageDraw.Draw(img_pil)
         draw_centered(draw, WIDTH // 2, TITLE_Y_1, title_line1, font_title, (255, 255, 255))
         draw_centered(draw, WIDTH // 2, TITLE_Y_2, title_line2, font_sub, (200, 200, 200))
+        if TAGLINE:
+            draw_centered(draw, WIDTH // 2, TITLE_Y_2 + TAGLINE_DY, TAGLINE, font_sub, (150, 150, 150))
         speed_kmh = int(round(v_now * 3.6))
         draw_centered(draw, WIDTH // 2, SPEED_Y, f"{speed_kmh}", font_speed, (255, 255, 255))
         draw_centered(draw, WIDTH // 2, SPEED_Y + KMH_Y_OFFSET, "KM/H", font_speed_unit, (200, 200, 200))
@@ -1113,7 +1130,11 @@ def render_video(outer, inner, raceline, ver_t, ver_d, ver_v_ms, lap_time,
         lap_str = f"LAP TIME  {int(_dlt // 60):d}:{_dlt % 60:06.3f}"
         draw_centered(draw, WIDTH // 2, LAP_Y, lap_str, font_sub, (180, 180, 180))
         draw_centered(draw, WIDTH // 2, WATERMARK_Y, WATERMARK_TEXT, font_wm, (150, 150, 150))
-        out.write(cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR))
+        _bgr = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+        if JETS is not None:
+            import jet_overlay
+            _bgr = jet_overlay.overlay(_bgr, f / fps, JETS, fps)
+        out.write(_bgr)
 
         if (f + 1) % 60 == 0 or f == total_frames - 1:
             print(f"  frame {f + 1}/{total_frames}")
@@ -1136,6 +1157,11 @@ def main():
                     help="REQUIRED: real telemetry CSV (frame,time_s,distance,speed,...). "
                          "Drives the animation timing AND the speed readout.")
     ap.add_argument("--track-name", default=None, help="Subtitle text (track name)")
+    ap.add_argument("--title", default=None, help="Title line 1 (default: THE OPTIMAL LAP)")
+    ap.add_argument("--fence", type=float, default=None, help="Barbed-wire fence this many metres outside both road edges")
+    ap.add_argument("--max-seconds", type=float, default=None, help="Preview: stop rendering after this many seconds")
+    ap.add_argument("--tagline", default=None, help="Optional 3rd title line under the track name")
+    ap.add_argument("--flights", default=None, help="Aircraft flyovers 'b2|sr71|vic:t0,dur,x0,y0,x1,y1;...' - see jet_overlay.py")
     ap.add_argument("--out", default=None, help="Output MP4 path")
     ap.add_argument("--zoom", type=float, default=DEFAULT_ZOOM)
     ap.add_argument("--trail-frames", type=int, default=DEFAULT_TRAIL)
@@ -1230,6 +1256,17 @@ def main():
     print(f"[diag] visual   X[{ov_minx:.0f},{ov_maxx:.0f}] Y[{ov_miny:.0f},{ov_maxy:.0f}]")
 
     track_name = args.track_name or os.path.splitext(os.path.basename(args.outline))[0]
+    if args.title:
+        globals()["TITLE_LINE_1"] = args.title
+    if args.fence is not None:
+        globals()["FENCE_M"] = args.fence
+    if args.max_seconds is not None:
+        globals()["MAX_SECONDS"] = args.max_seconds
+    if args.tagline:
+        globals()["TAGLINE"] = args.tagline.upper()
+    if args.flights:
+        import jet_overlay
+        globals()["JETS"] = jet_overlay.parse(args.flights)
     out_path = args.out or f"{os.path.splitext(os.path.basename(args.outline))[0]}_optimal_lap.mp4"
 
     render_video(
