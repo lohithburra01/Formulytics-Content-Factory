@@ -13,3 +13,6 @@ __pycache__/
 # Large downloaded / re-fetchable caches
 cache/fastf1_http_cache.sqlite
 cache/ext/saxena_zip/*.zip
+
+# Third-party cloned repo (has its own .git)
+cache/ext/kadiri/
