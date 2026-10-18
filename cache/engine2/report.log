@@ -1,0 +1,18 @@
+track              real                old |           hybrid |        new_blind |         new_geom
+Catalunya           74.68     -1.60s  21.2 |     -0.74s  13.5 |     -1.22s  15.3 |     +4.60s  33.3
+Hungaroring         77.21     -0.85s  12.2 |     +0.41s  12.0 |     +0.51s  11.0 |     +2.16s  26.3
+Melbourne           78.52                  |     -0.91s   9.2 |     -1.06s  13.4 |                 
+Miami               87.80                  |     +1.55s  13.0 |     +0.45s  17.1 |                 
+Monte Carlo         72.05     -0.28s  22.3 |     +0.45s   8.7 |     +0.78s  12.7 |     +1.10s  21.5
+Montreal            72.58     -0.63s  21.5 |     +0.90s  11.2 |     -0.07s  16.6 |     +4.68s  29.7
+Monza               81.79     -1.63s  29.5 |     -0.36s  22.8 |     +0.26s  23.9 |     +1.34s  34.1
+Shanghai            92.06                  |     +1.88s  12.2 |     +0.72s  17.3 |                 
+Silverstone         88.11     -1.31s  17.7 |     -0.38s   9.2 |     -0.80s  14.2 |     +3.92s  25.3
+Spa-Francorchamps  104.36     -2.46s  24.1 |     -0.43s  15.5 |     +1.39s  16.6 |     +7.90s  34.9
+Spielberg           66.11     -3.19s  24.8 |     +0.19s  11.0 |     -0.61s  11.9 |     +1.49s  22.0
+Zandvoort           71.16     +0.14s  16.8 |     -0.20s   9.6 |     -0.00s  10.0 |     +4.98s  28.2
+OLD physics engine (shipped)     n= 9  median|err| 1.31s  median rmse  21.5  median corr 0.946   | on the 9 shipped: |err| 1.31  rmse 21.5
+Pattern hybrid (LOO)             n=12  median|err| 0.44s  median rmse  11.6  median corr 0.987   | on the 9 shipped: |err| 0.41  rmse 11.2
+NEW engine2, blind LOO           n=12  median|err| 0.67s  median rmse  14.8  median corr 0.974   | on the 9 shipped: |err| 0.61  rmse 14.2
+NEW engine2 on our raceline      n= 9  median|err| 3.92s  median rmse  28.2  median corr 0.944   | on the 9 shipped: |err| 3.92  rmse 28.2
+ok

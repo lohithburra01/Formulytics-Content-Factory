@@ -1,0 +1,14 @@
+Catalunya          sim  73.713 real  74.679 err -0.966 rmse  18.4 corr 0.954 vmax 310.8/341.0 rech 3.58 vcap 297
+Hungaroring        sim  77.453 real  77.207 err +0.246 rmse  11.2 corr 0.985 vmax 313.1/331.0 rech 4.76 vcap 312
+Melbourne          sim  77.276 real  78.518 err -1.242 rmse  13.9 corr 0.972 vmax 306.1/327.0 rech 4.23 vcap 306
+Miami              sim  87.942 real  87.798 err +0.144 rmse  16.0 corr 0.978 vmax 318.2/343.0 rech 3.48 vcap 318
+Monte Carlo        sim  72.885 real  72.051 err +0.834 rmse  13.4 corr 0.982 vmax 321.4/288.6 rech 4.10 vcap 360
+Montreal           sim  72.158 real  72.578 err -0.420 rmse  16.1 corr 0.970 vmax 301.5/331.9 rech 4.25 vcap 301
+Monza              sim  82.077 real  81.786 err +0.291 rmse  24.9 corr 0.901 vmax 315.4/341.9 rech 3.44 vcap 307
+Shanghai           sim  92.564 real  92.064 err +0.500 rmse  19.0 corr 0.964 vmax 309.7/332.0 rech 4.35 vcap 309
+Silverstone        sim  87.241 real  88.111 err -0.870 rmse  13.6 corr 0.978 vmax 310.4/316.8 rech 4.23 vcap 310
+Spa-Francorchamps  sim 105.227 real 104.361 err +0.866 rmse  16.0 corr 0.965 vmax 304.5/335.8 rech 5.83 vcap 304
+Spielberg          sim  65.460 real  66.113 err -0.653 rmse  11.0 corr 0.983 vmax 312.6/329.0 rech 3.56 vcap 312
+Zandvoort          sim  70.942 real  71.163 err -0.221 rmse  10.3 corr 0.985 vmax 302.5/316.0 rech 4.03 vcap 302
+median |err| 0.577 s  mean err -0.124  median rmse 14.9 km/h
+{'mu': np.float64(1.6421632815344984), 'ClA': np.float64(4.445637586425125), 'CdA_c': np.float64(1.608324965313404), 'CdA_s': np.float64(0.6470384736458235), 'P_ice': np.float64(301017.5508266879), 'mu_b': np.float64(1.0765784732381793), 'mu_d': np.float64(0.858744277547971)}

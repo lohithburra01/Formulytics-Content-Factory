@@ -1,0 +1,96 @@
+{
+ "track": "zandvoort",
+ "cda": 0.5633,
+ "cl": 4.9682,
+ "rho": 1.2185,
+ "iters": 3,
+ "converged": true,
+ "rail_ok": true,
+ "lap_rail_s": 69.4,
+ "top_err_kmh": -0.05,
+ "hs_median_err_kmh": -0.05,
+ "cl_tier": "v25>170",
+ "ls_median_err_kmh": -5.07,
+ "lap_s": 71.305,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_zandvoort.json",
+ "csv": "cache/autofit_zandvoort_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.07673,
+   "v25": 126.0,
+   "v26_target": 119.4,
+   "sim_v": 98.7,
+   "err": -20.7
+  },
+  {
+   "s_frac": 0.15555,
+   "v25": 209.0,
+   "v26_target": 195.1,
+   "sim_v": 181.8,
+   "err": -13.3
+  },
+  {
+   "s_frac": 0.18545,
+   "v25": 150.0,
+   "v26_target": 140.9,
+   "sim_v": 116.7,
+   "err": -24.2
+  },
+  {
+   "s_frac": 0.47128,
+   "v25": 239.0,
+   "v26_target": 223.0,
+   "sim_v": 226.5,
+   "err": 3.5
+  },
+  {
+   "s_frac": 0.52458,
+   "v25": 121.0,
+   "v26_target": 114.9,
+   "sim_v": 112.2,
+   "err": -2.7
+  },
+  {
+   "s_frac": 0.58052,
+   "v25": 115.0,
+   "v26_target": 109.5,
+   "sim_v": 110.9,
+   "err": 1.4
+  },
+  {
+   "s_frac": 0.73465,
+   "v25": 101.0,
+   "v26_target": 96.9,
+   "sim_v": 89.5,
+   "err": -7.4
+  },
+  {
+   "s_frac": 0.81042,
+   "v25": 209.0,
+   "v26_target": 195.1,
+   "sim_v": 191.5,
+   "err": -3.6
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": -13.97,
+   "f2": -10.36
+  },
+  {
+   "cda": 0.6589,
+   "cl": 5.0,
+   "f1": -7.15,
+   "f2": 0.9
+  },
+  {
+   "cda": 0.5633,
+   "cl": 4.9682,
+   "f1": -0.05,
+   "f2": -0.05
+  }
+ ]
+}

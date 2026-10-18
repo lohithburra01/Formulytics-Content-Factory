@@ -1,0 +1,65 @@
+{
+ "track": "zandvoort",
+ "rho": 1.2185,
+ "t25_s": 68.6,
+ "lap_band_s": [
+  69.149,
+  72.372
+ ],
+ "vtop_target_kmh": 330.5,
+ "corners": [
+  {
+   "s_m": 325.6,
+   "s_frac": 0.07673,
+   "v25_kmh": 126.0,
+   "v26_target_kmh": 119.4
+  },
+  {
+   "s_m": 660.1,
+   "s_frac": 0.15555,
+   "v25_kmh": 209.0,
+   "v26_target_kmh": 195.1
+  },
+  {
+   "s_m": 787.0,
+   "s_frac": 0.18545,
+   "v25_kmh": 150.0,
+   "v26_target_kmh": 140.9
+  },
+  {
+   "s_m": 1999.9,
+   "s_frac": 0.47128,
+   "v25_kmh": 239.0,
+   "v26_target_kmh": 223.0
+  },
+  {
+   "s_m": 2226.1,
+   "s_frac": 0.52458,
+   "v25_kmh": 121.0,
+   "v26_target_kmh": 114.9
+  },
+  {
+   "s_m": 2463.4,
+   "s_frac": 0.58052,
+   "v25_kmh": 115.0,
+   "v26_target_kmh": 109.5
+  },
+  {
+   "s_m": 3117.5,
+   "s_frac": 0.73465,
+   "v25_kmh": 101.0,
+   "v26_target_kmh": 96.9
+  },
+  {
+   "s_m": 3439.0,
+   "s_frac": 0.81042,
+   "v25_kmh": 209.0,
+   "v26_target_kmh": 195.1
+  }
+ ],
+ "cda0": 0.75,
+ "cl0": 4.6,
+ "ref_used": "2025_q",
+ "transfer": "transfer_2026.json",
+ "warnings": []
+}

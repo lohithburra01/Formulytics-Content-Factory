@@ -1,0 +1,13 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.800 CL_CORNER=4.200 RHO=1.1466
+  closure iter 0: v0=69.1 vN=68.8 d=0.24 T_lap=87.993s
+  closure iter 1: v0=69.1 vN=68.8 d=0.24 T_lap=87.790s
+  closure converged at iter 1
+[sim] wrote 2655 rows -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\madring_calib_v2\gpsc12_default.csv
+[sanity] T_lap=88.49s  v=[85,319] km/h  superclip frames=135  gain_med=24.7  drop_med=44.9 km/h/s
+
+== gpsc12_default: lap 88.489 s (top10 trace 93.766, p90 91.711) | v 85-319 | corr 0.8350 MAE 19.4 | corner err median +8.8 (MAD 8.8) | sanity True
+corners  s:top10/p90/sim(err): 495:106/108/129(+24)  1532:113/114/286(+173)  1896:89/91/95(+6)  2340:204/206/157(-47)  3267:147/149/158(+11)  3954:100/104/107(+7)  4194:207/210/165(-42)  4730:79/80/86(+7)  4881:117/120/150(+33)  5176:130/132/142(+12)
+straights s:top10/p90/sim: 287:300/303/298  1113:324/333/316  1785:231/239/288  2166:232/246/242  3014:277/288/296  3643:266/270/276  4590:252/258/270  4818:158/164/161  5075:239/243/244
+cum delta vs top10 (s): 10%=-0.21 20%=-0.25 30%=-2.56 40%=-3.05 50%=-2.30 60%=-2.31 70%=-2.68 80%=-2.60 90%=-2.71 100%=-3.77
+physics: gain_median 24.4, gain_peak 41.7, drop_median 44.7, drop_peak 112.5, superclip_fraction 0.242

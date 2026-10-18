@@ -1,0 +1,14 @@
+[anchored] it 0: speed RMSE 16.20 km/h  lap 108.243  curv err 2.69/km  max offset 0.0 m  min section gap 59.1 m
+[anchored] it 1: speed RMSE 9.93 km/h  lap 106.450  curv err 2.66/km  max offset 20.5 m  min section gap 54.1 m
+Traceback (most recent call last):
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\portimao\build_gt3_line.py", line 25, in <module>
+    rl, arc, kap, L = S.build_raceline(np.array(o["outer"], float), np.array(o["inner"], float), inset_m=a.inset)
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\sim_2026_lap.py", line 341, in build_raceline
+    iqp_seed_line, _ = run_iqp(cl_qp, wr_safe, wl_safe)
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\raceline_video.py", line 699, in run_iqp
+    alpha = opt_min_curv_sparse(reftrack_it, normvec, A_mat, KAPPA_BOUND, VEH_WIDTH)
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\raceline_video.py", line 671, in opt_min_curv_sparse
+    raise RuntimeError(f"cvxopt QP status: {sol['status']}")
+RuntimeError: cvxopt QP status: unknown
+
+build failed

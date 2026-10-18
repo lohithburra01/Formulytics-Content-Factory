@@ -1,0 +1,28 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] reference CSV not found (.\cache\madring_no_reference_geometry_probe.csv); lap origin left at the svg_to_outline longest-straight proxy
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.08,5.08] l=[4.08,5.08]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=3.932 mean|a|=2.596 (8.78s)
+  iter 1: max|a|=2.776 mean|a|=1.466 (9.48s)
+  iter 2: max|a|=1.599 mean|a|=0.739 (9.01s)
+  iter 3: max|a|=1.340 mean|a|=0.414 (9.72s)
+  iter 4: max|a|=0.782 mean|a|=0.221 (10.07s)
+  iter 5: max|a|=0.478 mean|a|=0.117 (9.56s)
+  iter 6: max|a|=0.277 mean|a|=0.062 (10.00s)
+  iter 7: max|a|=0.161 mean|a|=0.033 (9.74s)
+  converged at iter 7
+[iqp] 2665 pts, 5330 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=5.16m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 464/800 straight stations
+[sim] refinement slack: max=7.89e-03 (547/800 stations relaxed)
+[sim] adaptive de-wobble: 635/2665 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0567 (IQP seed) → 0.0660 (refined)
+[sim] raceline: 2665 pts, 5332 m, |κ|max=0.0660
+[sim] wrote raceline -> .\cache\madring_geometry_verified_raceline.json
+  closure iter 0: v0=78.7 vN=78.6 d=0.11 T_lap=97.022s
+  closure iter 1: v0=78.7 vN=78.6 d=0.11 T_lap=96.700s
+  closure converged at iter 1
+[sim] lap: 96.700s (bang-bang) -> 97.537s (jerk-limited), +0.837s for realism
+[sim] wrote 2927 rows -> .\cache\madring_geometry_verified.csv
+[sanity] T_lap=97.54s  v=[70,312] km/h  superclip frames=132  gain_med=28.3  drop_med=46.5 km/h/s

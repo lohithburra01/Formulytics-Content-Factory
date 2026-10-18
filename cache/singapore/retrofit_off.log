@@ -1,0 +1,60 @@
+[retro] corner at 423 m: no sim minimum within 2% -> station 199 (171 km/h)
+[retro] it 0: lap 89.158  vmin err max 47.93 km/h  corner-time err max 652 ms  seg err max 770 ms
+[retro] it 1: lap 91.130  vmin err max 3.91 km/h  corner-time err max 1950 ms  seg err max 863 ms
+[retro] it 2: lap 90.274  vmin err max 0.65 km/h  corner-time err max 1142 ms  seg err max 849 ms
+[retro] it 3: lap 89.883  vmin err max 0.63 km/h  corner-time err max 1030 ms  seg err max 840 ms
+[retro] it 4: lap 89.549  vmin err max 0.47 km/h  corner-time err max 842 ms  seg err max 832 ms
+[retro] it 5: lap 89.297  vmin err max 0.32 km/h  corner-time err max 659 ms  seg err max 823 ms
+[retro] it 6: lap 89.128  vmin err max 0.37 km/h  corner-time err max 527 ms  seg err max 816 ms
+[retro] it 7: lap 89.005  vmin err max 0.36 km/h  corner-time err max 425 ms  seg err max 809 ms
+[retro] it 8: lap 88.899  vmin err max 0.33 km/h  corner-time err max 483 ms  seg err max 803 ms
+[retro] it 9: lap 88.827  vmin err max 0.23 km/h  corner-time err max 541 ms  seg err max 735 ms
+[retro] it10: lap 88.802  vmin err max 0.18 km/h  corner-time err max 557 ms  seg err max 731 ms
+[retro] it11: lap 88.770  vmin err max 0.15 km/h  corner-time err max 582 ms  seg err max 664 ms
+[retro] it12: lap 88.758  vmin err max 0.12 km/h  corner-time err max 590 ms  seg err max 661 ms
+[retro] it13: lap 88.782  vmin err max 0.10 km/h  corner-time err max 561 ms  seg err max 595 ms
+[retro] it14: lap 88.792  vmin err max 0.08 km/h  corner-time err max 550 ms  seg err max 592 ms
+[retro] it15: lap 88.795  vmin err max 0.07 km/h  corner-time err max 544 ms  seg err max 590 ms
+[retro] it16: lap 88.791  vmin err max 0.06 km/h  corner-time err max 548 ms  seg err max 589 ms
+[retro] it17: lap 88.787  vmin err max 0.05 km/h  corner-time err max 551 ms  seg err max 587 ms
+[retro] it18: lap 88.786  vmin err max 0.04 km/h  corner-time err max 551 ms  seg err max 586 ms
+[retro] it19: lap 88.787  vmin err max 0.04 km/h  corner-time err max 550 ms  seg err max 585 ms
+[retro] it20: lap 88.785  vmin err max 0.03 km/h  corner-time err max 551 ms  seg err max 584 ms
+[retro] it21: lap 88.781  vmin err max 0.03 km/h  corner-time err max 556 ms  seg err max 583 ms
+[retro] it22: lap 88.778  vmin err max 0.02 km/h  corner-time err max 558 ms  seg err max 583 ms
+[retro] it23: lap 88.778  vmin err max 0.02 km/h  corner-time err max 558 ms  seg err max 582 ms
+[retro] it24: lap 88.776  vmin err max 0.02 km/h  corner-time err max 560 ms  seg err max 581 ms
+[retro] it25: lap 88.774  vmin err max 0.01 km/h  corner-time err max 561 ms  seg err max 581 ms
+[retro] it26: lap 88.771  vmin err max 0.01 km/h  corner-time err max 565 ms  seg err max 581 ms
+[retro] it27: lap 88.770  vmin err max 0.01 km/h  corner-time err max 566 ms  seg err max 580 ms
+[retro] it28: lap 88.769  vmin err max 0.01 km/h  corner-time err max 567 ms  seg err max 580 ms
+[retro] it29: lap 88.768  vmin err max 0.01 km/h  corner-time err max 567 ms  seg err max 580 ms
+[retro] it30: lap 88.770  vmin err max 0.01 km/h  corner-time err max 566 ms  seg err max 580 ms
+[retro] it31: lap 88.767  vmin err max 0.01 km/h  corner-time err max 568 ms  seg err max 579 ms
+[retro] it32: lap 88.767  vmin err max 0.00 km/h  corner-time err max 569 ms  seg err max 579 ms
+[retro] it33: lap 88.767  vmin err max 0.00 km/h  corner-time err max 569 ms  seg err max 579 ms
+[retro] it34: lap 88.766  vmin err max 0.00 km/h  corner-time err max 570 ms  seg err max 579 ms
+[retro] it35: lap 88.766  vmin err max 0.00 km/h  corner-time err max 570 ms  seg err max 579 ms
+[retro] it36: lap 88.765  vmin err max 0.00 km/h  corner-time err max 570 ms  seg err max 579 ms
+[retro] it37: lap 88.765  vmin err max 0.00 km/h  corner-time err max 571 ms  seg err max 579 ms
+[retro] it38: lap 88.764  vmin err max 0.00 km/h  corner-time err max 571 ms  seg err max 579 ms
+[retro] it39: lap 88.764  vmin err max 0.00 km/h  corner-time err max 572 ms  seg err max 579 ms
+
+[retro] official sector lines (real distance from the real clock):
+  S1: real 26.475s  sim 26.320s  err -155 ms
+  S2: real 63.804s  sim 63.463s  err -341 ms
+  LAP: real 89.158s  sim 88.764s  err -394 ms
+[retro] straight peaks (real vs sim, km/h):
+    325 m: real 310  sim 280
+    847 m: real 256  sim 314
+   1632 m: real 316  sim 303
+   1897 m: real 209  sim 192
+   2115 m: real 196  sim 236
+   2540 m: real 273  sim 285
+   2912 m: real 219  sim 176
+   3425 m: real 289  sim 306
+   4162 m: real 308  sim 314
+   4589 m: real 253  sim 295
+[retro] gf [0.835, 0.941, 1.11, 0.977, 0.858, 1.077, 1.06, 0.807, 0.835, 0.835, 0.855, 1.29]
+[retro] pf [3.148, 2.695, 0.871, 1.072, 123.424, 1.275, 0.002, 0.604, 1.316, 1.071, 2.093, 0.724]
+[retro] wrote sim2025_retrofit.csv

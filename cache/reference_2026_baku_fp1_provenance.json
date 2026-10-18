@@ -1,0 +1,12 @@
+{
+  "source": "F1 official timing archive via FastF1",
+  "api_path": "/static/2026/2026-09-26_Azerbaijan_Grand_Prix/2026-09-24_Practice_1/",
+  "session": "Practice 1",
+  "driver": "RUS",
+  "lap_number": 14,
+  "lap_duration_s": 105.387,
+  "distance_m": 5943.056,
+  "samples": 808,
+  "fetched_utc": "2026-09-24T17:03:57.338878+00:00",
+  "fastf1_version": "3.9.0.dev2"
+}

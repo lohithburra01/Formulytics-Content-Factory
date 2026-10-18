@@ -1,0 +1,108 @@
+{
+ "track": "silverstone",
+ "cda": 0.7397,
+ "cl": 4.7,
+ "rho": 1.2075,
+ "iters": 5,
+ "converged": false,
+ "rail_ok": true,
+ "lap_rail_s": 85.692,
+ "top_err_kmh": -0.74,
+ "hs_median_err_kmh": -27.74,
+ "cl_tier": "v25>170",
+ "ls_median_err_kmh": 6.28,
+ "lap_s": 85.897,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_loo_silverstone.json",
+ "csv": "cache/autofit_silverstone_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.1534,
+   "v25": 110.0,
+   "v26_target": 105.1,
+   "sim_v": 113.4,
+   "err": 8.3
+  },
+  {
+   "s_frac": 0.17719,
+   "v25": 89.0,
+   "v26_target": 85.9,
+   "sim_v": 79.6,
+   "err": -6.3
+  },
+  {
+   "s_frac": 0.34469,
+   "v25": 180.0,
+   "v26_target": 168.4,
+   "sim_v": 128.3,
+   "err": -40.1
+  },
+  {
+   "s_frac": 0.37102,
+   "v25": 116.0,
+   "v26_target": 110.4,
+   "sim_v": 121.8,
+   "err": 11.4
+  },
+  {
+   "s_frac": 0.5443,
+   "v25": 304.0,
+   "v26_target": 283.7,
+   "sim_v": 318.2,
+   "err": 34.5
+  },
+  {
+   "s_frac": 0.68524,
+   "v25": 230.0,
+   "v26_target": 214.6,
+   "sim_v": 166.4,
+   "err": -48.2
+  },
+  {
+   "s_frac": 0.86337,
+   "v25": 239.0,
+   "v26_target": 223.0,
+   "sim_v": 195.3,
+   "err": -27.7
+  },
+  {
+   "s_frac": 0.93973,
+   "v25": 106.0,
+   "v26_target": 101.4,
+   "sim_v": 105.7,
+   "err": 4.3
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": -3.13,
+   "f2": -30.35
+  },
+  {
+   "cda": 0.7288,
+   "cl": 5.0,
+   "f1": 3.5,
+   "f2": -20.44
+  },
+  {
+   "cda": 0.74,
+   "cl": 4.85,
+   "f1": -0.1,
+   "f2": -24.19
+  },
+  {
+   "cda": 0.7397,
+   "cl": 4.7,
+   "f1": -0.74,
+   "f2": -27.74
+  },
+  {
+   "cda": 0.74,
+   "cl": 5.5,
+   "f1": 2.54,
+   "f2": -34.39
+  }
+ ]
+}

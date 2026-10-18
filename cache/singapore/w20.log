@@ -1,0 +1,27 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.58,5.09] l=[4.58,5.09]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=3.936 mean|a|=2.769 (9.87s)
+  iter 1: max|a|=3.556 mean|a|=1.645 (9.80s)
+  iter 2: max|a|=2.547 mean|a|=0.866 (9.30s)
+  iter 3: max|a|=1.196 mean|a|=0.423 (9.28s)
+  iter 4: max|a|=0.584 mean|a|=0.210 (9.20s)
+  iter 5: max|a|=0.236 mean|a|=0.102 (9.05s)
+  iter 6: max|a|=0.115 mean|a|=0.051 (8.84s)
+  converged at iter 6
+[iqp] 2440 pts, 4881 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=4.48m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 511/800 straight stations
+[sim] refinement slack: max=2.67e-03 (527/800 stations relaxed)
+[sim] adaptive de-wobble: 584/2445 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0653 (IQP seed) → 0.0519 (refined)
+[sim] raceline: 2445 pts, 4891 m, |κ|max=0.0519
+[sim] S/F line at raceline idx 2443/2445 (frac 99.9%, |κ|=0.0000) — reference_2025_singapore_q.csv x-corr peak=1687
+[sim] wrote raceline -> cache/singapore/w20_rl.json
+  closure iter 0: v0=77.9 vN=77.8 d=0.12 T_lap=88.758s
+  closure iter 1: v0=77.9 vN=77.8 d=0.12 T_lap=88.365s
+  closure converged at iter 1
+[sim] lap: 88.365s (bang-bang) -> 89.044s (jerk-limited), +0.680s for realism
+[sim] wrote 2672 rows -> cache/singapore/w20.csv
+[sanity] T_lap=89.04s  v=[76,306] km/h  superclip frames=193  gain_med=30.5  drop_med=46.0 km/h/s

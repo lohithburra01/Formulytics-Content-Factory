@@ -1,0 +1,82 @@
+{
+ "track": "austria",
+ "cda": 0.5964,
+ "cl": 4.8511,
+ "rho": 1.147,
+ "iters": 3,
+ "converged": true,
+ "rail_ok": true,
+ "lap_rail_s": 64.771,
+ "top_err_kmh": -0.41,
+ "hs_median_err_kmh": 0.13,
+ "cl_tier": "v25>170",
+ "ls_median_err_kmh": 8.24,
+ "lap_s": 65.12,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_loo_austria.json",
+ "csv": "cache/autofit_austria_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.1016,
+   "v25": 150.0,
+   "v26_target": 140.9,
+   "sim_v": 109.8,
+   "err": -31.1
+  },
+  {
+   "s_frac": 0.32085,
+   "v25": 74.0,
+   "v26_target": 71.8,
+   "sim_v": 82.9,
+   "err": 11.1
+  },
+  {
+   "s_frac": 0.51071,
+   "v25": 112.0,
+   "v26_target": 106.9,
+   "sim_v": 112.3,
+   "err": 5.4
+  },
+  {
+   "s_frac": 0.63157,
+   "v25": 207.0,
+   "v26_target": 193.2,
+   "sim_v": 202.4,
+   "err": 9.2
+  },
+  {
+   "s_frac": 0.70236,
+   "v25": 233.0,
+   "v26_target": 217.4,
+   "sim_v": 193.4,
+   "err": -24.0
+  },
+  {
+   "s_frac": 0.92392,
+   "v25": 201.0,
+   "v26_target": 187.6,
+   "sim_v": 178.7,
+   "err": -8.9
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": -11.87,
+   "f2": -5.56
+  },
+  {
+   "cda": 0.6711,
+   "cl": 5.0,
+   "f1": -5.77,
+   "f2": 3.3
+  },
+  {
+   "cda": 0.5964,
+   "cl": 4.8511,
+   "f1": -0.41,
+   "f2": 0.13
+  }
+ ]
+}

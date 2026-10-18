@@ -1,0 +1,20 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+timing path: 2672 pts, 5343.5 m, winding CW
+outline {'outer_simple': True, 'inner_simple': True, 'valid': True}
+[sim] corridor widths: r=[4.85,5.06] l=[4.85,5.06]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=3.887 mean|a|=2.726 (7.63s)
+  iter 1: max|a|=3.192 mean|a|=1.416 (7.79s)
+  iter 2: max|a|=1.987 mean|a|=0.738 (7.82s)
+  iter 3: max|a|=0.930 mean|a|=0.398 (8.58s)
+  iter 4: max|a|=0.601 mean|a|=0.200 (8.38s)
+  iter 5: max|a|=0.304 mean|a|=0.098 (8.73s)
+  iter 6: max|a|=0.152 mean|a|=0.049 (9.86s)
+  converged at iter 6
+[iqp] 2639 pts, 5278 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=4.54m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 455/800 straight stations
+[sim] refinement slack: max=4.94e-03 (547/800 stations relaxed)
+[sim] adaptive de-wobble: 658/2639 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0418 (IQP seed) → 0.0477 (refined)
+line {"stations": 2639, "length_m": 5277.621111976372, "length_vs_timing_path": 0.9876665037756782, "sf_shift_idx": 0, "sf_gap_m": 3.4256167267982036, "min_grip_radius_m": 25.292405372401536, "outside_0p3m": 0, "corridor_width_m": 12.0, "inset_m": null}

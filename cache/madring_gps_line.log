@@ -1,0 +1,18 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+laps: timed 593, usable 593, push 73 (fp1 36, fp2 37)
+python.exe : Traceback (most recent call last):
+At line:1 char:302
++ ... tch {} } }; & 'C:\Users\91910\AppData\Local\Programs\Python\Python310 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\_madring_gps_line.py", line 143, in <module>
+    tck, _ = splprep([np.r_[xy0[:, 0], xy0[0, 0]], np.r_[xy0[:, 1], xy0[0, 1]]], per=1, s=len(xy0) * 1.0)
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\scipy\interpolate\_fitpack_py.py", line 159, in 
+splprep
+    res = _impl.splprep(x, w, u, ub, ue, k, task, s, t, full_output, nest, per,
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\scipy\interpolate\_fitpack_impl.py", line 175, 
+in splprep
+    t, c, o = _fitpack._parcur(ravel(transpose(x)), w, u, ub, ue, k,
+ValueError: Invalid inputs.

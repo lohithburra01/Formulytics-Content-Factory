@@ -1,0 +1,8 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.800 CL_CORNER=5.000 RHO=1.1466
+{"s_meas": 450.0, "v_target_kmh": 116.0, "centre_station": 219, "centre_arc_m": 438.1363605359646, "half_window_m": 60.0, "r_target_m": 38.9, "r_before_m": 27.0, "r_after_m": 11.9, "sigma_m": 120.0, "reached": false, "max_lateral_shift_m": 18.46, "max_outside_svg_corridor_m": 17.63}
+{"s_meas": 2340.0, "v_target_kmh": 204.5, "centre_station": 1167, "centre_arc_m": 2334.641019859222, "half_window_m": 70.0, "r_target_m": 75.7, "r_before_m": 61.7, "r_after_m": 76.4, "sigma_m": 24.0, "reached": true, "max_lateral_shift_m": 3.94, "max_outside_svg_corridor_m": 1.9}
+{"s_meas": 3267.0, "v_target_kmh": 147.0, "centre_station": 1634, "centre_arc_m": 3268.778739248653, "half_window_m": 80.0, "r_target_m": 53.3, "r_before_m": 39.5, "r_after_m": 54.4, "sigma_m": 32.0, "reached": true, "max_lateral_shift_m": 9.18, "max_outside_svg_corridor_m": 7.33}
+{"s_meas": 4194.0, "v_target_kmh": 207.4, "centre_station": 2084, "centre_arc_m": 4168.918212691885, "half_window_m": 70.0, "r_target_m": 76.7, "r_before_m": 62.9, "r_after_m": 77.5, "sigma_m": 22.0, "reached": true, "max_lateral_shift_m": 3.3, "max_outside_svg_corridor_m": 0.54}
+road {"valid": true, "outer_simple": true, "inner_simple": true, "line_outside_0p3m": 0, "max_edge_shift_m": 18.46}
+length 5331.33 -> 5318.33

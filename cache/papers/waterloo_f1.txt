@@ -1,0 +1,2011 @@
+2026
+https://pulsipher.info
+Carlo sampling) that automate the conversion of an InfiniteOpt model into a discretized form suit-
+able for conventional mathematical programming solvers [1, 5]. The abstraction relieves the modeler
+of the previous burden of hand-discretizing continuous dynamics into a finite-dimensional formu-
+lation, but offers no analogous relief fordiscretedecisions whose value may vary across the infinite
+domain. Such decisions must still be encoded directly as binary variables and algebraic relationships,
+leaving the modeler to construct the resulting mixed-integer program (MIP) themselves.
+These mixed discrete-continuous decisions are the natural setting for generalized disjunctive pro-
+gramming (GDP), first proposed by Raman and Grossmann [6]. GDP models discrete structure
+through Boolean indicator variables tied to disjuncts, each of which carries its own constraint set,
+with the active disjunct selected by logical propositions over the indicators [7]. The framework re-
+tains the high-level logical structure of a model while delegating its conversion into a MIP to a li-
+brary of automatic reformulations [8, 9, 10, 11]. The classical big-M and hull reformulations [7, 12]
+have been refined and extended in different ways, including per-pair tightening of big-M (MBM)
+[13], partition-based interpolation between big-M and hull (P-split) [14], and extended cutting planes
+(CP) [15]. Alongside these reformulations, logic-based outer approximation (LOA) [16, 17, 18] takes
+an algorithmic route for convex GDPs with nonlinear disjunct constraints: rather than converting the
+GDP into a single MIP , it solves the GDP iteratively through fixed-indicator subproblems and an ac-
+cumulating master. Software implementations of GDP and its solution methods includepyomo.GDP
+[19],DisjunctiveProgramming.jl[20], and GAMS.
+Despite its maturity in the finite case, the application of GDP to InfiniteOpt problems has so
+far seen limited development. Related work addresses the same class of mixed discrete-continuous
+decisions over infinite domains, but expresses the model directly as a mixed-integer nonlinear pro-
+gram (MINLP) rather than as a GDP . Mixed-integer dynamic optimization (MIDO) [21] formulates
+the problem as an MINLP over differential-algebraic equations with binary variables, and mixed-
+integer optimal control (MIOC) [22, 23, 24, 25]. Both predate the modern GDP machinery and bypass
+the disjunctive modeling layer, so problems whose discrete structure is naturally expressed through
+Boolean indicators and logical propositions must be encoded by hand into binary variables and alge-
+braic relationships.
+Gondosiswanto and Pulsipher [26] recently bridge this gap on the modeling side by proposing
+the InfiniteGDP abstraction. It lifts disjunctions, logical propositions, and cardinality constraints into
+the InfiniteOpt setting such that GDP can be used to more intuitively model InfiniteOpt problems
+(e.g., MPC with switching constraints). Moreover, [26] also generalizes the big-M, hull, and indicator
+reformulations to solve InfiniteGDP problems. Big-M and hull represent two extremes: big-M avoids
+adding an excessive number of variables/constraints at the cost of weak continuous relaxation, while
+hull yields the tightest relaxation at the cost of increased problem size. The intermediate reformu-
+lations that have driven much of the empirical progress in finite GDP , including MBM, P-split, and
+CP , fall between these two extremes and offer reasonable tradeoffs, while LOA sidesteps the spec-
+trum altogether by solving the GDP iteratively. To date, none of these other approaches have been
+generalized to InfiniteGDP .
+Hence, we propose infinite-dimensional generalizations of MBM, P-split, CP , and LOA to address
+the aforementioned gap. We additionally propose MBM-GP , a Gaussian-process variant of MBM that
+2
+https://pulsipher.info
+is native to the infinite setting: it learns the big-M function over the infinite domain from a small
+subset of the per-support subproblems, retaining MBM’s tightness at a fraction of its reformulation
+cost. All four methods expand the library of methods to solve InfiniteGDP problems. Figure 1 pro-
+vides a summary of the proposed InfiniteGDP workflow, highlighting the main contributions of this
+work. A single InfiniteGDP model branches into six interchangeable solution methods that split into
+two families. The first is the reformulation branch of five methods that lift and transcribe the model
+into a single MIP , where MBM admits a choice between its grid and Gaussian-process (MBM-GP)
+implementations. The second is the algorithm branch, which now includes LOA that directly solves
+the InfiniteGDP without reformulation to a single MIP .
+InfiniteGDP model
+minM d f
+`
+ypdq, d
+˘
+s.t.
+Ž
+iPI j
+”
+W ij pdq
+rij pypdq,dqď0
+ı
+, dPD
+Reformulations
+lift, transcribeÑone MIP
+Algorithms
+iterative, no single MIP
+big-M MBM
+grid|GP
+P-split CP hull LOA
+transcribe on
+ˆD:ypdq ÞÑy k
+MIP solver
+iterate
+NLPØOA master
+select solution method
+new generalization (this work) existing endpoint (big-M, hull)
+Figure 1:Graphical abstract. From a single InfiniteGDP model, the six solution methods form two branches.
+The reformulation branch (big-M, MBM, P-split, CP , hull, ordered along the tightness/cost spectrum) lifts and
+transcribes the model into one MIP , with the MBM leaf covering both its grid and Gaussian-process (MBM-GP)
+implementations; the algorithm branch is occupied by LOA alone, which branches separately and solves the
+model through an iterative procedure. Blue boxes mark the generalizations introduced in this work; big-M
+and hull are the pre-existing endpoints.
+The rest of this paper is structured as follows. Section 2 reviews the GDP and InfiniteGDP mod-
+eling abstractions and their existing reformulations. Section 3 presents the four generalized solution
+methods and the novel MBM-GP variant in detail, together with their implementation and practical
+guidance on choosing among them. Section 4 performs benchmarks on three case studies. Finally,
+Section 5 provides concluding remarks and recommendations for future developments.
+3
+https://pulsipher.info
+2 Background and Notation
+In this section, we review relevant GDP background and establish notation. For a more thorough
+discussion of these topics, please refer to [27, 14, 26].
+2.1 Generalized Disjunctive Programming
+GDP encodes discrete structure on a finite decision vectorzPZĎR nz through Boolean indicator
+variables and disjunctions [6, 12, 7]. The generic GDP problem is
+min
+z, W
+fpzq
+s.t.gpzq ď0
+ł
+iPIj
+«
+Wij
+rijpzq ď0
+ff
+, jPJ
+ΩpWq “True
+zPZ, W ij P tTrue,Falseu
+(1)
+with objectivef, global constraintsg, disjunctions indexed byjPJwith disjunctsiPI j carrying
+Boolean indicatorsW ij and disjunct constraintsr ijpzq ď0, and a logical propositionΩpWqover the
+indicators (built from_,^,␣,ù ñ,ôand the cardinality sets EXACTLY, ATLEAST, ATMOST). On the
+binary realizationw ij P t0,1uthe proposition reduces to algebraic relations [7].
+A reformulation maps Problem (1) to a finite MIP; a solution algorithm such as LOA instead solves
+Problem (1) through a sequence of subproblems without ever forming a single equivalent program.
+The classical endpoints (big-M, hull), intermediate refinements (P-split, MBM), and decomposition
+algorithms (CP , LOA) are outlined below.
+Big-M.The simplest reformulation [7] produces the MIP
+min
+z, w
+fpzq
+s.t.gpzq ď0
+rijpzq ďM ij p1´w ijq, iPI j, jPJ
+ÿ
+iPIj
+wij “1, jPJ
+zPZ, w ij P t0,1u
+(2)
+whereM ij ěmax zPZ rijpzqis large enough that the disjunct constraint is slack whenw ij “0. Big-M
+is structure-preserving and stays linear whenr ij is, but yields a weak continuous relaxation when
+theM ij are loose.
+4
+https://pulsipher.info
+Hull.The hull reformulation [7, 12] disaggregates the decisionzinto per-disjunct copiesν ij and
+produces the mixed-integer program
+min
+z, νij , w
+fpzq
+s.t.gpzq ď0
+z“
+ÿ
+iPIj
+νij, jPJ
+wij rij
+`
+νij{wij
+˘
+ď0, iPI j, jPJ
+wij zL ďν ij ďw ij zU , iPI j, jPJ
+ÿ
+iPIj
+wij “1, jPJ
+zPZ, w ij P t0,1u
+(3)
+The perspective transformw ij rijpνij{wijqkeeps the disjunct constraint convex whenr ij is. Hull
+yields the tightest convex relaxation per disjunction at the cost of duplicated variables and typically
+nonlinear (perspective) constraints.
+P-split.P-split [14] partitions the variables of each disjunct constraint intoPPZ ` groups
+tV1, . . . , VP u, writingr ijpzq “ řP
+p“1 ˜rppzVpq `cď0with constantcPR, and introduces auxiliary
+variablesv ij,p PRthat envelope each partition expression by splitting the constraint into
+˜rppzVpq ďv ij,p, p“1, . . . , P, iPI j, jPJ,(4)
+Pÿ
+p“1
+vij,p `cď0, iPI j, jPJ.(5)
+The envelope constraints (4) are enforced globally after eachv ij,p is bounded via interval arithmetic
+onz L
+Vp, zU
+Vp, while hull disaggregation is applied only to the linking constraint (5), withzitself left
+undisaggregated.P“1recovers big-M,P“n z recovers hull, and intermediate choices ofPtrade
+model size for relaxation tightness. This partitioned form presumes the disjunct constraint is addi-
+tively separable across the chosen groups, i.e., expressible as a sum ř
+p ˜rppzVpq; non-separable con-
+straints can still be accommodated by introducing enveloping auxiliary functions for the coupled
+terms or by selecting a partition that keeps interacting variables within the same group.
+Multiple Big-M.MBM [13] tightens big-M by replacing eachM ij with per-pair constantsM ii1, one
+for each pair of disjunctsi, i 1 PI j of disjunctionj, so that each disjunct constraintr ijpzq ď0is
+replaced with
+rijpzq ď
+ÿ
+i1‰i
+Mii1 wi1j, iPI j, jPJ.(6)
+5
+https://pulsipher.info
+EachM ii1 comes from a small subproblem maximizingr ij subject only to disjuncti 1’s constraint and
+the variable bounds:
+Mii1 “max
+z
+rijpzq
+s.t.r i1jpzq ď0
+zL ďzďz U .
+(7)
+The reformulated constraint (6) activates only theMvalues relevant to the chosen disjunct, giving a
+relaxation strictly between big-M and hull while keeping the model linear whenr ij, ri1j are.
+Cutting planes.The CP algorithm [15] alternates between a relaxed big-M master problem on the
+original variables and a hull-based separation subproblem that projects the master solution onto the
+hull relaxation. At each iteration, letz rBM denote the optimal solution of the current master. The
+separation subproblem disaggregateszinto per-disjunct copiesν ij foriPI j,jPJwith relaxed
+indicatorsw ij P r0,1sand solves
+min
+z,ν ij , wij
+}z´z rBM}2
+2
+s.t.z“
+ÿ
+iPIj
+νij, jPJ
+wij rij
+`
+νij{wij
+˘
+ď0, iPI j, jPJ
+wij zL ďν ij ďw ij zU , iPI j, jPJ
+ÿ
+iPIj
+wij “1, w ij P r0,1s, iPI j, jPJ.
+(8)
+Letz SEP denote the optimalz. If}z SEP ´z rBM}2
+2 ąε, the separating cut
+2
+`
+zSEP ´z rBM˘`
+z´z SEP˘
+ě0(9)
+is added to the master and the loop repeats. The algorithm terminates when the projection distance
+falls belowεor the master is proven optimal. CP avoids the variable doubling of hull while recov-
+ering hull-like tightness through cuts on the original variables. The construction assumes convexity:
+projecting the master optimum onto the hull and obtaining a valid separating hyperplane require
+the disjunct constraints, and hence the separation subproblem, to be convex, so CP is sound only for
+convex GDP . Even if a solution to the separation problem is found, there is no guarantee that the
+resulting cut supports the feasible region.
+Logic-based outer approximation.The logic-based outer approximation (LOA) algorithm of [16]
+solves convex GDPs by alternating between a fixed nonlinear program (NLP) subproblempS 1qand
+an outer-approximation (OA) master problemp ˆM b
+OAq. At each major iterationlthe NLP fixes all
+logical variablesW ij to a single Boolean assignment (a combination) and solves for the continuous
+variablesz. The master accumulates first-order linearizations of the objectivefand the nonlinear
+disjunct constraintsh ij at each NLP solution pointy l, then selects the next combination. The NLP
+objective provides an upper boundZ U and the master objective provides a lower boundZ L, which
+6
+https://pulsipher.info
+converge to the optimum within finitely many iterations. The algorithm terminates when|Z U ´
+ZL| ďε. The augmented penalty variant [17] relaxes the OA cuts of nonlinear disjunct constraints
+with bounded slacks, keeping the master feasible after NLP infeasibility. The implementation here
+uses this augmented-penalty form; because the bounded slacks absorb small outer-approximation
+violations, the method tolerates mild nonconvexity in the disjunct constraints in practice, though it
+carries no global guarantee.
+Relaxation Tightness.These methods occupy distinct positions on the relaxation-tightness spec-
+trum between big-M and hull. Figure 2 illustrates this on a three-disk GDP with disjunctsD i :
+pz1 ´c 1,iq2 ` pz 2 ´c 2,iq2 ď1centered atc 1 “ p1,1q,c 2 “ p4,4.5q,c 3 “ p7,1q. Big-M reduces each
+disjunction to its bounding box, hull recovers the exact hull of the three disks, and MBM sits strictly
+between by growing each disjunct constraint to its maximum effective radius
+a
+1`max i1‰i Mii1. Be-
+cause the per-constraintM ii1 values cannot trace the curved hull boundary, MBM is strictly weaker
+than hull on nonlinear convex disjuncts; CP closes the remaining gap iteratively. Figure 3 shows this
+progression on the same three-disk GDP: starting from the big-M bounding box, each appended cut
+(9) tightens the relaxed big-M master toward the hull without disaggregating any variables.
+0 2 4 6 8
+0
+2
+4
+6
+W1
+W2
+W3
+z1
+z2
+(a)big-M relaxation
+0 2 4 6 8´2
+0
+2
+4
+6
+8
+W1
+W2
+W3
+z1
+z2
+(b)Multiple Big-M (MBM)
+0 2 4 6 8
+0
+2
+4
+6
+W1
+W2
+W3
+z1
+z2
+(c)hull relaxation
+envelope
+Figure 2:Relaxation envelopes for the three-disk GDP under big-M, MBM, and hull.
+7
+https://pulsipher.info
+0 2 4 6 8
+0
+2
+4
+6
+W1
+W2
+W3
+x
+y
+(a)iteration 0 (big-M)
+0 2 4 6 8
+0
+2
+4
+6
+W1
+W2
+W3
+x
+y
+(b)iteration 1
+0 2 4 6 8
+0
+2
+4
+6
+W1
+W2
+W3
+x
+y
+(c)iteration 2
+envelope cut
+Figure 3:Cutting plane progression on the three-disk GDP: each iteration appends a separating hyperplane
+that tightens the relaxed big-M master toward the hull.
+2.2 The InfiniteGDP Abstraction
+An InfiniteOpt problem is posed over a continuous domaindPD(time, space, and/or uncertainty,
+withD“D 1 ˆ ¨ ¨ ¨ ˆD n when several infinite parameters are present), carrying an objective summa-
+rized by a measure operatorM d (e.g., a space–time integral or an expectation [26]) and constraints
+that hold for alldPD. Infinite decision variablesy:DÞÑYĎR ny carry the parameter dependence
+ypdq; finite decision variableszPZĎR nz do not. Where the distinction is immaterial, the methods
+below writeypdqfor the full decision vector. A transcription method discretizes the problem onto a
+support grid ˆD“ t ˆdk :kPKu ĂD: the measure becomes a quadrature ř
+k ωk fpy k, ˆdkqwith weights
+ωk, and each constraint is imposed pointwise atyk ”yp ˆdkq, yielding a finite NLP [1, 5]. LetT ˆD denote
+thetranscription mapthat carries an infinite quantity to its vector of support values,
+T ˆD :yp¨q ÞÝ Ñ
+␣
+yp ˆdkq:kPK
+(
+,(10)
+andliftingfor the inverse mapping: replacing a finite quantity by ad-indexed analogue and requiring
+every relation to hold for alldPD. These two operations are incorporated into the methods described
+below and proposed in Section 3.
+InfiniteGDP [26] uses this infinite-dimensional setting to generalize Problem (1) by lifting the indi-
+cator variables and disjunctions into the infinite domain. Each Boolean indicator becomes an infinite
+variableW ij :DÞÑ tTrue,Falseu, and its binary realizationw ijpdq P t0,1umay switch independently
+at every point ofD. This lifting operation produces the formulation:
+min
+y, W
+Md fpypdq, dq
+s.t.gpypdq, dq ď0, dPD
+ł
+iPIj
+«
+Wijpdq
+rijpypdq, dq ď0
+ff
+, jPJ, dPD
+ΩpWpdqq “True, dPD
+ypdq PY, W ijpdq P tTrue,Falseu
+(11)
+8
+https://pulsipher.info
+with disjunctions, propositions, and cardinality constraints all applied overD.
+The work of [26] generalizes the big-M, hull, and indicator reformulations of (2) and (3) to this
+setting. As a representative case, the big-M-reformulated InfiniteGDP is
+min
+y, w
+Md fpypdq, dq
+s.t.gpypdq, dq ď0, dPD
+rijpypdq, dq ďM ij p1´w ijpdqq, iPI j, jPJ, dPD
+ÿ
+iPIj
+wijpdq “1, jPJ, dPD
+ypdq PY, w ijpdq P t0,1u.
+(12)
+The hull-reformulated version follows analogously by lifting the disaggregation and perspective con-
+straints of (3) todPD. Each reformulation in this paper seeks to firstliftthe finite reformulation rule
+to the infinite domain by replacing each finite quantity by itsd-indexed analogue and requiring ev-
+ery relation to hold for alldPD; this produces a symbolic, still-infinite intermediate model. Then
+transcription via the mapT ˆD is used to obtain a finite MIP (Figure 4 sketches this flow). Note that
+iterative algorithms like LOA require more careful treatment as discussed in Section 3.
+These InfiniteGDP problems can readily be modeled and solved via the Julia packages
+DisjunctiveProgramming.jland its extensionInfiniteDisjunctiveProgramming.jl,
+which provide a JuMP-native syntax for the Problem (11) and allow users to select from a library
+of solution methods; the syntax is further discussed in Section 3.5. To date, only the big-M and
+hull endpoints of the relaxation spectrum reviewed in Section 2.1 have been generalized to the
+InfiniteGDP setting, alongside the indicator reformulation. The intermediate methods (MBM,
+P-split, CP , LOA) have not been generalized and investigated in an InfiniteOpt context which is the
+focus of this work.
+3 Solution Methods for InfiniteGDPs
+This section generalizes four solution methods to the InfiniteGDP setting, each of which recovers its
+established finite form when the model carries no infinite parameters. Three are reformulations that
+fill the spectrum between the big-M and hull endpoints; the fourth, LOA, is an iterative solution algo-
+rithm rather than a reformulation. MBM (Section 3.1) tightens big-M with pairwiseM ii1pdqwithout
+leaving the big-M form, and Section 3.1.1 introduces MBM-GP , a novel Gaussian-process variant that
+avoids solving theMsubproblems at every support. P-split (Section 3.2) parameterizes a continuous
+interpolation between the two extremes via the partition sizeP. CP (Section 3.3) seeks hull-tight
+relaxations through iterative cuts added to big-M that avoid variable doubling. LOA (Section 3.4)
+targets convex GDPs with nonlinear disjuncts where a direct hull would require a nonlinear MIP
+solver. Section 3.5 then shows how the methods are exposed in software, and Section 3.6 provides
+some general guidance and discussion on method selection. Each reformulation method broadly fol-
+lows a lift-then-transcribe template described in Figure 4: the finite reformulation is first lifted to a
+symbolic infinite model overdPD, then transcribed on ˆDthrough the mapT ˆD of (10).
+9
+https://pulsipher.info
+A recurring theme in what follows is that the total cost of solving an InfiniteGDP splits into two
+components. Thereformulation timecovers everything needed to build the final program handed to
+the solver, such as solving the per-pairMsubproblems of MBM or generating cuts in CP . Thesolver
+timeis the cost of the resulting MIP solve itself. The methods of this section occupy different positions
+in this trade-off: a cheap reformulation typically leaves a looser model that the solver must work
+harder to close, while an expensive reformulation front-loads work to hand the solver a tighter model.
+The reformulation is a one-time cost with respect to the disjunctive structure, so in applications that
+repeatedly re-solve the same model with updated data, such as model predictive control or multi-
+objective optimization, it can be reused across re-solves while the solver time recurs at every solve.
+The benchmarks of Section 4 therefore report the two components separately.
+InfiniteGDPModel
+disjunctions overdPD
+(Eq. 11)
+big-M reformulated
+symbolic, infinite
+Mij relaxes constraint
+when disjunct is off
+(Eq. 12)
+big-M transcribed MIP
+transcribed, finite
+Mij relaxes constraint
+when disjunct is off,
+at each supportˆdk P ˆD
+hull reformulated
+symbolic, infinite
+copyνijpdqvanishes
+when disjunct is off
+(Eq. 3 lifted todPD)
+hull transcribed MIP
+transcribed, finite
+copyνij,kvanishes
+when disjunct is off,
+at eachˆdk P ˆD
+P-split: partition
+symbolic, infinite
+auxiliary envelopes
+vij,ppdqper partition
+(Section 3.2)
+big-M reform.(lift todPD)
+hull reform.
+(lift todPD)
+P-split reform.(partitionV
+1, . . . , V
+P)
+apply hull
+on linking sum
+transcribe onˆD
+ypdq ÞÑyk
+transcribe onˆD
+ypdq ÞÑyk
+Figure 4:Lift-then-transcribe reformulation flow on an InfiniteGDPModel, shown for the big-M, hull, and P-
+split paths.
+3.1 Multiple Big-M
+The finite MBM reformulation of [13] replaces each disjunct constraint with the per-pair form (6),
+where each constantM ii1 is obtained from the subproblem (7) of Section 2.1. This construction lifts
+to the infinite setting: each disjunct constraintr ijpypdqq ď0must hold for alldPD, so each per-pair
+big-M parameter becomes a continuous function over the infinite domain,M ii1 :DÞÑR, and the
+reformulated constraint
+rijpypdqq ď
+ÿ
+i1‰i
+Mii1pdqw i1jpdq, iPI j, jPJ, dPD,(13)
+10
+https://pulsipher.info
+remains fully infinite. The functionM ii1pdqis anchored by pointwise data: transcribing throughT ˆD,
+the subproblem
+Mii1,k “max
+yk
+rijpykq
+s.t.r i1jpykq ď0
+yL ďy k ďy U ,
+kPK,(14)
+is solved for each ˆdk P ˆD, wherey k ”yp ˆdkq. The per-support construction is only needed when the
+subproblem actually varies over the domain. If neitherr ij norr i1j depends on the infinite parameter
+d, whether directly or through known continuous functions over the infinite domain, then (14) is
+the same program at every support andM ii1pdqcollapses to a scalar obtained from a single solve.
+Otherwise, any continuous function overDthat matches or upper bounds the pointwise values is
+a valid choice ofM ii1pdq. One natural implementation is a multilinear interpolant oftM ii1,kubuilt
+on the support grid. Alternatively, Section 3.1.1 shows that a Gaussian process can supply a valid
+Mii1pdqfrom subproblem solves at only a small subset of the supports. This structure preserves the
+tightness of the pointwise bound while avoiding a single conservative scalarMderived from global
+variable bounds. In practice, the model structure often correlates the infinite parameters, causing
+Mii1,k to vary substantially across ˆDand makingM ii1pdqmuch tighter than the worst-case value.
+Each subproblem inherits the support grid of the original InfiniteGDP model, so any known con-
+tinuous functions over the infinite domain appearing inr ij, ri1j evaluate at the matching point ˆdk.
+Figure 5 summarizes this per-pair, per-support construction ofM ii1pdq.
+disjuncticonstraint
+rijpypdqq ď0
+disjuncti1 ‰iregion
+ri1jpypdqq ď0
+transcribeonˆD
+ypdq ÞÑyk
+Mii1,k “
+maxyk rijpykq
+s.t.ri1jpykq ď0,
+yL ďyk ďyU
+one subproblem per
+supportˆdk P ˆD
+k“1
+¨ ¨ ¨
+k“K
+d
+Mii1pdq
+k“1 k“K
+objective
+feasibility
+lift todPD
+tMii1,ku ÞÑMii1pdq
+Figure 5:Multiple big-M in the infinite setting: the per-pair subproblem is solved at every support point ˆdk
+and the resultingM ii1,k realize the continuous big-M functionM ii1 pdqover the infinite domain.
+3.1.1 Gaussian Process Multiple Big-M (MBM-GP)
+ViewingM ii1pdqas a continuous function over the infinite domain enables an alternative to solving
+(14) at every support point. The grid construction above requires one subproblem solve per con-
+straint pair per support, so its cost grows with the resolution of ˆD, and on nonconvex models each
+subproblem is itself a nonconvex NLP . MBM-GP instead solves (14) at only a small subset ˜DĂ ˆDof
+the supports, fits a Gaussian process (GP) [28] to the computed values, and takes the upper bound of
+the GP prediction as the big-M function at every unsolved support:
+Mii1pdq “µpdq `κ σpdq,(15)
+11
+https://pulsipher.info
+whereµpdqandσpdqare the GP posterior mean and standard deviation andκě0is a confidence
+factor. Taking the upper bound ensures validity: a prediction that undershoots the true pointwise
+value would make the relaxed constraint too tight and cut off feasible points, whereas overshooting
+only loosens the relaxation. Using (15) therefore keeps MBM-GP a valid choice ofMii1pdqin the sense
+described above while solving only a fraction of the subproblems.
+The scalar collapse of Section 3.1 applies unchanged: a pair whose subproblem does not depend
+on the infinite parameter is solved once, and the GP is reserved for pairs whoseM ii1pdqgenuinely
+varies. For those, an implementation must make two choices: which supports to solve, and how
+strongly the prediction is inflated to an upper bound.
+•Point selection.A uniform criterion fixes ˜Da priori, e.g., as evenly spaced supports across the
+domain. An adaptive criterion instead builds ˜Dsequentially. It solves the support with the
+largest variance (15) and refits the GP , so the solves concentrate where the predictedMis most
+uncertain. Sampling can continue until the posterior variance is closed by a prescribed amount.
+This sequential approach is similar to Bayesian optimization with an an exploration focused
+acquisition function. Under either criterion, solved supports keep their exact values and grid
+MBM is recovered as ˜DÑ ˆD.
+•Upper bound.The confidence factorκin (15) sets how far the prediction is inflated above the
+posterior mean. A largerκmakes an undershoot, and with it an invalidM, less likely, at the
+price of extra slackκ σpdqat the unsolved supports. A smallerκkeeps the relaxation tighter but
+relies more heavily on the quality of the GP fit.
+Figure 6 illustrates the construction on an exampleMprofile. Of40supports,10are solved and
+keep their exact values. The GP fitted to those solves supplies the upper bound (15) at the remaining
+supports, and the bound lies above the pointwise values throughout.
+12
+https://pulsipher.info
+0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 10.5
+1
+1.5
+2
+2.5
+3
+3.5
+4
+Infinite parameterd
+Mpdq
+GPµpdq ˘κ σpdq
+pointwiseMpdq
+upper boundµpdq `κ σpdq
+solved supports
+Figure 6:MBM-GP on an example pointwiseMprofile over40supports, of which10are solved (markers)
+and keep their exact values. The shaded region is the GP fitted to the solved supports withκ“2.5; its upper
+edge (dotted) is the bound (15) that the unsolved supports take, and it lies above the pointwiseMvalues
+throughout.
+For the case studies of Section 4, we use the adaptive criterion, seeding the GP with the first,
+middle, and last supports and solving roughly a quarter of the supports, and we setκ“2.5. Under
+the GP posterior this corresponds to a roughly99%one-sided confidence level (Φp2.5q «0.994), so
+the prediction overshoots the true value with high probability, which preserves validity at the cost of
+mild extra slack. The benchmarks find that MBM-GP recovers objectives comparable to grid MBM at
+a small fraction of the reformulation cost.
+3.2 P-Split
+The finite P-split formulation of [14] splits each disjunct constraint into the globally enforced en-
+velopes (4) and the disjunct linking constraint (5) of Section 2.1, with hull disaggregation applied
+only to the latter.
+The split lifts to the infinite setting: the auxiliary variable for a partition whose defining expres-
+sion depends on infinite parameters must itself be infinite, so eachv ij,p is lifted to an function inher-
+iting its parameter dependence from˜rppyVppdqq:
+˜rppyVppdqq ďv ij,ppdq, p“1, . . . , P, iPI j, jPJ, dPD,(16)
+Pÿ
+p“1
+vij,ppdq `cpdq ď0, iPI j, jPJ, dPD,(17)
+wherecpdqcaptures any terms that are known continuous functions over the infinite domain. The
+13
+https://pulsipher.info
+hull reformulation of [26] handles the infinite hull disaggregation of the linking constraint (17), and
+the bounds onv ij,ppdqfollow from the global bounds ony Vp overD. Transcription on ˆDis then
+inherited from that hull machinery, which discretizes the disaggregated linking constraint through
+T ˆD; P-split adds no transcription step of its own.
+To make explicit which quantities are disaggregated, we write out this infinite hull reformulation
+of the linking constraint (17). It introduces per-disjunct copiesν i1
+ij,ppdqof each auxiliary function, one
+for every disjuncti 1 PI j of the disjunction, and yields
+vij,ppdq “
+ÿ
+i1PIj
+νi1
+ij,ppdq, p“1, . . . , P, iPI j, dPD,(18a)
+Pÿ
+p“1
+νi
+ij,ppdq `cpdqw ijpdq ď0, iPI j, dPD,(18b)
+wi1jpdqv L
+ij,p ďν i1
+ij,ppdq ďw i1jpdqv U
+ij,p, p“1, . . . , P, i, i 1 PI j, dPD,(18c)
+for each disjunctionjPJ, wherev L
+ij,p, vU
+ij,p are the interval-arithmetic bounds on the auxiliary func-
+tions. Because the linking constraint is linear inv ij,ppdq, its perspective transform in (18b) is exact
+and introduces no nonlinearity. In contrast with the full hull reformulation (3), only the auxiliary
+functionsv ij,ppdqacquire disaggregated copies, while the original infinite variablesypdqare never
+duplicated. They appear in the globally enforced envelopes (16) rather than in the disjunctive struc-
+ture, so the nonlinear partition expressions also generate no perspective terms of the formw˜rpp¨{wq.
+LargerPdisaggregates more auxiliary functions and tightens the relaxation toward hull, whileypdq
+remains undisaggregated at everyP. This is the precise sense in which P-split interpolates between
+the big-M and hull endpoints.
+3.3 Cutting Planes
+The finite CP algorithm of Section 2.1 alternates between the relaxed big-M master and the hull-based
+separation subproblem (8), appending the separating cut (9) until the projection distance falls below
+the toleranceε(Figure 3).
+In the infinite setting, the master is the big-M reformulation of the InfiniteGDP , with disjunct con-
+straintsr ijpypdqq ďM ijp1´w ijpdqqfordPD, and the separation subproblem is the hull reformulation
+of [26]. The two are coupled through the separation objective, which measures the distance between
+yand the master solutiony rBM over the infinite domain. The natural symbolic form of this objective
+is the measured distanceM d }ypdq ´y rBMpdq}2
+2. Transcription carries the measure to its quadrature,
+so the objective becomes the weighted sum in (19), withω k the quadrature weights from the tran-
+scription.
+Lifting places both the master and the separation subproblem overdPD; the transcription map
+T ˆD of (10) then carries them to the support grid, sending each decision variableypdqtotyp ˆdkq:kPKu.
+14
+https://pulsipher.info
+At iterationℓ, the master solutionty rBMp ˆdkq:kPKuparameterizes the hull-based separation
+min
+yp ˆdkq,ν ij p ˆdkq,
+wij p ˆdkq
+ÿ
+kPK
+ωk }yp ˆdkq ´y rBMp ˆdkq}2
+2
+s.t.yp ˆdkq “
+ÿ
+iPIj
+νijp ˆdkq, jPJ, kPK
+wijp ˆdkqr ij
+`
+νijp ˆdkq{wijp ˆdkq
+˘
+ď0, iPI j, jPJ, kPK
+wijp ˆdkqy L ďν ijp ˆdkq ďw ijp ˆdkqy U , iPI j, jPJ, kPK
+ÿ
+iPIj
+wijp ˆdkq “1, w ijp ˆdkq P r0,1s, iPI j, jPJ, kPK.
+(19)
+The optimalyp ˆdkqis the per-support projectiony SEPp ˆdkqofy rBMp ˆdkqonto the hull, and all supports
+kPKare solved jointly. Since (19) projects under the quadrature-weighted distance, the optimality
+condition of the projection supplies a separating hyperplane in the same weighted geometry. The
+separating cut is the quadrature of the measured cut
+Md 2
+`
+ySEPpdq ´y rBMpdq
+˘`
+ypdq ´y SEPpdq
+˘
+ě0,(20)
+which transcribes to
+ÿ
+kPK
+ωk 2
+`
+ySEPp ˆdkq ´y rBMp ˆdkq
+˘`
+yp ˆdkq ´y SEPp ˆdkq
+˘
+ě0(21)
+and is appended to the transcribed master, which acts on the transcribed variables thatT ˆD produces.
+The weights in (21) match those in the separation objective, which keeps the transcribed cut consistent
+with the weighted geometry of the projection. The cut is a supporting hyperplane of the hull aty SEP
+whose normaly rBM ´y SEP is taken in the weighted geometry. The weighting also makes the termina-
+tion test resolution-independent. As supports are added, the weighted projection distance converges
+to the measured distance, so the toleranceεkeeps its meaning under grid refinement, whereas an
+unweighted sum grows with|K|. Figure 7 shows how the master and separation subproblem are
+derived from the InfiniteGDP model, and Figure 8 details the per-iteration cut loop.
+When the original InfiniteGDP model contains no coupling between support points (e.g., a two-
+stage stochastic program with no first stage decisions), a stronger form of cut becomes available.
+Coupling here means any constraint that links the decision at one point of the domain to the deci-
+sion at another, such as derivative constraints or measure constraints that aggregate overD. When
+no such constraint is present, the transcribed feasible region factors into a Cartesian product across
+supports: the constraints at supportkinvolve onlyyp ˆdkq, and the hull of a Cartesian product is the
+product of the per-support hulls. The separation subproblem (19) then decouples into|K|indepen-
+dent projections, and each block of its solution,y SEPp ˆdkq, is the projection ofy rBMp ˆdkqonto the hull
+at that support alone. Each projection therefore supplies its own valid separating hyperplane at its
+support, exactly as in the finite algorithm, and lifting this family back to the infinite domain yields
+the pointwise infinite cut
+2
+`
+ySEPpdq ´y rBMpdq
+˘`
+ypdq ´y SEPpdq
+˘
+ě0, dPD,(22)
+15
+https://pulsipher.info
+InfiniteGDP
+model
+Separation
+subproblem
+(hull copy,
+binaries relaxed)
+big-M
+master
+(BigM in place,
+binaries relaxed)
+(1) copy + hull reformulate
++ relax integrality
+(overdPD)
+(2) BigM reformulate in place
++ relax integrality
+(overdPD)
+(3) master solution
+(sets separation objective)
+(4) new cut
+(added to master)
+transcribed
+MIP
+(to solver)(5) transcribe on ˆD
+ypdq ÞÑy k
+Model transformation
+Information transfer
+Figure 7:Cutting plane algorithm in the InfiniteGDP setting: model transformations (solid) and per-iteration
+information flow (dashed) between a hull-reformulated separation copy and an in-place big-M master.
+which holds at everydPDrather than only in aggregate. The pointwise form is strictly stronger.
+Aggregating (22) overKwith the weightsω k recovers (21), but the converse fails because individ-
+ual inner products may be negative as long as the weighted total is non-negative. The weights are
+immaterial within each pointwise cut, since scaling byω k ą0leaves its halfspace unchanged. Each
+separation solve thus contributes|K|cuts instead of one. This cut family has no finite-GDP counter-
+part: it exists only because the infinite domain replicates the disjunctive structure at every support
+point. The summed cut (21) remains the valid fallback whenever cross-support coupling is present.
+transcribe onˆD
+yrBMpdq ÞÑyrBMk
+solve master,
+obtainyrBMpdq
+yrBM1
+yrBM2
+...
+yrBMK
+Separation subproblem
+minřKk“1ωk}yk ´yrBMk }2
+s.t. hull reformulation
+gapăε? solve master
+(with all cuts)
+add cut to master
+one global cut, aggregated overˆD
+(Eq. 21)
+yes
+no
+Figure 8:Per-iteration mechanics of the cutting plane loop: the transcribed master solutionty rBM
+k uparameter-
+izes the separation subproblem, whose minimizer yields one global cut appended to the master.
+3.4 Logic-Based Outer Approximation
+The finite LOA algorithm of Section 2.1 alternates between the fixed-combination of an NLP sub-
+problempS 1qand the OA masterp ˆM b
+OAq, accumulating first-order linearizations until the bound gap
+|ZU ´Z L|falls belowε.
+16
+https://pulsipher.info
+In the infinite setting,W ijpdqvaries independently at each point in the domain, so lifting the
+combination yields atrajectory: a map from the support grid to disjunct selections,ti ˚
+j pkqukPK for
+each disjunctionj. Transcribing through the mapT ˆD of (10), the NLP subproblem and master are
+both posed on the resulting transcribed representation, in the same manner as the cutting plane
+method of Section 3.3.
+NLP subproblem.Given a fixed Boolean trajectoryW l
+ijp ˆdkq P tTrue,Falseufor alliPI j,jPJ,
+kPK, the infinite NLP subproblem is
+pS1
+8q: min
+yk
+ÿ
+kPK
+ωk fpy kq
+s.t.h ijpykq ď0,pi, jq:W l
+ijp ˆdkq “True, kPK
+gpykq ď0, kPK
+yk PY, kPK,
+(23)
+whereω k are the quadrature weights from the transcription. When there is no coupling across sup-
+port points (no global constraints linking differentk), (23) decomposes into|K|independent sub-
+problems. With coupling (e.g., derivative or measure constraints linking support points), it remains a
+single NLP . IfpS1
+8qis infeasible for a given trajectory, a feasibility restoration subproblem introduces
+a scalar slackuand solvesminusubject toh ijpykq ďu,gpy kq ďu. The resultingy l is still used for OA
+cut generation [17].
+OA master.AfterLNLP solves, letK 1
+L,j denote the linearization set for disjunctionj: the iterations
+lin whichW l
+ij “True for somei, following the notation of [16]. In what follows,∇denotes the
+gradient with respect to the decision variables, so that∇fpy l
+kqis the gradient offevaluated at the
+NLP solution pointy l
+k andfpy l
+kq `∇fpy l
+kqJpyk ´y l
+kqis the corresponding first-order linearization.
+The infinite OA master is
+min
+yk, wij,k, αoa, σl
+ij,k
+αoa `µ
+ÿ
+l,i,j,k
+σl
+ij,k (24a)
+s.t.α oa ě
+ÿ
+kPK
+ωk
+“
+fpy l
+kq `∇fpy l
+kqJpyk ´y l
+kq
+‰
+, l“1, . . . , L(24b)
+gpyl
+kq `∇gpy l
+kqJpyk ´y l
+kq ď0, l“1, . . . , L, kPK(24c)
+hijpyl
+kq `∇h ijpyl
+kqJpyk ´y l
+kq ďMp1´w ij,kq `σ l
+ij,k, lPK 1
+L,j, iPI j, jPJ, kPK
+(24d)
+ÿ
+iPIj
+wij,k “1, jPJ, kPK,(24e)
+yk PY, w ij,k P t0,1u, σ l
+ij,k P r0,¯σs, iPI j, jPJ, kPK.(24f)
+Following the augmented-penalty OA of [17], a non-negative slackσ l
+ij,k P r0,¯σsrelaxes each disjunct
+OA cut (24d), and the master objective (24a) penalizes the slack with weightµ. This keeps the master
+always feasible while driving slacks to zero as cuts accumulate. Feasibility matters when the NLP at
+17
+https://pulsipher.info
+iterationlwas infeasible andy l
+k came from feasibility restoration. The structural difference from the
+finite master ˆM b
+OA is that binary variablesw ij,k exist at each support pointkindependently, enabling
+per-support mode selection. The three cut types scope differently over the support grid. The objective
+OA cut (24b) is a single constraint that aggregates over allk, reflecting the measure structure of the
+objective. The disjunct OA cuts (24d) are pointwise: one constraint per supportk, each gated by
+its own binaryw ij,k, reflecting that disjunct constraints hold for alldPD. The no-good cut (25)
+likewise aggregates over all supports. Disjunct OA cuts are added only for iterationslPK 1
+L,j in
+which disjunctionjhad an active disjunct at supportk. Affine disjunct constraints do not require OA
+linearization and enter the master exactly via big-M in (24d).
+After exploring a trajectoryti ˚
+j pkquk,j, the no-good cut
+ÿ
+kPK
+ÿ
+jPJ
+`
+1´w i˚
+j pkq, j, k
+˘
+ě1(25)
+keeps the master from re-selecting the identical binary trajectory. The number of distinct trajectories
+per disjunction is|I j||K|, so (25) is weaker per cut than its finite counterpart, but the OA cuts (24b)–
+(24d) remain the primary driver of convergence.
+OA masterp ˆM b
+OA q
+minα oa `µ ř σ l
+ij,k
+per-support binariesw ij,k
+lower boundZ L (Eq. 24)
+NLP subproblempS 1
+8q
+min ř
+k ωk fpy kq
+fixed trajectory;
+upper boundZ U
+(Eq. 23)
+on infeasibility:
+restorationminu
+|ZU ´Z L | ďε?
+converged:
+commit trajectory,
+load solution
+linearize aty l, add cuts:
+objective OA (aggregated over ˆD)
+disjunct OA (per-support, gatedw ij,k )
+no-good (Eq. 25)
+fix Boolean trajectory
+ti˚
+j pkqu kPK
+yl,Z U
+yes
+no
+accumulate cuts
+Figure 9:Per-iteration mechanics of the logic-based outer approximation loop. The OA master selects a
+Boolean trajectoryti ˚
+j pkquover the support grid and supplies the lower boundZ L; the NLP subproblem solves
+at that fixed trajectory, yielding the pointy l and the upper boundZ U (via feasibility restoration when the NLP
+is infeasible). Linearizing aty l appends the objective, disjunct, and no-good cuts to the master, and the loop
+repeats until|Z U ´Z L| ďε.
+Both subproblems are posed on the support grid ˆD, in the same manner as the cutting plane
+18
+https://pulsipher.info
+method of Section 3.3. The NLP subproblem (23) contains the active disjunct constraints, global con-
+straints, and objective of the original InfiniteGDP model. The master (24) is the big-M reformulation
+of the transcribed model with the nonlinear objective replaced byα oa, accumulating cuts (24b)–(25)
+as iterations proceed. Figure 9 summarizes the resulting NLP–master loop. For convexf,g,h ij, the
+algorithm converges finitely (Theorem 1 of [16]). The proof extends to the transcribed infinite case
+since it reduces to a finite MINLP after discretization.
+3.5 Implementation
+The three generalized reformulations, including the MBM-GP variant, are implemented in
+DisjunctiveProgramming.jlandInfiniteDisjunctiveProgramming.jl(the InfiniteOpt
+extension) as subtypes ofAbstractReformulationMethod, the same dispatch hierarchy that
+already carries theBigM,hull, andIndicatorreformulations of [26]. A model is built and stored
+as anInfiniteGDPModelusing the API discussed in [26]. The reformulation is then simply chosen
+and/or updated at each solve through thegdp methodkeyword onoptimize!, making it easy to
+switch betweenBigM(),MBM(),PSplit(P),CuttingPlanes(), andHull().
+Since LOA behaves like a solver rather than a reformulation, it is implemented as an optimizer
+under theDisjunctiveAlgorithms.jlpackage. Hence,DisjunctiveAlgorithms.jlacts as
+a solver that is able to directly solve GDP formulations using algorithms such as LOA. Selecting LOA
+therefore is done by usingDisjunctiveAlgorithms.Optimizerinstead of another optimizer.
+Code Snippet 1 demonstrates the syntax on a small three-mode heating problem. Over a 24-hour
+horizon, the heating powerPptq P r0,5soperates in one of three modes: high (Pě4), medium
+(2ďPď3), or off (P“0). The mode is chosen independently at every support point through
+theExactly(1)cardinality constraint, and the objective minimizes the integrated power. To learn
+more, please visithttps://github.com/infiniteopt/DisjunctiveProgramming.jl.
+Code Snippet 1: Simple three-mode heating model inInfiniteDisjunctiveProgramming.jl; only the
+gdp methodargument changes to select a solution method.
+1usingDisjunctiveProgramming, InfiniteOpt, Gurobi
+2
+3# Define model and variables
+4model =InfiniteGDPModel(Gurobi.Optimizer)
+5@infinite_parameter(model, tin[0, 24], num_supports = 24)
+6@variable(model, 0 <= P <= 5,Infinite(t))
+7@variable(model, W[1:3],InfiniteLogical(t))
+8
+9# Define the infinite disjunction
+10@constraint(model, P >= 4.0,Disjunct(W[1]))# high
+11@constraint(model, 2.0 <= P <= 3.0,Disjunct(W[2]))# medium
+12@constraint(model, P == 0,Disjunct(W[3]))# off
+13@disjunction(model, W)
+14@constraint(model, Win Exactly(1))
+15
+16# Define the objective, reformulate, and solve
+17@objective(model, Min,integral(P, t))
+18optimize!(model, gdp_method =MBM())# or BigM(), PSplit(2), Hull(), CuttingPlanes(), Indicator(), ...
+19
+https://pulsipher.info
+3.6 Method Selection
+Because the methods are interchangeable at solve time, the practical question is which to select for a
+given model. The choice is governed by three factors: the tightness of the continuous relaxation, the
+cost split between the reformulation (pre-solve) phase and the solver, and the convexity of the dis-
+junct constraints. Table 1 summarizes the resulting recommendations, which the benchmarks of Sec-
+tion 4 empirically demonstrate. Note that the performance of each approach is problem-dependent,
+and so this section only seeks to provide general recommendations that serve as a rule of thumb for
+practitioners.
+Table 1:Relaxation/cost profile of the six solution methods and when each might be preferred. MBM-GP is
+listed as an implementation variant of MBM rather than a separate method.
+Method Relaxation / cost profile Prefer when
+big-M loosest relaxation; cheapest to build; stays linear a fast pre-solve matters more
+than the gap
+MBM tighter, trajectory-adaptive; still linear; per-pairM
+cost up front
+solve cost dominates; a tight
+single-tree model is wanted
+MBM-GP MBM tightness at solved supports, GP upper
+bound elsewhere; a fraction of MBM’s pre-solve
+cost
+MBM is wanted but its per-pair
+Mpre-solve cost is prohibitive
+P-split tunable big-MØhull viaP; larger model a tunable relaxation; convex (Mc-
+Cormick) partitions
+hull tightest convex relaxation; variable doubling, per-
+spective NLP
+a strong relaxation justifies the
+larger model
+CP hull-strength without doubling; iterativeconvexGDP only (separation
+must be convex)
+LOA OA for nonlinear convex disjuncts; avoids a non-
+linear MIP
+convex GDP with nonlinear dis-
+junct constraints
+Big-M is the cheapest reformulation to build and stays linear when the disjuncts are, but its relax-
+ation is the loosest, so it leaves a large gap when the solver is time-limited. Multiple big-M removes
+most of that looseness while remaining a single-tree linear model: the per-pairM ii1pdqadapt to the
+trajectory, giving the tightest linearizing relaxation, at the cost of an up-front per-pairMcomputation
+that shifts work into the pre-solve phase. This makes MBM a good balanced choice for nonconvex
+InfiniteGDPs: it trades a higher up-front reformulation cost for a tighter continuous relaxation that
+can accelerate convergence, so the balance pays off most when the solve would otherwise dominate,
+as on a time-limited spatial branch-and-bound. The pre-solve investment is also a one-time cost. In
+applications that repeatedly re-solve the same disjunctive structure with updated global parameters,
+such as model predictive control or multi-objective optimization, the computedM ii1pdqfunctions are
+reused across re-solves, so the reformulation cost amortizes while the tighter continuous relaxation
+pays off at every solve. When the up-front cost is prohibitive, the MBM-GP variant of Section 3.1.1
+solves only a fraction of the per-support subproblems and is the cheaper option at fine discretizations.
+20
+https://pulsipher.info
+Hull yields the tightest convex relaxation per disjunction but doubles the variables and introduces
+perspective nonlinearities, so it builds quickly yet leaves a larger transcribed model for the solver.
+P-split interpolates between big-M and hull through the partition sizeP, offering a tunable position
+on the spectrum; it requires convex partition expressions, so for bilinear couplings the nonconvex
+products are enveloped with McCormick relaxations to keep the partitioned formulation a valid re-
+laxation.
+Cutting planes and LOA are decomposition algorithms with a convexity requirement. CP re-
+covers hull-strength tightness without variable doubling, but its separation subproblem inherits the
+convexity of the original disjunct constraints: a valid separating cut is only guaranteed when the sep-
+aration problem is convex. CP is therefore sound only on convex GDP; on a nonconvex model it can
+generate cuts that remove feasible, even optimal, points (demonstrated directly in Section 4.2). LOA
+targets convex GDPs whose disjunct constraints are nonlinear, where a direct hull would require a
+nonlinear MIP solver; its augmented-penalty form tolerates mild nonconvexity in practice but carries
+no global guarantee. In summary, MBM is a good balanced choice for nonconvex problems, trading
+a higher reformulation cost for a tighter, still-linear master, and MBM-GP recovers most of that tight-
+ness when the pre-solve budget is small. Hull and P-split become useful when a stronger relaxation
+justifies a larger model. Big-M is practical when weak relaxations do not strongly influence solution
+time. One should generally restrict the use of CP and LOA to the convex regime for which they are
+designed.
+4 Case studies
+This section evaluates the methods on three case studies. For each, the formulation is presented
+first and the methods are then benchmarked against the guidance of Section 3.6. Two are natively
+infinite-dimensional dynamic-optimization problems with nonconvex bilinear couplings: a mini-
+mum lap-time control problem with four-way powertrain mode selection parameterized over arc
+length (Section 4.1), and a 24-hour biodiesel production schedule with a temperature-dependent
+heat-pump coefficient of performance parameterized over time (Section 4.2). The third is an event-
+constrained IEEE 14-bus capacity design problem (Section 4.3) drawn from [29] which is a linear
+stochastic program that yields a convex InfiniteGDP . Unless noted otherwise, the F1 problem is dis-
+cretized atN“100support points, the biodiesel problem atN“300, and the powergrid problem
+atN“200, and all reformulations target a5%relative MIP gap. A cross-study summary follows
+in Section 4.4. For solvers,Gurobiv12.0.2 is used for all MIP and MIQCP solves and the LOA
+subproblems, andIpopt(viaIpopt.jlv1.15.0) is used for the local NLP separation solves on the
+nonconvex biodiesel study. Other package versions includeJuMPv1.31.1,InfiniteOpt.jlv0.6.3,
+DisjunctiveProgramming.jlv0.7.0, andAbstractGPs.jlv0.5.24, running on Julia 1.11.5. The
+results are collected using a Windows 11 machine with an Intel(R) i9-12900K CPU @ 3.20 GHz and
+64 GB of memory. The source code for all case studies is available athttps://github.com/
+PULSI-Opt/InfGDP-case-studies.
+21
+https://pulsipher.info
+4.1 Minimum lap-time with powertrain mode selection
+This case study considers the minimum-time traversal of a closed racing circuit by a hybrid For-
+mula 1 vehicle operating under the 2026 FIA Power Unit Regulations. Arc lengthsP r0, Lsalong
+the track centerline parameterizes the vehicle state, withLthe total circuit length. Track geome-
+try enters through the curvatureκpsq, a known continuous function over the arc-length domain,
+and the corresponding friction-limited cornering speed¯vpκpsqq, which accounts for aerodynamic
+downforce. At every arc lengthsthe powertrain operates in exactly one of four modesiPI“
+tclip,ice,boost,regenu: partial throttle (clipping), full internal combustion engine, ICE plus MGU-K
+deployment, and regenerative braking. The four-mode classification follows the time-optimal hybrid
+race-car policy of [2], where these modes arise as Pontryagin switching cases of a continuous policy;
+they are recast here as an explicit arc-length disjunction so that the active mode is a Boolean deci-
+sion at every support point. Each mode constrains the motor forceFpsq, the electrical battery power
+Pbpsq, the motor powerP mpsq “Fpsqvpsq, and the effective propulsive forceF epsqdelivered to the
+tires through the drivetrain.
+The objective is the lap time
+mintpLq,(26)
+which accumulates along the circuit through the kinematic relation
+vpsq dt
+ds “1, sP r0, Ls.(27)
+Vehicle dynamics follow Newton’s second law along the track centerline, expressed in arc-length
+form as in [30],
+m vpsq dv
+ds “F epsq ´ 1
+2 ρCdA vpsq2 ´f rmg, sP r0, Ls,(28)
+with vehicle massm, drag area coefficientC dA, and rolling resistancef r. The state of charge drains
+with battery power, in the same arc-length form used by [31] for F1 energy recovery systems,
+Eb vpsq dSOC
+ds “ ´P bpsq, sP r0, Ls,(29)
+whereE b is the battery capacity, and motor power is mechanically tied to motor force by
+Pmpsq “Fpsqvpsq, sP r0, Ls.(30)
+The cornering speed comes from a rigid-body lateral force balance with aerodynamic downforce,
+in closed form,
+¯vpκq “
+d
+µg
+κ´ µρCLA
+2m
+,(31)
+obtained by setting the required centripetal forcemv 2κequal to the friction-limited tire forceµpmg`
+1
+2 ρCLAv2qon a load that combines static weight and downforce, with downforce area coefficient
+CLA. This point-mass closed form replaces the full Pacejka tire model with load transfer of [30], and
+¯vpκpsqqenters the model as a known continuous function over the arc-length domain, evaluated on
+the support grid. Figure 10 sketches the corresponding free-body diagram.
+22
+https://pulsipher.info
+CoM
+mg
+downforce
+1
+2 ρCLAv2
+FN
+Flat ďµF N
+curve
+at the cornering limit:mv 2κ“µ
+`
+mg` 1
+2 ρCLAv2˘
+Figure 10:Free-body diagram for the closed-form cornering speed (31) (rear view). Vertical forces (blue) set the
+tire normal loadF N ; the friction-circle bound caps the lateral tire force (orange) atµFN , which at the cornering
+limit balances the centripetal demandmv 2κ.
+The state envelopes combine cornering and SOC limits,
+vmin ďvpsq ďmintv max,¯vpκpsqqu, sP r0, Ls,(32)
+SOCmin ďSOCpsq ďSOC max, sP r0, Ls.(33)
+A longitudinal acceleration envelope caps how fast the speed can change, keeping the trajectory
+within the available grip and powertrain limits,
+amin ďvpsq dv
+ds ďa max, sP r0, Ls,(34)
+wherev dv
+ds “ dv
+dt is the longitudinal acceleration. The bounds are asymmetric. Aerodynamic down-
+force grows the tire normal load with speed, so braking sustains far higher deceleration than accel-
+eration, which is limited by traction and engine power. The envelope bounds longitudinal grip and
+complements the lateral cornering limit in (31).
+At every arc length the powertrain selects exactly one of four modes through the disjunction
+ł
+iPI
+»
+—————————–
+Wipsq
+F i ďFpsq ď ¯Fi
+P i
+m ďP mpsq ď ¯P i
+m
+Fepsq “η i
+dt Fpsq
+P i
+b ďP bpsq ď ¯P i
+b psq
+gipPmpsq, Pbpsqq ď0
+fi
+ffiffiffiffiffiffiffiffiffifl
+, sP r0, Ls.(35)
+Drivetrain efficiencyη i
+dt equalsη dt for the propulsion modes and1for the regenerative mode. The
+mode-dependent couplingg i links motor and battery power: for clipping and ICE the battery is
+inactive (Pb “0); for boost it enforces the bandP m ´ ¯Pice ďη mgukPb ďP m ´P ice; for regeneration it
+enforcesP b “η mgukPm withP m ď0. Mode bounds are drawn from the quasi-steady-state simulation
+of [3], scaled to the 2026 400 kW ICE and˘350kW MGU-K limits. The battery bounds are constant
+insfor all modes except boost. Its deployment ceiling follows a lap-periodic energy-management
+schedule,
+¯P boost
+b psq “min
+␣ ¯Pmguk, P cap
+b psq
+(
+, P cap
+b psq “200`150 cosp2πs{LqkW,(36)
+23
+https://pulsipher.info
+which keeps the cap withinr50,350skW so the boost region never empties. The schedule is not
+necessarily realistic, but introducing it makes the boost disjunct’s constraint data explicitly position-
+dependent such that this more rigorously benchmarks the proposed methods.
+Exactly one mode is active at every support point,
+EXACTLY
+`
+1, Wclippsq, Wicepsq, Wboostpsq, Wregenpsq
+˘
+“True, sP r0, Ls,(37)
+and the lap closes,
+vp0q “vpLq,SOCp0q “SOCpLq, tp0q “0,(38)
+withW i :r0, Ls ÞÑ tTrue,FalseuforiPI.
+The full formulation reads
+minlap time (26)
+s.t. kinematics and vehicle dynamics (27),(28)–(30)
+state envelopes (31)–(34)
+mode disjunction and cardinality (35),(37)
+boundary conditions (38).
+The distinguishing structural feature is the spatial parameterization of the logical variables:W ipsq
+is infinite and the active mode may switch at every support point along the circuit. Unlike the tank
+changeover in [26], where mode selection is constant over each operating period, here the selection is
+fully spatially resolved. The continuous dynamics contain three bilinear terms (v¨dv{ds,v¨dSOC{ds,
+andF¨v), which Gurobi’s spatial branch-and-bound handles.
+This problem is solved on the Suzuka circuit (L“5.807km), discretized atN“100support
+points. Figure 11 shows a representative optimal solution: the speed tracks the grip-limited ceiling
+through the corners, the battery deploys and regenerates around the lap, and the active powertrain
+mode switches at individual support points along the circuit, with the ICE-only mode never selected.
+With three bilinear couplings this is a nonconvex MIQCP , so the guidance of Section 3.6 predicts that
+MBM reaches a near-optimal lap time fastest, hull converges more slowly through a larger model,
+big-M stays far from the best-known lap time within the budget, and CP – whose separation problem
+is nonconvex here – fails to produce a usable incumbent. LOA is likewise outside the convex regime
+it targets, so it carries no valid bound on this problem. It is still run as a heuristic to probe how
+far its augmented-penalty form degrades under strong nonconvexity. The benchmark results below
+confirm these predictions.
+24
+https://pulsipher.info
+0 2,000 4,000 6,0000
+100
+200
+300
+Arc lengths[m]
+Speed [km/h]
+vpsq vmaxpsq
+(a)Speed vs. grip limit
+0 2,000 4,000 6,000
+20
+40
+60
+80
+Arc lengths[m]
+State of charge [%]
+(b)Battery state of charge
+0 2,000 4,000 6,000
+´4
+´2
+0
+2
+4 ¨105
+Arc lengths[m]
+Battery power [W]
+(c)Battery power (deployą0, regen
+ă0)
+500 m
+Clip Boost Regen
+(d)Track map coloured by active powertrain mode
+500 m
+ 100
+150
+200
+250
+300
+350
+Speed [km/h]
+(e)Track map coloured by optimal speedvpsq
+Figure 11:Solution trajectory for the F1 lap-time problem on the Suzuka circuit (N“100, MBM reformulation,
+lap time91.61s). The trajectory is an illustrative solve with Gurobi’s default settings; the benchmark runs of
+Table 2 use the configuration stated there and stop at the5%gap target. (a) Optimal speedvpsqand grip-limited
+ceilingv maxpsqalong the lap. (b) Battery state of charge. (c) Battery power (deploymentą0, regenerationă0).
+(d) Active powertrain mode at each support point mapped onto the circuit geometry. (e) The same support
+points coloured byvpsq.
+Results.Progress against solver time is reported through a solution-progress measure inr0,1sde-
+rived from each method’s running MIP gap: the gap is mapped so that reaching the5%MIP-gap
+stopping tolerance corresponds to0.95(the dashed reference line) and proving the true optimum cor-
+responds to1.0; a method that plateaus below0.95has not solved to tolerance. Big-M usesM“10 7
+and P-split usesP“3with the McCormick lifting. MBM-GP uses the adaptive point selection and
+κ“2.5of Section 3.1.1, here and in the other two studies. Figure 12 reports the result. The de-
+ployment schedule (36) makes the boost disjunct’s constraint data vary along the lap, which strongly
+affects the relative performance of the reformulations. Only the multiple big-M methods solve within
+the1200s budget. MBM crosses0.95at«102s. MBM-GP follows at«194s after a2.7s build: its
+GP surrogate samples the varyingMpsqcurves instead of solving all9600per-support subproblems,
+which exact MBM pays21.7s for. P-split finds its first lap only at«997s and ends at97.46s with
+a16.9%gap. Big-M and hull have no incumbent when the time limit is reached and are therefore
+omitted from Figures 12 and 13. Hence, for this case study, feasible solutions are only obtained with
+the intermediate reformulations rather than the big-M and hull endpoints. CP is absent because,
+as predicted for a nonconvex separation problem, it produced no valid incumbent. LOA runs as a
+heuristic: it exhausts its1200s budget in set-covering initialization without producing a bound, so its
+25
+https://pulsipher.info
+curve plots the incumbent’s distance to the best lap time found, reaching164.29s (78%off, Table 2) at
+«251s with no further improvement. Figure 13 splits the total runtime into its reformulation (pre-
+solve) and solver components, confirming that MBM’s advantage comes from a tight master that the
+solver closes quickly rather than from a low reformulation cost.
+0 100 200 300 400 500 600 700 800 900 1,000 1,100 1,2000
+0.2
+0.4
+0.6
+0.8
+0.95
+1
+5% MIP-Gap Target
+MIP Solve Time [s]
+Solution Progress (5% MIP-Gap“0.95) MBM
+MBM-GP
+P-split
+LOA˚
+Figure 12:Solution progress versus solve time on the nonconvex F1 problem (N“100) under the1200s wall
+budget (dotted vertical line); the dashed line marks the5%MIP-gap target (0.95). Big-M and hull are omitted
+because they find no incumbent within the time limit; P-split’s first incumbent arrives at«997s. LOA ˚
+produces no bound on this problem, so its curve plots the incumbent’s distance to the best known lap time.
+26
+https://pulsipher.info
+MBM MBM-GP PSplit-3
+0
+200
+400
+600
+800
+1,000
+1,200
+Total Time [s]
+Reformulation Solver
+Figure 13:Reformulation time (stacked, under solver time) versus solver time on the nonconvex F1 problem
+(N“100); values from Table 2. Big-M and hull are omitted because they reach the1200s time limit with no
+incumbent. The P-split solver bar is the1200s time limit, reached with a16.9%-gap incumbent.
+4.2 Temperature-coupled biodiesel production scheduling
+This case study considers the 24-hour scheduling of a fully electrified biodiesel facility [4] with three
+process units (Figure 14): a transesterification reactor, a FAME distillation column, and a glycerol
+purification column. Each unituPU“ trx,f,gucan independently switch on or off over the horizon
+tP r0,24sh in response to a time-varying electricity pricec eptqand scenario-weighted product prices
+¯pf ptq,¯pgptq. A heat pump drives the glycerol column reboiler, with a coefficient of performance (COP)
+that degrades with reboiler temperature. This creates a compounding electrical penalty that couples
+the temperature setpointT gptq P rT L
+g , T U
+g sto both the heat duty and the electrical power demand of
+the column. The on/off scheduling structure and the temperature-dependent glycerol heat-pump
+COP are introduced here as additions to the continuous-control formulation of [4], which treats all
+units as always on and uses a constant COP for the glycerol cascade. Throughout, the formulation
+adopts linear flow-driven surrogates of the unit models in [4], trading kinetic and stage-by-stage
+fidelity for tractability at the scheduling level.
+27
+https://pulsipher.info
+Figure 14:Process flowsheet for the electrified biodiesel facility. Each schedulable unit (blue) carries an
+ON/OFF disjunction over the 24-hour horizon; buffer tanks (green) decouple the unit schedules.
+Linear calibrations specify the temperature–purity and temperature–COP couplings, with
+the COP form approximating the near-linear COP–temperature trend reported for industrial
+high-temperature heat pumps in [32],
+πgpTgq “π min ` πmax ´π min
+T Ug ´T Lg
+pTg ´T L
+g q,(39)
+COPgpTgq “α´βpT g ´T L
+g q,(40)
+withπ min “0.95,π max “0.995,α“3.75,β“0.02425K ´1, andT g P r350,430sK. The glycerol reboiler
+heat duty is modeled as a linear function of flow with a temperature–flow bilinear correction,
+Qreb
+g ptq “q 0 `q 1Fgptq `κ T pTgptq ´T L
+g qF gptq,(41)
+the resulting electrical power follows from the temperature-dependent COP ,
+P reb
+g ptq ¨COP gpTgptqq “Q reb
+g ptq,(42)
+and the total glycerol column power sums the reboiler and condenser duties,
+Pgptq “P reb
+g ptq `Q cond
+g ptq{COPcond.(43)
+The two bilinear termsκ T pTg ´T L
+g qFg in (41) andP reb
+g ¨T g in (42) are the only nonconvex couplings in
+the formulation. Together they produce a power amplification factor of„2.7between the minimum
+and maximum reboiler temperatures at full throughput.
+LetW uptqdenote the infinite logical variable indicating that unituis active at timet. The eco-
+nomic objective trades electricity cost and switching cost against product revenue, following the cost
+28
+https://pulsipher.info
+structure of [4] with unit-level startup and shutdown penalties added,
+min
+ż 24
+0
+ceptqP totptqdt`
+ÿ
+uPU
+`
+Csu
+u nsu
+u `C sd
+u nsd
+u
+˘
+´
+ż 24
+0
+`
+¯pf ptqDf ptq `¯pgptqDgptq
+˘
+dt,(44)
+whereP totptq “P rxptq `P methptq `P f ptq `P gptqis the total plant power draw,C su/sd
+u are switching
+costs, andn su/sd
+u are transition counts computed on the support grid from successive values of the
+binary indicators.
+The glycerol column powerP g follows the temperature-coupled chain (41)–(43); the remaining
+power terms are linear flow-driven surrogates. Each column draws a condenser duty proportional to
+its throughput, and the reactor and the FAME and methanol columns convert their heat duties into
+electrical power at constant coefficients of performance,
+Qcond
+u ptq “c u Fuptq, uP tmeth,f,gu,(45a)
+Prxptq “Q rxptq{ηrx,(45b)
+Puptq “Q reb
+u ptq{COPreb
+u `Q cond
+u ptq{COPcond, uP tmeth,fu,(45c)
+whereη rx is the reactor heating efficiency,COP reb
+u the reboiler COP of columnu, andCOP cond the
+shared condenser COP . The methanol recovery column carries no independent on/off decision: it
+has no buffer tank, so its throughput is the crude methanol flowF meohptq “γ meohFoilptqfixed by the
+reactor, and its reboiler dutyQ reb
+meth together with the reactor heat dutyQ rx are enforced within the
+reactor disjunction (46), so both vanish when the reactor is off. The glycerol column power (43) takes
+its condenser dutyQ cond
+g from (45a), and the FAME reboiler dutyQ reb
+f in (45c) is the one set by its
+disjunction (48).
+Each unit independently switches on or off through a two-term disjunction. Linear ON-state
+surrogates of the unit models in [4] are adopted: stoichiometric yields for the reactor (drawn from
+the transesterification stoichiometry reviewed in [33]) and linear flow-driven reboiler duties for the
+columns. The transesterification reactor sets crude product flows from oil flowF oil via the stoichio-
+metric yieldsγ c forcPC“ tf, g,meohu,
+»
+—————————–
+Wrxptq
+Foilptq ěF oil
+Fcptq “γ c Foilptq, cPC
+Qrxptq “q rx
+0 `q rx
+1 Foilptq
+Qrxptq ďQ availptq
+Qreb
+methptq “q meth
+0 `q meth
+1 Fmeohptq
+fi
+ffiffiffiffiffiffiffiffiffifl
+_
+»
+———————–
+␣Wrxptq
+Foilptq “0
+Fcptq “0, cPC
+Qrxptq “0
+Qreb
+methptq “0
+fi
+ffiffiffiffiffiffiffifl
+, tP r0,24s.(46)
+The ON branch caps the electrified reactor duty by a time-varying utility availability,
+Qavailptq “300´80 cosp2πt{24qkW,(47)
+which is an arbitrary approximation of variable output of the utility supplying the reactor, chosen for
+the sake of example. The cap stays above220kW, so the ON region remains feasible at every support,
+29
+https://pulsipher.info
+and it makes the reactor disjunct’s constraint data explicitly time-dependent. The FAME distillation
+column carries a linear reboiler heat duty,
+»
+——–
+Wf ptq
+Ff ptq ěF f
+Qreb
+f ptq “q f
+0 `q f
+1 Ff ptq
+fi
+ffiffifl_
+»
+——–
+␣Wf ptq
+Ff ptq “0
+Qreb
+f ptq “0
+fi
+ffiffifl, tP r0,24s.(48)
+The glycerol column carries the temperature-coupled heat duty (41); in the OFF disjunct, the temper-
+ature is held at its lower boundT L
+g so the bilinear COP coupling (42) is inactive,
+»
+——–
+Wgptq
+Fgptq ěF g
+Qreb
+g ptq “q g
+0 `q g
+1Fgptq `κ T pTgptq ´T L
+g qFgptq
+fi
+ffiffifl_
+»
+——–
+␣Wgptq
+Fgptq “0, Q reb
+g ptq “0
+Tgptq “T L
+g , P reb
+g ptq “0
+fi
+ffiffifl, tP r0,24s.(49)
+Buffer and product tanks decouple the unit schedules [4], so the plant can meet downstream
+demand while turning off upstream units during high-price intervals,
+dLbuf
+u
+dt “F crude
+u ptq ´F uptq, dLprod
+u
+dt “F uptq ´D uptq, uP tf, gu.(50)
+A dynamic mass balance tracks the pure glycerol mass in the product tank from the temperature-
+dependent purity inflow and the contract-purity outflow,
+dM pure
+g
+dt “π gptqFgptq ´π specDgptq, tP r0,24s,(51)
+and the blended inventory must meet the contract purityπ spec “0.99at all times,
+M pure
+g ptq ěπ spec Lprod
+g ptq, tP r0,24s.(52)
+Tank levels and pure glycerol mass return to their initial values at the end of the horizon,
+Lbufp0q “L bufp24q “L 0, L prodp0q “L prodp24q “L 0, M pure
+g p0q “M pure
+g p24q “π specL0,(53)
+andW u :r0,24s ÞÑ tTrue,FalseuforuPU.
+The full formulation reads
+minelectricity cost, switching, revenue (44)
+s.t. temperature couplings (39)–(43)
+unit power draws (45)
+on/off disjunctions (46)–(49)
+tank dynamics (50)
+glycerol mass balance and purity spec (51),(52)
+boundary conditions (53).
+The key structural feature is the temperature–COP coupling within the glycerol disjunction: the OFF
+disjunct holdsT gptqatT L
+g , andT gptqacts through the bilinear term inside (41) and the bilinear COP re-
+lation (42) only when the column is on. Unlike the F1 problem, where a single exactly-one disjunction
+30
+https://pulsipher.info
+selects among four powertrain modes, the biodiesel plant has three independent binary disjunctions,
+one per process unit. This structure is more typical of industrial scheduling problems, in which the
+startup/shutdown economics of each unit interact only through the downstream tank dynamics.
+This problem is solved overr0,24sh, discretized atN“300support points. Figure 15 shows
+the optimal schedule, identical across the linearizing methods: the three units shed load during the
+electricity price peaks, the glycerol reboiler temperature tracks the COP trade-off, and the buffer
+tanks decouple the unit schedules. Because the only nonconvexities are the two glycerol bilinear
+terms, the guidance of Section 3.6 predicts that all four linearizing methods reach the global optimum,
+differing only in the split between reformulation and solver time, and that CP – nonconvex here –
+generates invalid cuts. LOA also loses its convexity guarantee on this problem. It is still run, with
+the expectation that its augmented-penalty form tolerates the two bilinear terms and returns a good
+local schedule without a valid bound.
+31
+https://pulsipher.info
+0 5 10 15 200
+200
+400
+600
+800
+t[h]
+Electricity price [$/MWh]
+g
+f
+rx
+(a)Unit on/off schedules with electricity price
+0 5 10 15 20
+360
+380
+400
+420
+t[h]
+Reboiler temperatureT g [K]
+Tgptq COPgptq
+2
+2.5
+3
+3.5
+Glycerol heat-pump COP
+(b)Reboiler temperature and heat-pump COP
+0 2 4 6 8 10 12 14 16 18 20 22 24
+30
+40
+50
+60
+70
+t[h]
+Inventory level
+FAME buffer FAME product glyc. buffer
+glyc. product pure glyc. mass
+(c)Tank inventories
+Figure 15:Solution trajectory for the nonconvex biodiesel scheduling problem (N“300, MBM reformulation,
+objective´213423at a0.14%gap). The trajectory is an illustrative solve with Gurobi’s default settings; the
+benchmark runs of Table 2 use the configuration stated there. (a) Unit on/off schedules (rx reactor, f FAME,
+g glycerol) against the time-varying electricity price. (b) Glycerol reboiler temperatureT gptqand the resulting
+heat-pump COP . (c) Buffer and final product inventories with the purified glycerol mass.
+Results.Big-M usesM“10 3 and P-split usesP“3. The bilinear couplings make the transcribed
+model a nonconvex MIQCP , solved by spatial branch-and-bound. All five reformulations solve the
+instance to the gap target inside the1200s budget, and the availability cap (47) makes the reactor dis-
+junct’sMptqcurves genuinely time-varying. Figure 16 shows the resulting separation: MBM closes
+in17s of solver time, big-M needs100s (0.8%gap at´213308), hull runs496s but lands on the
+best known solution´213682with an essentially closed gap (0.006%), and P-split-3 takes665s to a
+1.3%incumbent. P-split lifts the bilinear terms to McCormick-enveloped auxiliary variables, since its
+32
+https://pulsipher.info
+plain partitioning cannot represent them. The root relaxations reflect this ordering: MBM and hull
+start within0.03%of the optimum, while big-M and P-split both start with a2.1%root gap. The
+automatic partition leaves a wide-range variable in each group, so the per-partition envelopes are
+no tighter than a single big-M, while the lifted model carries3ˆhull’s rows, and this larger model
+must be processed at every branch-and-bound node. CP is omitted, as its separation subproblem in-
+herits the nonconvexity. LOA finds no feasible incumbent within the budget: its NLP subproblems,
+nonconvex QCPs at fixed mode schedules, never return a solution, so it fails here exactly as on F1
+and is likewise absent from the figure. Figure 17 shows the cost split. MBM’s122s reformulation
+bar reflects its per-pairMcomputation, now itself a set of nonconvex subproblems solved at every
+support, but the resulting tight master yields the fastest solver time. MBM-GP keeps most of that
+tightness at a fraction of the build. It matches grid MBM’s objective (´213397for both) while cutting
+the reformulation time from122to6.3s, a19ˆreduction. In this case, the saving comes from the GP
+fit itself: the surrogate samples the time-varyingMptqinduced by (47) instead of solving all«16000
+per-support subproblems. Its31s total is the fastest of any method, ahead of grid MBM’s139s and
+big-M’s101s.
+0 50 100 150 200 250 300 350 400 450 500 550 600 650 7000
+0.2
+0.4
+0.6
+0.8
+0.95
+1
+5% MIP-Gap Target
+MIP Solve Time [s]
+Solution Progress (5% MIP-Gap“0.95)
+big-M
+MBM
+MBM-GP
+hull
+P-split
+Figure 16:Solution progress versus solve time on the nonconvex biodiesel problem (N“300); axes as in
+Figure 12. LOA is absent: it finds no feasible incumbent within the budget (Table 2).
+33
+https://pulsipher.info
+BigM MBM MBM-GP Hull PSplit-3
+0
+100
+200
+300
+400
+500
+600
+700
+Total Time [s]
+Reformulation Solver
+Figure 17:Reformulation versus solver time on the nonconvex biodiesel problem (N“300); axes as in Fig-
+ure 13.
+CP fails here exactly as Section 3.6 anticipates. To verify the failure directly, a fresh big-M model
+was solved to a verified optimum and each cut CP had generated was evaluated at that optimum.
+A valid cut must be nonnegative at every feasible point, in particular at the true optimum; a strictly
+negative value certifies that the cut excludes it. All three generated cuts were strictly violated at the
+verified big-M optimum, with values´3.1ˆ10 7,´8.6ˆ10 4, and´6.2ˆ10 4 (separation solved locally
+with Ipopt, as required because the separation problem inherits the model’s nonconvexity). A global
+solver would arrive at a globally optimal separation with enough time, but the resulting cut could
+still be invalid. The consequence compounds with size: atN“300the CP run returns a solver
+error with no recoverable solution, and where an incumbent is recovered its objective is«25%worse
+than the true optimum. The same failure occurs on the nonconvex F1 problem, where CP produces
+no valid incumbent at all. CP is therefore reported as a benchmarked method only on the convex
+powergrid case study below.
+4.3 Event-constrained IEEE 14-bus capacity design
+The third case study is a chance-constrained transmission and generation capacity design problem on
+the IEEE 14-bus test system, adapted verbatim from the event-constrained programming formulation
+of [29]. A planner sizes oversizing margins on five generators and twenty lines so that, under random
+nodal demandξPR 11, the event that no component exceeds its rated capacity occurs with proba-
+bility at leastα. Unlike the F1 and biodiesel problems, the infinite parameter here is a probability
+distribution rather than a physical domain; the support grid is a Monte Carlo samplet ˆξkuN
+k“1 drawn
+fromξ„Npξ nom,Σq. All constraints are linear, so the transcribed reformulations are MILPs and the
+34
+https://pulsipher.info
+cutting plane separation subproblem is convex, making CP theoretically sound and providing the
+control case against which CP’s invalid-cut behavior on the two nonconvex problems is interpreted.
+Two design vectors are finite: generator oversizingz gen P r0,300s 5 and line oversizingz line P
+r0,100s 20. Two state vectors are infinite inξ: generator dispatchy genpξq P r0,1000s 5 and line flow
+ylinepξq P r´1000,1000s 20.
+The objective is the total oversizing cost,
+min
+y, z, W
+5ÿ
+g“1
+zgen
+g `
+20ÿ
+ℓ“1
+zline
+ℓ .(54)
+At each of the fourteen buses, net injection equals demand. The system is written compactly with
+the bus-incidence pattern of [29] as
+Agen ygenpξq `A line ylinepξq “B ξ, ξPΞ,(55)
+whereA gen P t0,1u 14ˆ5 andA line P t´1,0,1u 14ˆ20 encode which generator and line is incident to each
+bus, andBP t0,1u 14ˆ11 maps the eleven uncertain demands onto their buses.
+For each generatorg, dispatch is either within or above its design limit¯p g `z gen
+g (with¯p“
+p332,140,100,100,100qMW),
+«
+W gen
+g pξq
+ygen
+g pξq ď¯pg `z gen
+g
+ff
+_
+«
+␣W gen
+g pξq
+ygen
+g pξq ě¯pg `z gen
+g
+ff
+, g“1, . . . ,5, ξPΞ.(56)
+For each lineℓ, flow is either within the symmetric bandr´p ¯f`z line
+ℓ q, ¯f`z line
+ℓ saround zero (with
+base limit ¯f“50MW) or it exceeds the band in one of the two directions,
+«
+W line,low
+ℓ pξq
+yline
+ℓ pξq ď ´p ¯f`z line
+ℓ q
+ff
+_
+«
+W line
+ℓ pξq
+|yline
+ℓ pξq| ď ¯f`z line
+ℓ
+ff
+_
+«
+W line,high
+ℓ pξq
+yline
+ℓ pξq ě ¯f`z line
+ℓ
+ff
+,(57)
+forℓ“1, . . . ,20andξPΞ.
+The event being constrained is that at leastn gen
+min generators and at leastn line
+min lines are within their
+design limits. Following [29], two aggregator indicatorsW at
+genpξqandW at
+linepξqare introduced, tied to
+the counts of within-limit components,
+ÿ
+g
+wgen
+g pξq ěn gen
+min ð ñW at
+genpξq,(58)
+ÿ
+ℓ
+wline
+ℓ pξq ěn line
+min ð ñW at
+linepξq,(59)
+wherew gen
+g , wline
+ℓ are the binary realizations of the disjunct indicators in (56)–(57). The event indicator
+Wpξqis their conjunction, `
+W at
+genpξq ^W at
+linepξq
+˘
+ð ñWpξq.(60)
+The expectation ofWpξqunder the Monte Carlo sample equals the empirical event probability,
+and is required to be at leastα,
+EξrWpξq s “ 1
+N
+Nÿ
+k“1
+wk ěα.(61)
+35
+https://pulsipher.info
+The parameter settings of [29] are used:α“0.9,n gen
+min “5,n line
+min “20(so the atleast logic of (58)–
+(59) reduces in this configuration to the conjunction over all components), andN“200Monte Carlo
+samples drawn with seed 42 fromξ„Npξ nom,Σqwithξ nom
+1:6 “ p87.3,50,25,28.8,50,25qMW and the
+remaining components zero. The model is taken verbatim frompower grid.jlof [29], with the
+only inert change being explicit upper bounds on the count auxiliaries in (58)–(59) that hull requires
+and that act as a no-op for big-M.
+Because every constraint is linear inpy, z, Wq, the transcribed reformulations are MILPs and CP’s
+hull-based separation subproblem is convex. Per Section 3.6, this is the regime in which CP and LOA
+are sound, so the study plays a dual role: it benchmarks the linearizing methods on a discretely-
+uncertain, non-dynamic InfiniteGDP , and it supplies the convex control case in which CP’s cuts are
+valid and LOA’s OA bound is legitimate.
+Results.Big-M usesM“10 5, P-split usesP“2, and CP runs to natural convergence with a
+separation tolerance of10 ´6. As Section 3.6 predicts for a convex GDP , all methods — now including
+MBM-GP , CP and LOA — reach the same global optimum (36.71). P-split closes last, needing nearly
+the full budget: the root LP bound is zero for every reformulation on this event-constrained structure,
+and P-split’s lifted transcription carries8ˆbig-M’s rows, so its bound moves slowest. Figure 18
+shows the progress curves. LOA’s curve reflects a different mechanism than the branch-and-bound
+traces. Because every constraint and the objective are linear, the disjunct constraints enter the master
+exactly via big-M and the objective and global OA cuts are exact, so the OA master reduces to a big-M
+reformulation of the transcribed model, augmented by the OA and no-good cuts accumulated during
+the set-covering seed. LOA thus recovers essentially the same big-M MILP structure the standalone
+big-M method solves, and the optimum is available once the seed identifies the optimal trajectory and
+the master bound matches it, with no further search required. Complementing this, Figure 19 reports
+the reformulation/solver split, with CP’s158s reformulation bar accounting for cut generation. Hull
+solves in325s and big-M in102s, while P-split’s1181s shows its lifted master paying its size’s
+full price. MBM-GP again removes most of MBM’s reformulation cost: it builds in10.0s instead of
+139.8s, solves in a similar amount of time (53.2versus44.5s), and its«63s total is the fastest of any
+method on this study while retaining MBM’s per-pair tightness. On this study everyMpdqcurve is
+constant ind, so the speedup comes from the sampler’s uniform-Mdetection rather than the GP fill.
+The contrast with the nonconvex F1 and biodiesel results, where CP produced invalid cuts, confirms
+that CP’s validity is contingent on convexity of the separation subproblem.
+36
+https://pulsipher.info
+0 100 200 300 400 500 600 700 800 900 1,000 1,100 1,2000
+0.2
+0.4
+0.6
+0.8
+0.95
+1
+5% MIP-Gap Target
+MIP Solve Time [s]
+Solution Progress (5% MIP-Gap“0.95)
+big-M
+MBM
+MBM-GP
+hull
+P-split
+CP
+LOA˚
+Figure 18:Solution progress versus solve time on the convex powergrid case study (N“200); axes as in
+Figure 12. The CP curve is the branch-and-bound trace of its final big-M+cuts MIP; cut generation occurs
+in the reformulation phase (Figure 19). LOA ˚ plots the relative OA gap of its iteration loop; because every
+constraint is linear, the OA master carries the full problem exactly and the optimum is reached trivially once
+the set-covering initialization completes, so the trace measures initialization rather than search.
+37
+https://pulsipher.info
+BigM MBM MBM-GP Hull PSplit-2 CP
+0
+200
+400
+600
+800
+1,000
+1,200
+Total Time [s]
+Reformulation Solver
+Figure 19:Reformulation versus solver time on the convex powergrid case study (N“200,5%MIP gap,
+Gurobi 12.0.2); axes as in Figure 13. Timings are single-trial.
+4.4 Summary
+Table 2 collects the objectives, gaps, and the reformulation/solver time split across the three stud-
+ies. The results are consistent with the guidance of Section 3.6. On the challenging nonconvex F1
+problem, whose boost disjunct carries the position-dependent deployment cap (36), only the mul-
+tiple big-M methods solve within the budget: MBM in102s and MBM-GP in194s with an 8-fold
+reduced pre-solve time, while big-M and hull time out with no incumbent and P-split reaches only a
+16.9%-gap lap at the wall. Feasible solutions for this problem thus come only from the intermediate
+reformulations rather than the big-M and hull endpoints. On the biodiesel and powergrid studies
+every reformulation closes the gap, and the solver times spread by more than an order of magnitude
+in the relaxation ordering: the MBM family solves fastest (17–53s), big-M pays for its loose relax-
+ation (100s on both), hull pays for its size (496and325s) while returning the tightest certificates,
+including the best known biodiesel solution´213682at a0.006%gap, and P-split’s oversized lifts
+make it slowest on both (665and1181s). Across all three studies, MBM-GP reproduces grid MBM’s
+solution quality to within the gap target while cutting the reformulation cost by8–19times, making
+it the fastest total method on biodiesel (31s) and powergrid (63s); on the two studies where theM
+curves genuinely vary (Mpsqon F1,Mptqon biodiesel) the saving comes from the GP surrogate itself
+rather than uniform-Mdetection. CP matches every method on the convex powergrid study but is
+invalid on both nonconvex problems. For the powergrid problem, LOA converges to the same36.71
+optimum as every reformulation, closing its OA gap to numerical precision in36.8s, faster than any
+reformulation solves. On the nonconvex biodiesel and F1 studies its fixed-schedule NLP subprob-
+38
+https://pulsipher.info
+lems are themselves near-intractable under the benchmark settings: LOA exhausts its wall budget
+without an incumbent on biodiesel, and on F1 its best incumbent (164.29s) is78%above the best lap
+time found. Like CP , LOA is reliable in the convex regime it targets, but degrades sharply outside of
+it.
+Table 2:Cross-method summary. Reformulation and solver time are reported separately; all methods on all
+three studies use a5%MIP gap target under a uniform1200s wall budget, with Gurobi’s presolve, cuts, and
+heuristics disabled so solver time reflects reformulation quality. Objectives are lap time [s] for F1, cost [$] for
+biodiesel, and total expansion margin [MW] for powergrid; gap is the solver’s terminal relative MIP gap. LOA
+is an iterative decomposition, so the reformulation/solver split does not apply; its Solver column reports the
+time at which it reaches its result, and on F1 its Gap column reports its incumbent’s distance from the best-
+known objective. A dash marks entries that are not available.
+Problem Method Status Objective Gap [%] Reform [s] Solver [s]
+F1,N“100
+big-M Time Limit — —4.5 1200.2
+MBM Optimal93.85 3.7 21.7 102.2
+MBM-GP Optimal92.24 2.2 2.7 193.8
+hull Time Limit — —0.7 1200.2
+P-split Time Limit97.46 16.9 1.2 1200.6
+CP — — — — —
+LOA Time Limit164.29 78.1—1210.9
+Biodiesel
+(nonconvex),
+N“300
+big-M Optimal´213308 0.8 1.2 100.2
+MBM Optimal´213397 0.2 122.0 17.1
+MBM-GP Optimal´213397 0.2 6.3 24.7
+hull Optimal´213682 0.0 1.0 495.9
+P-split Optimal´213001 1.3 1.1 664.5
+CP — — — — —
+LOA Time Limit — — —1215.8
+Powergrid,
+N“200
+big-M Optimal36.71 0.0 3.8 102.3
+MBM Optimal36.71 0.0 139.8 44.5
+MBM-GP Optimal36.71 1.1 10.0 53.2
+hull Optimal36.71 0.0 1.6 325.2
+P-split Optimal36.71 3.8 6.6 1181.3
+CP Optimal36.71 0.5 158.3 45.0
+LOA Converged36.71 0.0—36.8
+5 Conclusions and Future Work
+We have generalized four GDP solution methods, the multiple big-M, P-split, and cutting plane re-
+formulations and the logic-based outer approximation algorithm, to the infinite-dimensional setting.
+The reformulations fill the relaxation spectrum between the big-M and hull endpoints that were pre-
+viously extended for InfiniteGDP . LOA adds an iterative alternative that never forms a single mixed-
+integer program. We have also introduced MBM-GP , a Gaussian-process variant of multiple big-M
+39
+https://pulsipher.info
+with no finite counterpart that learns the big-M function over the infinite domain from a small sub-
+set of the subproblem solves. The methods are implemented inDisjunctiveProgramming.jl,
+its extensionInfiniteDisjunctiveProgramming.jl, and theDisjunctiveAlgorithms.jl
+optimizer. The benchmark studies of this work demonstrate how the InfiniteGDP MBM method of-
+ten provides competitive solution times which can be attributed to its tight continuous relaxation;
+moreover, MBM-GP significantly reduces the upfront pre-solve computational cost when it becomes
+a bottleneck. Hull and P-split suit problems where a stronger relaxation justifies a larger model, big-
+M remains a fast baseline, and CP and LOA are reliable only on the convex problems they target.
+Future work will focus on a global logic-based outer approximation that rigorously handles noncon-
+vex disjuncts and on GPU-accelerated solves that exploit the recurrent structure of the transcribed
+problems.
+Declaration of generative AI and AI-assisted technologies in the manuscript
+preparation process
+Authors were assisted by Claude models (Anthropic) in the preparation of this work with figure gen-
+eration, equation formatting, and grammatical editing. All aspects of this work have been carefully
+reviewed and edited by the authors such that they take full responsibility for the final manuscript.
+Acknowledgments
+We acknowledge support from the Natural Sciences and Engineering Research Council of Canada
+under grant RGPIN-202403997 and support provided from the Department of Chemical Engineering
+at the University of Waterloo.
+References
+[1] Joshua L. Pulsipher, Weiqi Zhang, Tyler J. Hongisto, and Victor M. Zavala. A unifying modeling
+abstraction for infinite-dimensional optimization.Computers & Chemical Engineering, 156:107567,
+2022.
+[2] Mauro Salazar, Philipp Elbert, Soren Ebbesen, Carlo Bussi, and Christopher H. Onder. Time-
+optimal control policy for a hybrid electric race car.IEEE Transactions on Control Systems Technol-
+ogy, 25(6):1921–1934, 2017.
+[3] Alexander Heilmeier, Maximilian Geisslinger, and Johannes Betz. A quasi-steady-state lap time
+simulation for electrified race cars. In2019 Fourteenth International Conference on Ecological Vehi-
+cles and Renewable Energies (EVER), pages 1–10. IEEE, 2019.
+[4] Mohammad El Wajeh, Adel Mhamdi, and Alexander Mitsos. Optimal design and flexible op-
+eration of a fully electrified biodiesel production process.Industrial & Engineering Chemistry
+Research, 63(3):1487–1500, 2024.
+40
+https://pulsipher.info
+[5] Lorenz T. Biegler. An overview of simultaneous strategies for dynamic process optimization.
+Chemical Engineering and Processing: Process Intensification, 46(11):1043–1053, 2007.
+[6] R. Raman and I.E. Grossmann. Modelling and computational techniques for logic based integer
+programming.Computers & Chemical Engineering, 18(7):563–578, 1994.
+[7] Ignacio E. Grossmann and Francisco Trespalacios. Systematic modeling of discrete-continuous
+optimization models through generalized disjunctive programming.AIChE Journal, 59(9):3276–
+3295, 2013.
+[8] Francisco Trespalacios and Ignacio E. Grossmann. Review of mixed-integer nonlinear and gen-
+eralized disjunctive programming methods.Chemie Ingenieur Technik, 86(7):991–1012, 2014.
+[9] Jan Kronqvist, David E. Bernal Neira, and Ignacio E. Grossmann. 50 years of mixed-integer
+nonlinear and disjunctive programming.European Journal of Operational Research, 331(3):687–
+705, 2025.
+[10] Sangbum Lee and Ignacio E. Grossmann. A global optimization algorithm for nonconvex gen-
+eralized disjunctive programming and applications to process systems.Computers & Chemical
+Engineering, 25(11-12):1675–1697, 2001.
+[11] Dimitri J. Papageorgiou and Francisco Trespalacios. Pseudo basic steps: bound improvement
+guarantees from Lagrangian decomposition in convex disjunctive programming.EURO Journal
+on Computational Optimization, 6(1):55–83, 2018.
+[12] Egon Balas. Disjunctive programming and a hierarchy of relaxations for discrete optimization
+problems.SIAM Journal on Algebraic Discrete Methods, 6(3):466–486, 1985.
+[13] Francisco Trespalacios and Ignacio E. Grossmann. Improved big-M reformulation for general-
+ized disjunctive programs.Computers & Chemical Engineering, 76:98–103, 2015.
+[14] Jan Kronqvist, Ruth Misener, and Calvin Tsay. P-split formulations: A class of intermediate
+formulations between big-M and convex hull for disjunctive constraints, 2022.
+[15] Francisco Trespalacios and Ignacio E. Grossmann. Cutting plane algorithm for convex general-
+ized disjunctive programs.INFORMS Journal on Computing, 28(2):209–222, 2016.
+[16] Metin T ¨urkay and Ignacio E. Grossmann. Logic-based minlp algorithms for the optimal synthe-
+sis of process networks.Computers & Chemical Engineering, 20(8):959–978, 1996.
+[17] J. Viswanathan and I.E. Grossmann. A combined penalty function and outer-approximation
+method for minlp optimization.Computers & Chemical Engineering, 14(7):769–782, 1990.
+[18] Maria Lorena Bergamini, Pio Aguirre, and Ignacio Grossmann. Logic-based outer approxi-
+mation for globally optimal synthesis of process networks.Computers & Chemical Engineering,
+29(9):1914–1933, 2005.
+41
+https://pulsipher.info
+[19] Qi Chen, Emma S Johnson, David E Bernal, Romeo Valentin, Sunjeev Kale, Johnny Bates, John D
+Siirola, and Ignacio E Grossmann. Pyomo. gdp: an ecosystem for logic based modeling and
+optimization development: Q. chen et al.Optimization and Engineering, 23(1):607–642, 2022.
+[20] Hector D. Perez, Shivank Joshi, and Ignacio E. Grossmann. DisjunctiveProgramming.jl: Gener-
+alized disjunctive programming models and algorithms for JuMP, 2023.
+[21] Vikas Bansal, Vassilis Sakizlis, Robert Ross, John D. Perkins, and Efstratios N. Pistikopoulos.
+New algorithms for mixed-integer dynamic optimization.Computers & Chemical Engineering,
+27(5):647–668, 2003.
+[22] Sebastian Sager, Gerhard Reinelt, and Hans Georg Bock. Direct methods with maximal lower
+bound for mixed-integer optimal control problems.Mathematical Programming, 118(1):109–149,
+2009.
+[23] Falk M. Hante and Sebastian Sager. Relaxation methods for mixed-integer optimal control of
+partial differential equations.Computational Optimization and Applications, 55(1):197–225, 2013.
+[24] Sebastian Sager, Hans Georg Bock, and Moritz Diehl. The integer approximation error in mixed-
+integer optimal control.Mathematical Programming, 133(1–2):1–23, 2012.
+[25] Clemens Zeile, Nicol `o Robuschi, and Sebastian Sager. Mixed-integer optimal control under
+minimum dwell time constraints.Mathematical Programming, 188(2):653–694, 2021.
+[26] Evelyn Gondosiswanto and Joshua L. Pulsipher. Advances to modeling and solving infinite-
+dimensional optimization problems in InfiniteOpt.jl.Digital Chemical Engineering, 15:100236,
+2025.
+[27] Ignacio E. Grossmann.Advanced Optimization for Process Systems Engineering. Cambridge Uni-
+versity Press, Cambridge, United Kingdom, 2021.
+[28] Carl Edward Rasmussen and Christopher K. I. Williams.Gaussian Processes for Machine Learning.
+Adaptive Computation and Machine Learning. MIT Press, Cambridge, Massachusetts, 2006.
+[29] Daniel Ovalle, Stefan Mazzadi, Carl D. Laird, Ignacio E. Grossmann, and Joshua L. Pulsipher.
+Event constrained programming, 2025.
+[30] Giacomo Perantoni and David J. N. Limebeer. Optimal control for a formula one car with vari-
+able parameters.Vehicle System Dynamics, 52(5):653–678, 2014.
+[31] David J. N. Limebeer, Giacomo Perantoni, and Anil V . Rao. Optimal control of Formula One car
+energy recovery systems.International Journal of Control, 87(10):2065–2080, 2014.
+[32] Cordin Arpagaus, Fr ´ed´eric Bless, Michael Uhlmann, J ¨urg Schiffmann, and Stefan S. Bertsch.
+High temperature heat pumps: Market overview, state of the art, research status, refrigerants,
+and application potentials.Energy, 152:985–1010, 2018.
+42
+https://pulsipher.info
+[33] Fangrui Ma and Milford A. Hanna. Biodiesel production: a review.Bioresource Technology,
+70(1):1–15, 1999.
+43

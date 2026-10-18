@@ -1,0 +1,178 @@
+<title>Engine2 Blind Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; verdict table, then a track picker driving one big speed trace + battery strip. */
+:root{
+  --bg:#f6f7f8; --panel:#ffffff; --ink:#0d1117; --ink2:#4b5361; --muted:#7b8494; --line:#dfe3e8; --grid:#edf0f3;
+  --accent:#c8102e;
+  --s-real:#0d1117; --s-new:#2a78d6; --s-old:#eb6834; --s-hyb:#1baf7a; --s-geom:#4a3aa7; --s-25:#a3a9b3;
+  --good:#0a7d33; --bad:#b42318;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif; --f-body:"IBM Plex Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121417; --panel:#1a1d21; --ink:#f2f4f7; --ink2:#c2c8d0; --muted:#8a92a0; --line:#2c3138; --grid:#23272d;
+  --accent:#ff4d5e; --s-real:#f2f4f7; --s-new:#3987e5; --s-old:#d95926; --s-hyb:#199e70; --s-geom:#9085e9; --s-25:#5d636d;
+  --good:#3fbf6a; --bad:#ff6b5e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121417; --panel:#1a1d21; --ink:#f2f4f7; --ink2:#c2c8d0; --muted:#8a92a0; --line:#2c3138; --grid:#23272d;
+  --accent:#ff4d5e; --s-real:#f2f4f7; --s-new:#3987e5; --s-old:#d95926; --s-hyb:#199e70; --s-geom:#9085e9; --s-25:#5d636d;
+  --good:#3fbf6a; --bad:#ff6b5e; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:28px 60px;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,4.5vw,44px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:700;font-size:21px;margin:0 0 10px;text-wrap:balance}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+p{margin:0;max-width:72ch}
+.lead{color:var(--ink2);font-size:16.5px}
+section{display:flex;flex-direction:column;gap:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--ink2);font-size:12.5px;letter-spacing:.03em}
+tr:last-child td{border-bottom:none}
+tr.win td{font-weight:600}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:8px}
+.mono{font-family:var(--f-mono)}
+.picker{display:flex;flex-wrap:wrap;gap:6px}
+.picker button{font:500 13px var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.picker button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.picker button:focus-visible,.legend button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 14px 8px;position:relative}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:6px}
+.legend button{font:13px var(--f-body);background:none;border:none;color:var(--ink);cursor:pointer;padding:3px 0;display:flex;align-items:center}
+.legend button[aria-pressed="false"]{color:var(--muted)}
+.legend button[aria-pressed="false"] .sw{opacity:.25}
+svg text{fill:var(--muted);font:11px var(--f-mono)}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:12px var(--f-mono);box-shadow:0 4px 16px rgba(0,0,0,.12);display:none;min-width:190px}
+.tip div{display:flex;justify-content:space-between;gap:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.stat{border-top:3px solid var(--line);padding-top:8px}
+.stat b{font-family:var(--f-display);font-size:22px;display:block}
+.stat span{color:var(--ink2);font-size:13px}
+ul{margin:0;padding-left:20px;max-width:72ch} li{margin:4px 0}
+.note{color:var(--ink2);font-size:14px}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <div class="eyebrow">2026 optimal-lap pipeline · physics engine audit · 9 Oct 2026</div>
+    <h1>Engine2 blind test against 12 real 2026 qualifying laps</h1>
+    <p class="lead">A new 2026 lap engine built on the FIA energy rules, scored the strict way. For each circuit, the car was fitted on the other 11 circuits and then asked to predict this one blind. Every number on this page compares a prediction with the real 2026 pole-position lap from F1 timing data.</p>
+  </header>
+
+  <section>
+    <h2>Verdict</h2>
+    <div class="stats" id="stats"></div>
+    <p class="note">The new engine is clearly better than the physics engine we shipped. Its lap-time error is halved and its speed-trace error is about 30% lower. It does not beat the pattern hybrid (real 2025 lap scaled by measured 2025→2026 ratios). On our own SVG racelines the new car is 3.9 s too slow, which shows that most of the old engine's error came from the track drawings, not the car.</p>
+  </section>
+
+  <section>
+    <h2>Scores over all circuits</h2>
+    <div class="tbl"><table id="sum"></table></div>
+    <p class="note">Lap error is the absolute difference from the real 2026 lap time. Trace RMSE is the speed difference along the lap after aligning the lap start and corner apexes. Medians are over the circuits each method covers. The old engine and the raceline run exist only for the 9 tracks we shipped videos for.</p>
+  </section>
+
+  <section>
+    <h2>Speed graphs, track by track</h2>
+    <div class="picker" id="picker" role="group" aria-label="Circuit"></div>
+    <div class="chart">
+      <div class="legend" id="legend"></div>
+      <svg id="svg" width="100%" viewBox="0 0 1000 470" role="img" aria-label="Speed versus distance"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="tbl"><table id="per"></table></div>
+  </section>
+
+  <section>
+    <h2>What the engine is</h2>
+    <ul>
+      <li><b>Rules taken from the FIA document itself</b> (2026 Power Unit regulations, Issue 6): ERS-K 350 kW (5.4.6). Propulsion limit P = 1800 − 5·v, or 7100 − 20·v in override (5.4.7). 4 MJ battery window (5.4.8). 8.5–9 MJ harvest per lap (5.4.9). Fuel flow 3000 MJ/h. Qualifying energy follows the April 2026 changes: 7 MJ and 350 kW superclip from Miami.</li>
+      <li><b>The old engine's power curve was not in the rules.</b> It cut electric power from 350 kW at 200 km/h to zero at 300 km/h. In the real rules, top speed is limited by the energy budget per lap.</li>
+      <li><b>Battery strategy is solved, not scripted.</b> With a tight energy budget, the minimum-time solution is full deploy out of each corner, then holding a cruise speed and harvesting spare engine power. Each straight's cruise speed is then raised wherever the battery allows, so a full battery at the start of the lap is spent early.</li>
+      <li><b>The data picked the deployment profile.</b> All three FIA profiles were fitted. The 250 kW cap matched real laps best: 14.9 km/h fitted trace error, against 18.0 and 18.6 for the other two.</li>
+      <li><b>The track comes from the real 2025 pole lap, not an SVG.</b> Wherever the 2025 driver was off full throttle or trail-braking, the speed reveals how tight the corner is. A 2025 car fitted the same way reproduces all 12 real 2025 laps within 4–10 km/h.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Known limits</h2>
+    <ul>
+      <li>Some fitted values are effective rather than physical. Corner-mode drag came out at 1.46 m², and power fits at about 0.75× nameplate for both years because of the 3.7 Hz telemetry.</li>
+      <li>Per-event energy limits are not public. Monaco's tunnel comes out too fast, and Monza's straights are the worst trace (24 km/h).</li>
+      <li>The fitted car is tied to the identified-track geometry. On our SVG racelines it does not transfer, so videos still need the speed profile mapped onto the raceline by distance.</li>
+      <li>A 50/50 average of engine2 and the hybrid scored 0.53 s and 11.4 km/h, essentially level with the hybrid alone.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const D = /*DATA*/null;
+const SER = [
+  {k:'real', label:'Real 2026 Q', c:'--s-real', w:2.2, on:true},
+  {k:'new_blind', label:'Engine2 (blind)', c:'--s-new', w:1.8, on:true},
+  {k:'hybrid', label:'Pattern hybrid', c:'--s-hyb', w:1.5, on:true},
+  {k:'old', label:'Old shipped engine', c:'--s-old', w:1.5, on:true},
+  {k:'new_geom', label:'Engine2 on our raceline', c:'--s-geom', w:1.3, on:false, dash:'5 4'},
+  {k:'real2025', label:'Real 2025 pole', c:'--s-25', w:1.2, on:false, dash:'2 3'},
+];
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const tracks = Object.keys(D);
+const med = a => { const b=[...a].sort((x,y)=>x-y), n=b.length; return n? (n%2? b[(n-1)/2] : (b[n/2-1]+b[n/2])/2) : NaN; };
+const fmt = (x,d=2) => (x>=0?'+':'−')+Math.abs(x).toFixed(d);
+
+// summary
+const methods = [['old','Old shipped engine','--s-old'],['new_geom','Engine2 on our raceline','--s-geom'],['new_blind','Engine2, blind leave-one-out','--s-new'],['hybrid','Pattern hybrid, blind leave-one-out','--s-hyb']];
+const S = {};
+for (const [k] of methods){ const cs=tracks.filter(c=>D[c].m[k]); S[k]={n:cs.length, err:med(cs.map(c=>Math.abs(D[c].m[k].err))), rmse:med(cs.map(c=>D[c].m[k].rmse)), corr:med(cs.map(c=>D[c].m[k].corr))}; }
+document.getElementById('sum').innerHTML = '<tr><th>Method</th><th>Circuits</th><th>Median lap error</th><th>Median trace RMSE</th><th>Median correlation</th></tr>' +
+  methods.map(([k,l,c])=>`<tr class="${k==='new_blind'?'win':''}"><td><span class="sw" style="background:var(${c})"></span>${l}</td><td>${S[k].n}</td><td>${S[k].err.toFixed(2)} s</td><td>${S[k].rmse.toFixed(1)} km/h</td><td>${S[k].corr.toFixed(3)}</td></tr>`).join('');
+document.getElementById('stats').innerHTML = [
+  ['new_blind','Engine2, blind'],['old','Old shipped engine'],['hybrid','Pattern hybrid']].map(([k,l])=>
+  `<div class="stat" style="border-top-color:var(${methods.find(m=>m[0]===k)[2]})"><span>${l}</span><b>${S[k].err.toFixed(2)} s · ${S[k].rmse.toFixed(1)} km/h</b><span>median lap error · trace RMSE</span></div>`).join('');
+
+// picker + legend
+let cur = 'Silverstone';
+const pk = document.getElementById('picker');
+tracks.forEach(c=>{ const b=document.createElement('button'); b.textContent=c; b.setAttribute('aria-pressed', c===cur); b.onclick=()=>{cur=c; [...pk.children].forEach(x=>x.setAttribute('aria-pressed', x===b)); draw();}; pk.appendChild(b); });
+const lg = document.getElementById('legend');
+SER.forEach(s=>{ const b=document.createElement('button'); b.setAttribute('aria-pressed', s.on); b.innerHTML=`<span class="sw" style="background:var(${s.c})"></span>${s.label}`; b.onclick=()=>{s.on=!s.on; b.setAttribute('aria-pressed', s.on); draw();}; lg.appendChild(b); });
+
+const svg = document.getElementById('svg'), tip = document.getElementById('tip');
+const W=1000, X0=44, X1=990, Y0=12, Y1=360, SY0=385, SY1=455;
+let sx, sy, d;
+function draw(){
+  d = D[cur]; const s=d.s, xmax=s[s.length-1];
+  let lo=1e9, hi=0; SER.forEach(q=>{ if(q.on && d[q.k]) d[q.k].forEach(v=>{lo=Math.min(lo,v);hi=Math.max(hi,v);}); });
+  lo=Math.floor(lo/50)*50; hi=Math.ceil(hi/50)*50;
+  sx = x => X0+(X1-X0)*x/xmax; sy = v => Y1-(Y1-Y0)*(v-lo)/(hi-lo);
+  let h='';
+  for(let v=lo; v<=hi; v+=50) h+=`<line x1="${X0}" x2="${X1}" y1="${sy(v)}" y2="${sy(v)}" stroke="${css('--grid')}"/><text x="${X0-6}" y="${sy(v)+4}" text-anchor="end">${v}</text>`;
+  for(let x=0; x<=xmax; x+=1000) h+=`<text x="${sx(x)}" y="${SY1+13}" text-anchor="middle">${x/1000} km</text>`;
+  h+=`<text x="${X0}" y="${Y0-2}" >km/h</text>`;
+  [...SER].reverse().forEach(q=>{ if(!q.on||!d[q.k]) return; const p=d[q.k].map((v,i)=>`${i?'L':'M'}${sx(s[i]).toFixed(1)},${sy(v).toFixed(1)}`).join('');
+    h+=`<path d="${p}" fill="none" stroke="${css(q.c)}" stroke-width="${q.w}" stroke-linejoin="round" ${q.dash?`stroke-dasharray="${q.dash}"`:''}/>`; });
+  // battery strip
+  const ssy = e => SY1-(SY1-SY0)*e/4;
+  h+=`<text x="${X0}" y="${SY0-6}">Engine2 battery, MJ (0–4)</text><line x1="${X0}" x2="${X1}" y1="${SY1}" y2="${SY1}" stroke="${css('--line')}"/><line x1="${X0}" x2="${X1}" y1="${SY0}" y2="${SY0}" stroke="${css('--grid')}"/>`;
+  const bp=d.soc.map((e,i)=>`${i?'L':'M'}${sx(d.soc_s[i]).toFixed(1)},${ssy(e).toFixed(1)}`).join('');
+  h+=`<path d="${bp} L${sx(d.soc_s[d.soc_s.length-1])},${SY1} L${sx(0)},${SY1}Z" fill="${css('--s-new')}" fill-opacity=".15" stroke="${css('--s-new')}" stroke-width="1.2"/>`;
+  h+=`<line id="xh" x1="0" x2="0" y1="${Y0}" y2="${SY1}" stroke="${css('--muted')}" stroke-width="1" visibility="hidden"/>`;
+  svg.innerHTML=h;
+  const m=d.m, rows=[['old','Old shipped engine'],['new_geom','Engine2 on our raceline'],['new_blind','Engine2 (blind)'],['hybrid','Pattern hybrid'],['real2025','Real 2025 pole (reference)']];
+  document.getElementById('per').innerHTML=`<tr><th>${cur} · real 2026 Q ${m.real.toFixed(3)} s</th><th>Lap time</th><th>Lap error</th><th>Trace RMSE</th><th>Correlation</th></tr>`+
+    rows.filter(([k])=>m[k]).map(([k,l])=>`<tr class="${k==='new_blind'?'win':''}"><td>${l}</td><td>${(m.real+m[k].err).toFixed(3)} s</td><td>${fmt(m[k].err)} s</td><td>${m[k].rmse.toFixed(1)} km/h</td><td>${m[k].corr.toFixed(3)}</td></tr>`).join('');
+}
+svg.addEventListener('pointermove', e=>{
+  const r=svg.getBoundingClientRect(), x=(e.clientX-r.left)*W/r.width; if(x<X0||x>X1){tip.style.display='none';return;}
+  const s=d.s, xm=s[s.length-1]*(x-X0)/(X1-X0); let i=0; while(i<s.length-1&&s[i]<xm) i++;
+  const xh=document.getElementById('xh'); xh.setAttribute('x1',sx(s[i])); xh.setAttribute('x2',sx(s[i])); xh.setAttribute('visibility','visible');
+  tip.innerHTML=`<div><span>distance</span><span>${Math.round(s[i])} m</span></div>`+SER.filter(q=>q.on&&d[q.k]).map(q=>`<div><span><span class="sw" style="background:var(${q.c})"></span>${q.label}</span><span>${d[q.k][i].toFixed(0)}</span></div>`).join('');
+  tip.style.display='block'; const px=(e.clientX-r.left); tip.style.left=Math.min(px+16, r.width-tip.offsetWidth)+'px'; tip.style.top='54px';
+});
+svg.addEventListener('pointerleave',()=>{tip.style.display='none'; const xh=document.getElementById('xh'); if(xh) xh.setAttribute('visibility','hidden');});
+draw();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>

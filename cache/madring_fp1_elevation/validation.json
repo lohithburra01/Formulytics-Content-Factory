@@ -1,0 +1,36 @@
+{
+  "registration": {
+    "lag": 1990,
+    "shift_frac": 0.9716796875,
+    "shift_m": 5180.705718658441,
+    "rms_m": 9.18395259545925,
+    "median_m": 6.776540042194551,
+    "p95_m": 18.53992504119253,
+    "max_m": 27.003086566457863,
+    "scale": 1.00364996710258,
+    "rotation": [
+      [
+        -0.0021323954310779893,
+        -0.999997726442279
+      ],
+      [
+        0.9999977264422786,
+        -0.0021323954310786433
+      ]
+    ],
+    "translation": [
+      -763.0910501138874,
+      -98.31930191449527
+    ]
+  },
+  "sf_index": 2590,
+  "line_length_m": 5331.3318617472505,
+  "reference_lap_s": 94.077,
+  "reference_distance_m": 5345.143,
+  "raw_elevation_span_m": 24.600000000000023,
+  "smoothed_span_m": 23.979813538753092,
+  "height_seam_m": 0.0,
+  "relative_height_only": true,
+  "banking_panel": false,
+  "preview_only": true
+}

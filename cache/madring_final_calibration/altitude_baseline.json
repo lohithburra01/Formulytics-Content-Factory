@@ -1,0 +1,90 @@
+{
+  "name": "altitude_baseline",
+  "line": "D:\\f1_hot_lap\\OPTIMAL LAP SCRIPTS\\cache\\madring_fp1_elevation\\madring_fp1_raceline.json",
+  "cda": 0.8,
+  "cl": 4.2,
+  "altitude_assumption_m": 684.0,
+  "rho": 1.1465524801187907,
+  "bank_peak_deg": 0.0,
+  "bank_start": 0.5,
+  "bank_end": 0.6,
+  "raw_lap_s": 97.79343219189637,
+  "lap_s": 98.65292384993464,
+  "lap_vs_fp1_s": 4.5759238499346395,
+  "min_speed_kmh": 69.5856084780763,
+  "top_speed_kmh": 315.4121922635271,
+  "correlation": 0.9449693619241963,
+  "speed_mae_kmh": 15.583132521066712,
+  "corner_median_error_kmh": -8.600000000000001,
+  "corners": [
+    {
+      "frac": 0.0928,
+      "real_kmh": 101.09,
+      "sim_kmh": 88.81,
+      "error_kmh": -12.28
+    },
+    {
+      "frac": 0.2886,
+      "real_kmh": 111.09,
+      "sim_kmh": 115.5,
+      "error_kmh": 4.4
+    },
+    {
+      "frac": 0.3546,
+      "real_kmh": 85.4,
+      "sim_kmh": 99.97,
+      "error_kmh": 14.57
+    },
+    {
+      "frac": 0.4404,
+      "real_kmh": 203.0,
+      "sim_kmh": 155.21,
+      "error_kmh": -47.79
+    },
+    {
+      "frac": 0.6128,
+      "real_kmh": 149.0,
+      "sim_kmh": 112.77,
+      "error_kmh": -36.23
+    },
+    {
+      "frac": 0.7402,
+      "real_kmh": 101.0,
+      "sim_kmh": 97.94,
+      "error_kmh": -3.06
+    },
+    {
+      "frac": 0.792,
+      "real_kmh": 215.04,
+      "sim_kmh": 157.94,
+      "error_kmh": -57.1
+    },
+    {
+      "frac": 0.8858,
+      "real_kmh": 78.13,
+      "sim_kmh": 69.65,
+      "error_kmh": -8.47
+    },
+    {
+      "frac": 0.9132,
+      "real_kmh": 116.05,
+      "sim_kmh": 128.77,
+      "error_kmh": 12.72
+    },
+    {
+      "frac": 0.9704,
+      "real_kmh": 132.04,
+      "sim_kmh": 123.32,
+      "error_kmh": -8.73
+    }
+  ],
+  "physics": {
+    "gain_median": 27.29770274229908,
+    "gain_peak": 44.00200000000001,
+    "drop_median": 44.63525131282849,
+    "drop_peak": 116.28199999999998,
+    "superclip_fraction": 0.19736842105263158,
+    "superclip_peak": 61.6897974493623
+  },
+  "sanity_pass": true
+}

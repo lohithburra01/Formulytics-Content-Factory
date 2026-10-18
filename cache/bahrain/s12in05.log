@@ -1,0 +1,42 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.614 CL_CORNER=4.970 RHO=1.2242
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[5.69,7.13] l=[5.69,7.13]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=5.975 mean|a|=3.304 (21.40s)
+  iter 1: max|a|=3.818 mean|a|=2.152 (19.38s)
+  iter 2: max|a|=2.726 mean|a|=1.332 (24.09s)
+  iter 3: max|a|=1.663 mean|a|=0.791 (21.27s)
+  iter 4: max|a|=1.313 mean|a|=0.456 (22.11s)
+  iter 5: max|a|=1.081 mean|a|=0.274 (21.81s)
+  iter 6: max|a|=0.915 mean|a|=0.180 (20.61s)
+  iter 7: max|a|=0.765 mean|a|=0.125 (21.66s)
+  iter 8: max|a|=0.621 mean|a|=0.093 (21.47s)
+  iter 9: max|a|=0.496 mean|a|=0.073 (21.57s)
+  iter 10: max|a|=0.391 mean|a|=0.060 (20.85s)
+  iter 11: max|a|=0.307 mean|a|=0.051 (20.83s)
+  iter 12: max|a|=0.282 mean|a|=0.044 (22.19s)
+  iter 13: max|a|=0.271 mean|a|=0.039 (19.92s)
+  iter 14: max|a|=0.259 mean|a|=0.035 (21.50s)
+  iter 15: max|a|=0.248 mean|a|=0.031 (21.53s)
+  iter 16: max|a|=0.237 mean|a|=0.028 (21.36s)
+  iter 17: max|a|=0.226 mean|a|=0.026 (21.20s)
+  iter 18: max|a|=0.216 mean|a|=0.024 (17.60s)
+  iter 19: max|a|=0.206 mean|a|=0.023 (10.70s)
+  iter 20: max|a|=0.197 mean|a|=0.021 (10.36s)
+  converged at iter 20
+[iqp] 2672 pts, 5344 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=6.32m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 553/800 straight stations
+[sim] refinement slack: max=2.97e-03 (482/800 stations relaxed)
+[sim] adaptive de-wobble: 527/2675 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.2259 (IQP seed) → 0.0840 (refined)
+[sim] raceline: 2675 pts, 5352 m, |κ|max=0.0840
+[sim] S/F line at raceline idx 2611/2675 (frac 97.6%, |κ|=0.0000) — reference_2025_bahrain_q.csv x-corr peak=1715
+[sim] wrote raceline -> cache/bahrain/s12in05_rl.json
+  closure iter 0: v0=86.5 vN=86.5 d=0.06 T_lap=89.621s
+  closure iter 1: v0=86.5 vN=86.5 d=0.06 T_lap=88.776s
+  closure converged at iter 1
+[sim] lap: 88.776s (bang-bang) -> 89.340s (jerk-limited), +0.564s for realism
+[sim] wrote 2681 rows -> cache/bahrain/s12in05.csv
+[sanity] T_lap=89.34s  v=[78,334] km/h  superclip frames=141  gain_med=28.8  drop_med=55.7 km/h/s
