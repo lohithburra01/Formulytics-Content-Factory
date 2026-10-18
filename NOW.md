@@ -27,7 +27,10 @@ improving the project is the vehicle.
 ## Known caveats
 - 3 scripts hard-code the ORIGINAL folder path (don't run from sandbox until repointed):
   `elevation_3d_toy.py`, `_open_elevation_toy.py`, `LAP COMPARISON\_template_baker.py`
-- Git-ignored (re-fetchable/heavy): videos, `cache/fastf1_http_cache.sqlite`, `cache/ext/saxena_zip/*.zip`
+- Git-ignored (re-fetchable/heavy): videos, `cache/fastf1_http_cache.sqlite`, `cache/ext/saxena_zip/*.zip`,
+  `cache/ext/kadiri/` (third-party clone with its own .git)
+- D: drive records no file ownership → sandbox added to global git `safe.directory`.
+- Many small loose git objects bloat on this drive (2.2 GB → 279 MB after `git gc`); run `git gc` after big commits.
 
 ## Next action
 Step 1 remainder: golden regression tests for shipped tracks (generalise the Zandvoort bit-identical recipe).
