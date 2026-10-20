@@ -16,3 +16,7 @@ cache/ext/saxena_zip/*.zip
 
 # Third-party cloned repo (has its own .git)
 cache/ext/kadiri/
+
+# pipeline run folders (re-creatable from the committed packs)
+runs/
+weekend/.search_cache/

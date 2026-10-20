@@ -1,0 +1,59 @@
+id: run/pipeline_settings
+layer: run
+scope: {}
+links: [run/sim_numerics]
+values:
+  # --- speed-graph checks (grill D7: start from the existing gate / registry definitions) ---
+  check.window_frac: {value: 0.015, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate/autofit corner window (MATCH_TOL_FRAC)"}
+  check.corner_prominence_kmh: {value: 8.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing corner detection (_track_registry.corner_minima)"}
+  check.corner_sep_m: {value: 80.0, unit: m, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing corner detection (_track_registry.corner_minima)"}
+  check.onset_drop_kmh: {value: 5.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: braking onset = 5 km/h below the straight peak", pending_review: false}
+  check.exit_gain_kmh: {value: 60.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: exit acceleration over the first 60 km/h", pending_review: false}
+  check.brake_bands_kmh: {value: [100.0, 150.0, 200.0, 250.0, 300.0], unit: km/h, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: 50 km/h speed bands for braking/acceleration rates", pending_review: false}
+  check.accel_bands_kmh: {value: [100.0, 150.0, 200.0, 250.0, 300.0], unit: km/h, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: 50 km/h speed bands", pending_review: false}
+  # --- tuning (grill D5) ---
+  fit.tol_kmh: {value: 3.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing autofit tolerance TOL_HS"}
+  fit.tol_pct: {value: 5.0, unit: "%", origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: rate-band tolerance", pending_review: false}
+  fit.max_sweeps: {value: 6, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: tuning budget", pending_review: false}
+  fit.max_eval: {value: 8, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: tuning budget per number", pending_review: false}
+  fit.range.CDA_STRAIGHT_M2: {value: [0.45, 1.30], unit: m^2, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing autofit range CDA_LIM"}
+  fit.range.CL_CORNER_M2: {value: [3.0, 6.5], unit: m^2, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing autofit range CL_LIM"}
+  fit.range.track.street_grip_k: {value: [0.3, 1.0], origin: USER_DECISION, decided: 2026-10-19, reason: "existing range of cache/singapore/_fit_street_grip.py"}
+  fit.range.MU_LONG: {value: [0.9, 2.2], origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: plausible braking friction", pending_review: false}
+  fit.range.TRAIL_FRAC_MIN: {value: [0.15, 1.0], origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: fraction of braking grip used near the apex", pending_review: false}
+  fit.range.MU_DRIVE: {value: [0.6, 1.6], origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: plausible traction friction", pending_review: false}
+  # --- racing line (shipped v4b optimiser settings) ---
+  line.margin_m: {value: 0.3, unit: m, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from the shipped v4b line (car centre to road edge)", pending_review: false}
+  line.every: {value: 12, unit: stations, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b: a knot every ~24 m", pending_review: false}
+  line.smooth_w: {value: 0.006, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b optimiser default", pending_review: false}
+  line.apex_w: {value: 1.5, unit: s/m^2, origin: USER_DECISION, decided: 2026-10-08, reason: "user nudge 2026-10-08 'not touching all the apexes' -> apex-touch penalty (v4b weight)"}
+  line.apex_tol_m: {value: 0.15, unit: m, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b: a line within 0.15 m of the bound counts as touching", pending_review: false}
+  line.apex_win: {value: 20, unit: stations, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b: apex search +-20 stations", pending_review: false}
+  line.steps_first: {value: [2.0, 1.0, 0.5, 0.25], unit: m, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b round 1", pending_review: false}
+  line.steps_next: {value: [1.0, 0.5, 0.25], unit: m, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b rounds 2-3", pending_review: false}
+  line.max_sweeps: {value: 30, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b", pending_review: false}
+  line.accept_s: {value: 0.0001, unit: s, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b: minimum improvement", pending_review: false}
+  line.workers: {value: 12, origin: COMPUTED, source: "parallel workers; results are independent of the count (ProcessPool map keeps order, pure cost)"}
+  line.rule_w: {value: 1.5, unit: s/m^2, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b touch weight", pending_review: false}
+  line.rule_window_frac: {value: [0.33, 0.67], origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: entry = middle third between the previous apex and this one (v4b window 2060-2120 m = 0.33-0.64)", pending_review: false}
+  line.rule_seed_frac: {value: 0.8, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from v4b wide seed (the optimiser alone stayed trapped inside)", pending_review: false}
+  line.rule_retries: {value: 2, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: rule weight x4 retries before reporting a violation", pending_review: false}
+  line.max_rounds: {value: 3, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: tune<->line rounds (v4b used 3)", pending_review: false}
+  line.fixed_point_tol_m: {value: 0.5, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: line counts as settled when it moves < 0.5 m", pending_review: false}
+  sim.brake_preserve: {value: false, origin: COMPUTED, source: "test 2026-10-20 vs 2026 Singapore FP1 braking bands: on -> high-speed braking 43-59% stronger than FP1; off -> 6-31% weaker; off is closer (spec: wired, recorded off)"}
+  check.flag_kmh: {value: 10.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing corner-compare flag (+-10 km/h, cache/_corner_compare.py)"}
+  # --- realism gate bands (grill D7: existing cache/_gate_2026.py bands) ---
+  gate.gain_med_kmh_s: {value: [14.0, 28.0], unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band (real 2026 medians 16.6/24.2)"}
+  gate.gain_peak_max_kmh_s: {value: 64.0, unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band (real peaks 55/61)"}
+  gate.drop_med_kmh_s: {value: [32.0, 52.0], unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band (real 36.5/44.2)"}
+  gate.drop_peak_min_kmh_s: {value: 85.0, unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band (real 104/154)"}
+  gate.superclip_frac_max: {value: 0.45, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band"}
+  gate.superclip_peak_min_kmh_s: {value: 35.0, unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band"}
+  # --- the one time knob (grill D6) ---
+  knob.candidates: {value: "MU_LAT,P_ICE_MAX_W,CL_CORNER_M2,CDA_STRAIGHT_M2", origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: grip, power, downforce, drag; the test picks the one that moves the line least", pending_review: false}
+  knob.max_pattern_drop: {value: 0.0, origin: USER_DECISION, decided: 2026-10-20, reason: "grill D24: the time knob may not make the speed pattern vs the real lap any worse"}
+  knob.span: {value: 0.3, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: search +-30% of the start value", pending_review: false}
+  knob.iters: {value: 14, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: bisection steps (~0.01% resolution)", pending_review: false}
+  knob.reopt_steps: {value: [0.5, 0.25], unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: short line re-optimisation per candidate", pending_review: false}
+  knob.reopt_sweeps: {value: 4, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20", pending_review: false}
+

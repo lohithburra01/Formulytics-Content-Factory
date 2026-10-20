@@ -32,5 +32,42 @@ improving the project is the vehicle.
 - D: drive records no file ownership → sandbox added to global git `safe.directory`.
 - Many small loose git objects bloat on this drive (2.2 GB → 279 MB after `git gc`); run `git gc` after big commits.
 
-## Next action
+## 2026-10-20 — REBUILD IN PROGRESS (supersedes roadmap below)
+Grill + retro done. ALL decisions: `.scratch/race-weekend-flow/grill-decisions.md` (read first).
+v1 renamed to `spec_v1_rejected.md` / `flow_v1_rejected.html`. **Spec v2 = `.scratch/race-weekend-flow/spec.md` (Status: ready-for-agent; seams: resolve_pack, run(pack), knowledge store API — user-approved).** `learn/` lessons = rejected format (user wants traced examples in chat).
+Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-decisions.md).
+
+## Next action  (RESUME HERE - 2026-10-20 late)
+Goal (user): the WHOLE pipeline finished, tested on Singapore 2026. Plan = `.scratch/race-weekend-flow/spec.md`
++ tickets `.scratch/race-weekend-flow/issues/01-13` (each file has a Status line - read those first).
+Pipeline map (how the old bat works): `.scratch/race-weekend-flow/evidence/pipeline_map_singapore.md`.
+
+What exists (`weekend/`): notes (YAML layers) -> `python -m weekend.resolve singapore 2026` -> pack (142 values,
+all with origin) -> stages in clean child processes, cached per input key under `runs/<track>_<year>/<stage>/<key>/`:
+track -> base_line -> refs -> car_and_line (tune <-> line rounds) -> time_knob -> final -> checks -> video.
+One stage: `python -m weekend.pipeline <stage> weekend/packs/singapore_2026.json`. Whole thing: `python -m weekend singapore 2026` (LangGraph runner, commits lineage).
+Verified: track + base_line byte-identical to shipped; ported final step byte-identical; target band 90.274-90.774 s.
+
+Session 2026-10-20 night: brake_preserve bug fixed (run 1 invalid). Run 2 = lap 90.463 in band, BUT time knob cut P_ICE_MAX_W to 0.70x (edge of +-30% span = should be a conflict per D6); corners off vs FP1: T1 +38, T8 +18, T11 +19, T12 -38 km/h; gates fail: GAIN median 28.9 (>28), DROP median 57 (>52).
+D22 (user reviews ONLY line visually + speed graph vs FP1; all other values blanket-approved, 0 pending_review) and D23 (track = uniform-width band, 2D flat -> FP1 gaps expected) recorded in grill-decisions.md.
+Cache key now hashes only value + file sha (note text ignored; test added). Fast tests 19 pass / 1 skip.
+Run 3 done: final lap.csv byte-identical to run 2 (done criterion 1 MET). Fixed null-value KeyError (video.max_seconds) in pipeline.py. Video: runs/singapore_2026/video/b2a013318d106f57/video.mp4 (zoom 28, full lap).
+
+D24 done (pattern first; knob may not worsen FP1 pattern; knob.max_pattern_drop=0). Run 4: tuned car alone = 89.288 s (1.0 s faster than band); power-cut knob REJECTED (worsened pattern); chosen knob CL_CORNER_M2 x0.92 -> lap 90.464 in band, pattern 0.953 (old shipped 0.950). Superclip 3 zones / 4.2 s (old 2 / 1.8). Gates still fail: GAIN median 31.3, DROP median 56.8. Corners off: T1 +29, T3 -12, T8 +12, T11 +17, T12 -44. Video: runs/singapore_2026/video/9eaca95754a7b15a/video.mp4
+
+2026-10-21: D25 (video text shows decided time, user speeds to 40 s; sim = FP1 pattern a bit faster) + D26 (finish video workflow FIRST, then D4 predictor with optional inputs + confidence) in grill-decisions.md. Season FP1-vs-pole study: scratchpad fp1_vs_q_season.py (shape 0.986 median, gap 1.76 s). Pole 2026 SG = 91.373 s (F1_Pipeline_Assets/exports/reference_2026_singapore_q.csv).
+FINISH PLAN (user agreed 2026-10-21; grill contradictions D2/D6/D7/D8 annotated, lap rule = FP1 reconfirmed). START HERE NEXT SESSION with step 1: spec v2 update w/ D22-D26 -> new ticket 14 video decided-time label -> ticket 12 guards -> ticket 11 nudge flow -> ticket 13 proof run + commit -> then predictor grill.
+
+To do next, in order:
+1. User re-checks line in run 4 video (downforce cut -8% moved the line ~0.5 m) and judges pattern result.
+2. Read the checks report (runs/singapore_2026/checks/*/report.json) when run 1 finishes; then video stage.
+3. `python -m weekend.golden record runs/singapore_2026 weekend/golden/singapore_2026_chain` -> golden replay test.
+4. Ticket 12: pre-commit (golden replay + fast tests) and the no-delete hook (use the update-config skill).
+5. Ticket 11: nudge flow; Ticket 13: two full runs identical + all 6 done criteria.
+6. Show the user ONE review table: every value with pending_review: true (grep notes) + tuning conflicts
+   (low-speed braking -38%, mid-speed accel +30-60%, corners 1/7/8/11 +16..35 km/h and 12 -22 vs FP1 = track/line, not car).
+Decisions made tonight: D21 (tune to FP1 shape) in grill-decisions.md; brake preservation tested and left off (COMPUTED note);
+rejected SG_MU_SCALE knob removed. Nothing committed yet (lineage commit happens at the end of a runner run).
+
+## Next action (old)
 Step 1 remainder: golden regression tests for shipped tracks (generalise the Zandvoort bit-identical recipe).

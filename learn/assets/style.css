@@ -1,0 +1,16 @@
+/* Shared lesson style: plain printed handout. */
+:root { --fg:#1a1a1a; --muted:#666; --line:#ddd; --ok:#1a7f37; --bad:#b42318; --bg:#fffffc; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e8e8e8; --muted:#a0a0a0; --line:#3a3a3a; --ok:#4ac26b; --bad:#ff7b72; --bg:#161616; } }
+body { background:var(--bg); color:var(--fg); font:18px/1.6 Georgia, "Times New Roman", serif; max-width:40em; margin:2.5em auto; padding:0 16px; }
+h1 { font-size:1.6em; line-height:1.2; margin-bottom:.2em; }
+h2 { font-size:1.15em; margin-top:2em; }
+.meta { color:var(--muted); font-size:.85em; }
+pre { font:15px/1.5 Consolas, monospace; overflow-x:auto; border-left:3px solid var(--line); padding-left:12px; }
+blockquote { margin:1em 0; padding-left:14px; border-left:3px solid var(--line); color:var(--muted); }
+.q { margin:1.4em 0; }
+.q p { margin:.2em 0 .5em; font-weight:bold; }
+.q button { display:block; width:100%; text-align:left; font:inherit; font-size:.95em; background:none; color:var(--fg); border:1px solid var(--line); padding:.4em .7em; margin:.3em 0; cursor:pointer; }
+.q button.ok { border-color:var(--ok); color:var(--ok); }
+.q button.bad { border-color:var(--bad); color:var(--bad); }
+.q .why { color:var(--muted); font-size:.9em; min-height:1.2em; }
+footer { margin-top:3em; color:var(--muted); font-size:.85em; border-top:1px solid var(--line); padding-top:1em; }

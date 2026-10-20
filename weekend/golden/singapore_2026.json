@@ -1,0 +1,8 @@
+{
+ "source": "make_singapore_2026_lap.bat v4b shipped outputs (2026-10-08); final sim step re-run byte-identical 2026-10-20",
+ "lap_csv": "F1_Pipeline_Assets/exports/singapore_2026_synthetic.csv",
+ "lap_csv_sha256": "716522267f77cc65a66423889b2649435a820555269a8c8fcc400fc587c73471",
+ "raceline": "F1_Pipeline_Assets/tracks/singapore_grand_prix_mirror_raceline.json",
+ "raceline_sha256": "9ea31c4ef0f3e5711a9e30ec90c681b180799839fb3a586a5b5dc5ebebfa2338",
+ "lap_s": 93.0084
+}

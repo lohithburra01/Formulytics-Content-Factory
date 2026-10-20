@@ -1,0 +1,12 @@
+id: output/video_style
+layer: output
+scope: {}
+values:
+  video.zoom: {value: 28.0, origin: USER_DECISION, decided: 2026-10-08, reason: "user 2026-10-08: zoom 28 (was 18, then 25)"}
+  video.fps: {value: 30, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from the renderer default (every shipped video)", pending_review: false}
+  video.trail_frames: {value: 180, origin: USER_DECISION, decided: 2026-10-08, reason: "approved under D22 (user, 2026-10-20); carried from the renderer default (every shipped video)", pending_review: false}
+  video.max_seconds: {value: null, origin: USER_DECISION, decided: 2026-10-20, reason: "full lap (a number = short preview)"}
+  video.font_bold_file: {value: ../fonts/Formula1-Bold_web_0.ttf.ttf, origin: MEASURED, source: "the font raceline_video.py loads first (D:/f1_hot_lap/fonts, outside the repo)"}
+  video.font_bold_sha256: {value: 1e205a75c9d035833c7204fd84fe2ad780ebedcee98a0432b15a2791b3ae50f6, origin: MEASURED, source: "sha256 of the bold font, 2026-10-20"}
+  video.font_regular_file: {value: ../fonts/Formula1-Regular_web_0.ttf.ttf, origin: MEASURED, source: "regular font raceline_video.py loads"}
+  video.font_regular_sha256: {value: bebdcf9fb6193de1921733556e7f57ce1b98a1f77d3d3e2aab0a628557769275, origin: MEASURED, source: "sha256 of the regular font, 2026-10-20"}

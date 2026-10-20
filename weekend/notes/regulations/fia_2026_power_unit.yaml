@@ -1,0 +1,18 @@
+id: regulations/fia_2026_power_unit
+layer: regulations
+scope: {year: 2026}
+links: [car/f1_2026_car]
+values:
+  MASS_KG: {value: 768.0, unit: kg, origin: KNOWLEDGE, source: "FIA 2026 technical regulations, minimum car mass (sim comment)"}
+  P_ICE_MAX_W: {value: 400000, unit: W, origin: KNOWLEDGE, source: "FIA 2026 PU regulations, ~400 kW combustion (spec doc section 3)"}
+  P_MGU_DEPLOY_MAX_W: {value: 350000, unit: W, origin: KNOWLEDGE, source: "FIA 2026 PU regulations, MGU-K 350 kW"}
+  P_MGU_NORMAL_CAP_W: {value: 250000, unit: W, origin: KNOWLEDGE, source: "2026 regs, MGU-K cap outside key-accel zones", note: "sim comments disagree pre/post-Miami (inventory #140)"}
+  P_MGU_REGEN_MAX_W: {value: 350000, unit: W, origin: KNOWLEDGE, source: "FIA 2026 PU regulations, regen ceiling"}
+  E_DEPLOY_BUDGET_J: {value: 9000000, unit: J, origin: KNOWLEDGE, source: "FIA 2026 PU regulations, 9 MJ/lap", note: "defined but never used by the sim"}
+  KEY_ACCEL_WINDOW_S: {value: 7.0, unit: s, origin: KNOWLEDGE, source: "post-Miami 2026 regs key-acceleration definition (sim comment)", note: "the 7 s number itself is an estimate"}
+  SUPERCLIP_MAX_S: {value: 3.0, unit: s, origin: KNOWLEDGE, source: "FIA / motorsport.com, Apr 2026"}
+  V_DEPLOY_FULL_KMH: {value: 200.0, unit: km/h, origin: KNOWLEDGE, source: "2026 MGU-K speed taper, hard regulatory power cap (memory fp1-calibration-playbook)"}
+  V_DEPLOY_MID_KMH: {value: 270.0, unit: km/h, origin: KNOWLEDGE, source: "2026 MGU-K speed taper, 100 kW at this speed"}
+  V_DEPLOY_ZERO_KMH: {value: 300.0, unit: km/h, origin: KNOWLEDGE, source: "2026 MGU-K speed taper, cut at/above this speed"}
+  MGU_FRAC_AT_MID: {value: 0.2857142857142857, origin: COMPUTED, source: "100 kW / P_MGU_DEPLOY_MAX_W"}
+  G: {value: 9.81, unit: m/s^2, origin: KNOWLEDGE, source: "standard gravity"}
