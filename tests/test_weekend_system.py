@@ -113,3 +113,18 @@ def test_golden_final_lap_replays_byte_identical(tmp_path):
     assert r.returncode == 0, r.stdout + r.stderr
     assert _sha(tmp_path / "lap.csv") == exp["lap_csv_sha256"]
     assert _sha(tmp_path / "raceline.json") == exp["raceline_sha256"]
+
+
+def test_nudge_preview_reruns_only_affected_steps():
+    from weekend import nudge
+    w = dict(track="singapore", year=2026)
+    rule = {"id": "track/singapore_2026_line_rules_probe", "layer": "track", "scope": w,
+            "values": {"line.rule.t3_apex_inside": {"value": "T3 apex inside|900|apex|inside",
+                                                     "origin": "USER_DECISION", "decided": "2026-10-23",
+                                                     "reason": "test"}}}
+    p = nudge.preview(rule, w)
+    assert p["changed"] == ["line.rule.t3_apex_inside"]
+    assert p["reruns"][0] == "car_and_line" and "track" not in p["reruns"] and "refs" not in p["reruns"]
+    bad = dict(rule, values={"line.rule.x": {"value": "x", "origin": "USER_DECISION"}})  # no reason/date
+    with pytest.raises(Exception):
+        nudge.preview(bad, w)

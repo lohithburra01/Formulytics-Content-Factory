@@ -178,8 +178,11 @@ def checks(p, out, up, weekend):
                 pattern=res["pattern"], knob_conflict=tk.get("conflict"))
 
 
-@stage("video", reads=["video."], needs=["track", "final"], code=["raceline_video.py"])
+@stage("video", reads=["video."], needs=["track", "final", "refs"], code=["raceline_video.py"])
 def video(p, out, up, weekend):
+    """D25: the LAP TIME text is the decided time (refs target), not the sim's own lap; motion is unchanged."""
+    with open(os.path.join(up["refs"], "done.json"), encoding="utf-8") as fh:
+        decided_s = json.load(fh)["target_s"]
     for k in ("video.font_bold_file", "video.font_regular_file"):
         path = os.path.normpath(os.path.join(ROOT, p[k]))
         with open(path, "rb") as fh:
@@ -191,6 +194,7 @@ def video(p, out, up, weekend):
            "--telemetry-csv", os.path.join(up["final"], "lap.csv"),
            "--track-name", p["video.track_name"], "--zoom", repr(float(p["video.zoom"])),
            "--fps", str(int(p["video.fps"])), "--trail-frames", str(int(p["video.trail_frames"])),
+           "--display-laptime", repr(float(decided_s)),
            "--out", os.path.join(out, "video.mp4")]
     if p["video.max_seconds"]:
         cmd += ["--max-seconds", repr(float(p["video.max_seconds"]))]
@@ -201,4 +205,4 @@ def video(p, out, up, weekend):
         raise SystemExit(f"[video] render failed rc={r.returncode}")
     with open(os.path.join(out, "video.mp4"), "rb") as fh:
         sha = hashlib.sha256(fh.read()).hexdigest()
-    return dict(video="video.mp4", zoom=p["video.zoom"], sha256=sha)
+    return dict(video="video.mp4", zoom=p["video.zoom"], lap_text_s=decided_s, sha256=sha)

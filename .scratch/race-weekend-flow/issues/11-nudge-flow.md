@@ -4,7 +4,7 @@
 
 **Blocked by:** 09, 10
 
-**Status:** not started
+**Status:** flow built (2026-10-23): weekend/nudge.py preview|apply (Pydantic check, one confirm line, git commit; reruns = only stages reading the changed values, tested). Nudges already notes: apex touch (line.apex_w), T8->T9 wide entry (line.rule.t9_entry_outside), FP1 pace (ref.fp1_* + D21 tune), official geometry (track.path_*), zoom 28 (video.zoom). "Satisfied by the run" checked in ticket 13
 
 - [ ] All logged Singapore nudges exist as notes and are satisfied by the run
 

@@ -58,6 +58,8 @@ def _official_path(samples, ref_drv, svg_centre, dedup_m, sigma, step_m, n_frac,
     c = np.r_[0, np.cumsum(np.linalg.norm(np.diff(np.vstack([Ps, Ps[:1]]), axis=0), axis=1))]; Lp = c[-1]
     u = np.arange(0, Lp, step_m)
     Q = np.column_stack([np.interp(u, c, np.r_[Ps[:, 0], Ps[0, 0]]), np.interp(u, c, np.r_[Ps[:, 1], Ps[0, 1]])])
+    if svg_centre is None:                            # no frame map: the ref driver's lap start = S/F
+        return Q, dict(length_m=float(Lp), scale=1.0, rms_m=0.0, sf_shift_m=0.0)
     Cc = svg_centre
     cc = np.r_[0, np.cumsum(np.linalg.norm(np.diff(np.vstack([Cc, Cc[:1]]), axis=0), axis=1))]; Lc = cc[-1]
     f = np.linspace(0, 1, n_frac, endpoint=False)
@@ -82,18 +84,21 @@ def track(p, out, up, weekend):
     """SVG frame -> roll -> official path aligned onto it -> FIA length, min radius, edges, mirror."""
     import svg_to_outline as SO
     import contextlib, io
-    with contextlib.redirect_stdout(io.StringIO()):
-        o, i = SO.build_outline_from_svg(p.file("track.svg_file"), p["track.svg_frame_length_m"],
-                                         p["track.svg_road_width_m"], p["track.svg_min_radius_m"])
-    c = (o + i) / 2                                   # roll so index 0 ~ the real S/F (frame only)
-    s = np.r_[0, np.cumsum(np.linalg.norm(np.diff(c, axis=0), axis=1))]
-    k = int(np.argmin(np.abs(s - p["track.svg_sf_arc_m"])))
-    o, i = np.roll(o, -k, axis=0), np.roll(i, -k, axis=0)
-    # the shipped chain round-trips the frame outline through JSON; keep that exact
-    o, i = np.array(json.loads(json.dumps(o.tolist()))), np.array(json.loads(json.dumps(i.tolist())))
+    frame = None
+    if "track.svg_file" in p:                         # optional: a map only fixes rotation + S/F (Singapore)
+        with contextlib.redirect_stdout(io.StringIO()):
+            o, i = SO.build_outline_from_svg(p.file("track.svg_file"), p["track.svg_frame_length_m"],
+                                             p["track.svg_road_width_m"], p["track.svg_min_radius_m"])
+        c = (o + i) / 2                               # roll so index 0 ~ the real S/F (frame only)
+        s = np.r_[0, np.cumsum(np.linalg.norm(np.diff(c, axis=0), axis=1))]
+        k = int(np.argmin(np.abs(s - p["track.svg_sf_arc_m"])))
+        o, i = np.roll(o, -k, axis=0), np.roll(i, -k, axis=0)
+        # the shipped chain round-trips the frame outline through JSON; keep that exact
+        o, i = np.array(json.loads(json.dumps(o.tolist()))), np.array(json.loads(json.dumps(i.tolist())))
+        frame = (o + i) / 2
     with open(p.file("track.path_samples_file"), encoding="utf-8") as fh:
         samples = json.load(fh)
-    Q, info = _official_path(samples, p["track.path_ref_driver"], (o + i) / 2, p["track.path_dedup_m"],
+    Q, info = _official_path(samples, p["track.path_ref_driver"], frame, p["track.path_dedup_m"],
                              p["track.path_sigma"], p["track.path_step_m"], p["track.path_align_samples"],
                              p["track.path_sf_shift_max"])
     Q = np.array(json.loads(json.dumps(Q.tolist())))

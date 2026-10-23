@@ -1,10 +1,19 @@
 # Spec v2: Race-weekend system — every value has one origin, the run never needs a nudge
 
 Status: ready-for-agent
-Source: grill-decisions.md (D1–D20, confirmed 2026-10-20). Evidence: evidence/ (nudge_catalogue, retro_evidence, variable_inventory).
+Source: grill-decisions.md (D1–D26; D1–D20 confirmed 2026-10-20, D21–D26 added 2026-10-20/21). Evidence: evidence/ (nudge_catalogue, retro_evidence, variable_inventory).
 Supersedes: spec_v1_rejected.md (it wrapped the user's nudges in approval steps instead of removing them).
 Proof weekend: Singapore 2026.
 Test seams (user-approved 2026-10-20): (1) pack resolver, (2) run-from-pack, (3) knowledge store API.
+
+## Amendments D21–D26 (2026-10-20/21, user) — these win over anything below
+
+- **D21 Tune to the FP1 shape.** The car is fitted to the speed-graph SHAPE of this year's FP1 lap (same car generation). Before FP1 exists there is no shape reference.
+- **D22 The user judges three things only:** the racing line (visually, from the video, gives nudges), the speed graph vs FP1 (as a picture), and the lap time vs the decided band. Every other value is approved under one blanket decision and is never shown again. This replaces "user chooses" in stories 20/36/37 and the review table of the sensitivity scan.
+- **D23 Track-model limits.** The road is a uniform-width band around the official path, flat (2D). Speed gaps vs FP1 caused by that are expected, shown per corner/sector, and not chased by car tuning.
+- **D24 Pattern first, lap time second.** The lap time comes out of the pattern-tuned car. If it is in the band, no time knob. Otherwise the knob may only be a candidate that does not make the speed pattern worse (knob.max_pattern_drop = 0). If none qualifies, nothing is applied and the gap is shown ("pattern-matched lap = X s, band Y, pattern Z"). Replaces stories 32/33's "least line change" as the only rule.
+- **D25 Video text = decided lap time** (the D3 target now; the D4 predictor later). The user speeds the upload to ~40 s, so real-time playback does not matter.
+- **D26 Order.** Finish this video workflow first, then the D4 predictor (separate spec; inputs optional, prediction = median + range + confidence).
 
 ## Problem Statement
 
@@ -48,7 +57,7 @@ From my side, a weekend looks like this. I open Claude Code and name the track. 
 17. As the video maker, I want fitting done by a fixed script, never by the agent choosing which value to change, so that Sepang-style "pick other variables" drift can't happen.
 18. As the video maker, I want each car value fitted only to the speed-graph feature it controls (braking slope → braking grip/brake model; straight peaks → drag/power/deploy cap; corner minimums → downforce/lateral grip; exit acceleration → traction/power), so that fitting one feature can't silently wreck another.
 19. As the video maker, I want each fitted value to have a plausible range, so that the fit can't produce nonsense physics.
-20. As the video maker, I want an out-of-range requirement shown as a conflict, with the choice left to me, so that the system doesn't quietly bend physics to hit a target.
+20. [D22/D24: shown as sim-vs-FP1 gap on the graph, not a choice of numbers] As the video maker, I want an out-of-range requirement shown as a conflict, with the choice left to me, so that the system doesn't quietly bend physics to hit a target.
 
 ### Feature checks and the correction loop
 21. As the video maker, I want per-braking-zone checks (onset point and deceleration rate) against reference telemetry, so that braking-shape errors are caught before I look.
@@ -64,12 +73,12 @@ From my side, a weekend looks like this. I open Claude Code and name the track. 
 ### Line constraints
 30. As the video maker, I want my line observations stored as hard constraints with direction only (corner, phase entry/apex/exit, inside/outside), so that the optimiser respects what I saw without me guessing metres.
 31. As the video maker, I want the optimiser to compute the amount for each constraint, so that the physics decides the magnitude.
-32. As the video maker, I want any time left over after the line constraints to go into ONE declared time knob, labelled FITTED, so that hitting the target never reshapes the line.
+32. [D24: knob may never worsen the pattern] As the video maker, I want any time left over after the line constraints to go into ONE declared time knob, labelled FITTED, so that hitting the target never reshapes the line.
 33. As the video maker, I want the time knob chosen by a test (the one that changes the line least), so that the choice is evidence-based and repeatable.
 34. As the video maker, I want position-API data never used as a line source (only for start/finish, elevation and the distance axis), so that map-matched data doesn't masquerade as driver lines.
 
 ### Sensitivity scan
-35. As the video maker, I want a sensitivity scan that ranks the 136 assumed values by impact on the outputs, so that effort goes where it matters.
+35. [D22: superseded by the blanket decision] As the video maker, I want a sensitivity scan that ranks the 136 assumed values by impact on the outputs, so that effort goes where it matters.
 36. As the video maker, I want high-impact values turned into FITTED or sourced values (with a citation I approve in one line each), so that the important numbers are grounded.
 37. As the video maker, I want low-impact values approved in one table with one approval and recorded as decisions, so that clearing them doesn't cost a session.
 
@@ -123,6 +132,7 @@ From my side, a weekend looks like this. I open Claude Code and name the track. 
 70. As the video maker, I want every logged Singapore nudge (apex touch, T8→T9 wide entry, FP1 pace, geometry spacing) satisfied with no new nudges, so that the system is shown to remove nudges, not just record them.
 71. As the video maker, I want the Singapore lineage pack committed, so that the proof is reproducible.
 72. As the video maker, I want the Singapore video rendered with zoom and style from the pack, so that the render is shown to be covered by determinism too.
+73. (D25) As the video maker, I want the video text to show the decided lap time (target band centre), not the sim's raw lap, so that the video states the number I stand behind.
 
 ## Implementation Decisions
 
@@ -196,7 +206,7 @@ Each fitted value is bounded by a plausible range taken from notes. If the targe
 
 ## Further Notes
 
-- **Done criteria for the Singapore 2026 proof:** (1) two runs give identical output; (2) zero ASSUMED variables; (3) feature checks pass or gaps are reported per sector; (4) the logged Singapore nudges are satisfied with no new nudges; (5) the lineage pack is committed; (6) the video renders with zoom and style from the pack.
+- **Done criteria for the Singapore 2026 proof:** (1) two runs give identical output; (2) zero ASSUMED variables; (3) feature checks pass or gaps are reported per sector; (4) the logged Singapore nudges are satisfied with no new nudges; (5) the lineage pack is committed; (6) the video renders with zoom and style from the pack, and its lap-time text shows the decided time (D25).
 - The Singapore nudges to seed as notes (from the nudge catalogue): apex touch (#25); T8→T9 wide entry touching the far side, from the RUS 2025 onboard (#26, #29); FP1 pace gap with T1/T5 speed mismatch (#30); official-path geometry instead of SVG spacing (#28); street-grip value 0.723 (to be re-labelled with its true origin).
 - Three scripts hard-code the original folder path. They must be repointed before they're used from the sandbox.
 - Never delete: retired files are renamed or moved (e.g. spec_v1_rejected.md, flow_v1_rejected.html).

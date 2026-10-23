@@ -4,7 +4,7 @@
 
 **Blocked by:** 09
 
-**Status:** partial: golden replay written; pre-commit + no-delete hook not done
+**Status:** 2 of 3 done (2026-10-23): pre-commit golden guard (core.hooksPath weekend/hooks, tested: tampered golden -> blocked) + no-delete PreToolUse hook (.claude/settings.json, tested live); lineage commit checked in ticket 13
 
 - [ ] pre-commit blocks a commit that changes the golden result
 - [ ] rm / Remove-Item / del via Claude Code is blocked

@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RUNS = os.path.join(ROOT, "runs")
+RUNS = os.environ.get("WEEKEND_RUNS_DIR") or os.path.join(ROOT, "runs")  # override = a clean second proof run
 ENV_KEEP = ("SYSTEMROOT", "PATH", "TEMP", "TMP", "USERPROFILE", "LOCALAPPDATA", "APPDATA",
             "PROCESSOR_ARCHITECTURE", "NUMBER_OF_PROCESSORS", "OS", "WINDIR", "COMSPEC")
 SIM = "@sim"   # read-spec meaning: every value the sim door needs
@@ -40,7 +40,9 @@ COMMON_CODE = ["weekend/pipeline.py", "weekend/simdoor.py", "sim_2026_lap.py",
 
 def stage(name, reads, needs=(), code=()):
     def deco(fn):
-        STAGES[name] = Stage(name, fn, list(reads), list(needs), list(code))
+        # the file defining the stage is part of its key: editing a stage's code reruns it
+        own = os.path.relpath(sys.modules[fn.__module__].__file__, ROOT).replace(os.sep, "/")
+        STAGES[name] = Stage(name, fn, list(reads), list(needs), list(code) + [own])
         return fn
     return deco
 
