@@ -1197,6 +1197,17 @@
    "layer": "track",
    "note_id": "track/singapore_2026_line_rules"
   },
+  "line.rule_local_m": {
+   "value": 150.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: line step got too slow; a rule retry only moves knots within 150 m of the unmet rule window (the rest of the lap is already optimised)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
   "line.rule_retries": {
    "value": 4,
    "unit": "",

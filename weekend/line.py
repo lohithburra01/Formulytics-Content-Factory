@@ -133,16 +133,18 @@ def seed_rules(k, resolved, frac):
     return k
 
 
-def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, steps=None, log=print):
+def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, steps=None, log=print, rule_w0=None):
     K = setup(base_rl_file, outline_file, prm)
     resolved = resolve_rules(rules, prm)
     O.G["rules"] = [(r["idx"], r["side"]) for r in resolved]
-    O.G["rule_w"] = [prm["rule_w"]] * len(resolved)
+    # weights learned by an earlier call (previous tune<->line round) carry over: no re-climbing from 1.5
+    O.G["rule_w"] = list(rule_w0) if rule_w0 is not None and len(rule_w0) == len(resolved) else [prm["rule_w"]] * len(resolved)
     k = np.zeros(K) if init_knots is None else np.asarray(init_knots, float)
     if resolved and init_knots is None:
         k = seed_rules(k, resolved, prm["rule_seed_frac"])
     steps = steps or prm["steps_first"]
     t0 = time.time(); retries = 0
+    local = None          # on a retry: only the knots near the unmet rules move (the rest of the lap is done)
     while True:
         state = dict(O.G)
         with ProcessPoolExecutor(prm["workers"], initializer=_init, initargs=(state, vals)) as ex:
@@ -150,7 +152,7 @@ def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, step
             log(f"[line] start {best:.3f}  rules {len(resolved)}  w {O.G['rule_w']}")
             for step in steps:
                 for sw in range(prm["max_sweeps"]):
-                    cands = [(i, s) for i in range(K) for s in (step, -step)]
+                    cands = [(i, s) for i in (range(K) if local is None else local) for s in (step, -step)]
                     cs = []
                     for i, s in cands:
                         c = k.copy(); c[i] += s; cs.append(c)
@@ -180,11 +182,18 @@ def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, step
         for i in bad:
             O.G["rule_w"][i] *= 4.0
         steps = steps[-2:]
+        ka, near = O.G["arc"][O.G["kidx"]], set()
+        for i in bad:
+            ra = O.G["arc"][resolved[i]["idx"]]
+            lo_m, hi_m = float(ra.min()) - prm["rule_local_m"], float(ra.max()) + prm["rule_local_m"]
+            near |= {j for j, a_ in enumerate(ka) if lo_m <= a_ <= hi_m}
+        local = sorted(near)
         log(f"[line] rule(s) {bad} not reached (gaps {[round(gaps[i], 2) for i in bad]} m) -> weight x4, retry {retries}")
     _init(dict(O.G), vals)
     off = _offsets(rl)
     apex = AG.apex_terms(off, O.G["apex_pk"], O.G["apex_kap"], O.G["apex_win"])
     report = dict(cost=best, pure_lap_s=_lap(rl), violation_m=viol, seconds=round(time.time() - t0),
+                  rule_w=list(O.G["rule_w"]),
                   corners=[dict(c, apex_gap_m=round(float(g), 3)) for c, g in zip(corner_table(), apex)],
                   rules=[dict(label=r["rule"].get("label"), corner=r["corner"], phase=r["rule"]["phase"],
                               side=r["rule"]["side"], window_m=r["window_m"], gap_m=round(g, 3),

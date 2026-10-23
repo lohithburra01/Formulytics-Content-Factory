@@ -189,7 +189,7 @@ def _line_prm(p):
                 apex_tol_m=x["apex_tol_m"], apex_win=x["apex_win"], steps_first=x["steps_first"],
                 steps_next=x["steps_next"], max_sweeps=x["max_sweeps"], accept_s=x["accept_s"],
                 workers=x["workers"], rule_w=x["rule_w"], rule_window_frac=x["rule_window_frac"],
-                rule_seed_frac=x["rule_seed_frac"], rule_retries=x["rule_retries"])
+                rule_seed_frac=x["rule_seed_frac"], rule_retries=x["rule_retries"], rule_local_m=x["rule_local_m"])
 
 
 @stage("car_and_line", reads=[SIM, "fit.", "check.", "line."], needs=["track", "base_line", "refs"],
@@ -211,10 +211,12 @@ def car_and_line(p, out, up, weekend):
                                  p["fit.max_sweeps"], p["fit.max_eval"])
     vals, rep = tun(vals, rl); rounds = [dict(round=0, line="base", tune=rep)]
     say(f"[car_and_line] round 0 tuned on the base line: converged={rep['converged']} sims={rep['sims']}")
-    knots = None
+    knots, rule_w = None, None
     for rnd in range(1, p["line.max_rounds"] + 1):
         k, rl, lrep = LN.optimise(vals, base_file, outline, prm, rules, init_knots=knots,
-                                  steps=prm["steps_first"] if knots is None else prm["steps_next"], log=say)
+                                  steps=prm["steps_first"] if knots is None else prm["steps_next"], log=say,
+                                  rule_w0=rule_w)
+        rule_w = lrep["rule_w"]
         change = None if knots is None else LN.line_change_m(knots, k)
         vals, rep = tun(vals, rl)
         rounds.append(dict(round=rnd, line=lrep, tune=rep, line_change_m=change))
