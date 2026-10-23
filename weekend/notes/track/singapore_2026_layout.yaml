@@ -15,15 +15,7 @@ values:
   track.svg_sf_arc_m: {value: 855.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "frame only (the SVG fixes where the official path is placed and rotated, not its shape); kept from bat v4 (2026-10-08) - to be verified no-effect", note: "cache/_singapore_prep.py: speed-profile match to 2025 Q, corr 0.942"}
   track.path_samples_file: {value: cache/singapore/path_samples.json, file: true, origin: MEASURED, source: "OpenF1 location, 2025 Singapore Q (session 9892), fastest valid lap of the top-10 drivers, map-matched (cache/singapore/_fetch_path_multi.py, fetched 2026-10-08)"}
   track.path_ref_driver: {value: 63, origin: MEASURED, source: "driver of the fastest 2025 Q lap (RUS, pole 1:29.158); his lap start = the official timing line"}
-  track.path_dedup_m: {value: 0.05, unit: m, origin: COMPUTED, source: "drops exact duplicate samples only (OpenF1 resolution 0.1 m)"}
-  track.path_sigma: {value: 1.5, unit: samples, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4 (2026-10-08): light smoothing; geometry reproduces the shipped track exactly"}
-  track.path_step_m: {value: 2.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4 (2026-10-08): resample spacing; geometry reproduces the shipped track exactly"}
-  track.path_align_samples: {value: 1000, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4: alignment resolution (frame only)"}
-  track.path_sf_shift_max: {value: 30, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4: alignment search range (frame only)"}
   track.length_m: {value: 4927.0, unit: m, origin: KNOWLEDGE, source: "FIA circuit length, Marina Bay 2024+ layout (registry note)"}
-  track.stations: {value: 2000, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4: centreline resolution (~2.5 m)"}
-  track.min_radius_m: {value: 10.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4 (2026-10-08): removes map-matching kinks tighter than any real corner"}
-  track.asbuilt_width_m: {value: 12.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "kept from v4: midline of 12 m edges = as-built centreline"}
   track.width_m: {value: 10.0, unit: m, origin: FITTED, source: "cache/singapore_2026.md v4: 12 m gave worst corner error 46 km/h, 10 m gave 18", fit_target: "worst corner-speed error vs 2025 Q", fit_range: [8.0, 14.0]}
   track.mirror_x: {value: true, origin: COMPUTED, source: "Marina Bay runs anticlockwise; the engine drives clockwise, so the sim runs on the x-mirror (physics is left/right symmetric, no banking)"}
   ref.q2025_lap_s: {value: 89.158, unit: s, origin: MEASURED, source: "2025 Singapore Q pole, RUS 1:29.158 (official)"}

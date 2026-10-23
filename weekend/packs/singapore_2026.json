@@ -1331,8 +1331,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.length_m": {
    "value": 4927.0,
@@ -1352,8 +1352,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.mirror_outline_file": {
    "value": "F1_Pipeline_Assets/tracks/singapore_grand_prix_mirror_outline.json",
@@ -1384,8 +1384,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.path_dedup_m": {
    "value": 0.05,
@@ -1394,8 +1394,8 @@
    "source": "drops exact duplicate samples only (OpenF1 resolution 0.1 m)",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.path_ref_driver": {
    "value": 63,
@@ -1426,8 +1426,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.path_sigma": {
    "value": 1.5,
@@ -1437,8 +1437,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.path_step_m": {
    "value": 2.0,
@@ -1448,8 +1448,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.stations": {
    "value": 2000,
@@ -1459,8 +1459,8 @@
    "decided": "2026-10-20",
    "file": false,
    "pending_review": false,
-   "layer": "track",
-   "note_id": "track/singapore_2026_layout"
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
   },
   "track.street_grip_k": {
    "value": 0.723,
