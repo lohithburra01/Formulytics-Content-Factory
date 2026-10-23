@@ -1,0 +1,165 @@
+{
+ "base_line": {
+  "key": "982999a94683dea2",
+  "result": {
+   "length_m": 5429.224373321681,
+   "sf_index": 2713,
+   "stations": 2714
+  }
+ },
+ "car_and_line": {
+  "key": "bf74c871033ef862",
+  "result": {
+   "car": {
+    "CDA_STRAIGHT_M2": 0.625526,
+    "CL_CORNER_M2": 4.75264,
+    "MU_DRIVE": 1.220694,
+    "MU_LONG": 1.03073,
+    "TRAIL_FRAC_MIN": 0.667071,
+    "track.street_grip_k": 0.67573
+   },
+   "conflicts": [],
+   "fixed_point": false,
+   "pure_lap_s": 96.19368223951928,
+   "rounds": 3,
+   "rules": []
+  }
+ },
+ "checks": {
+  "key": "976372d0edc4e175",
+  "result": {
+   "all_ok": false,
+   "corners_flagged": 2,
+   "gate_ok": true,
+   "knob": null,
+   "knob_conflict": {
+    "lap_s": 96.861,
+    "note": "no time knob reaches the band without worsening the speed pattern; user decides",
+    "pattern": 0.9658,
+    "target_band_s": [
+     93.86,
+     94.36
+    ]
+   },
+   "lap_in_band": false,
+   "lap_s": 96.7977,
+   "pattern": 0.964,
+   "rules_ok": true,
+   "sectors": [
+    {
+     "fp1_s": 25.634,
+     "gap_s": 0.069,
+     "n": 1,
+     "sim_s": 25.235,
+     "target_s": 25.166
+    },
+    {
+     "fp1_s": 38.237,
+     "gap_s": 0.606,
+     "n": 2,
+     "sim_s": 38.145,
+     "target_s": 37.539
+    },
+    {
+     "fp1_s": 31.989,
+     "gap_s": 2.014,
+     "n": 3,
+     "sim_s": 33.419,
+     "target_s": 31.405
+    }
+   ]
+  }
+ },
+ "final": {
+  "key": "a0fec48a80b9221e",
+  "result": {
+   "lap_s": 96.7977,
+   "vmax_kmh": 332.998,
+   "vmin_kmh": 73.856
+  }
+ },
+ "refs": {
+  "key": "c27266780ca2df90",
+  "result": {
+   "branch": "fp1",
+   "shape_ref_csv": "shape_ref.csv",
+   "target_band_s": [
+    93.86,
+    94.36
+   ],
+   "target_s": 94.11
+  }
+ },
+ "time_knob": {
+  "key": "f0b426ba41ac4f6d",
+  "result": {
+   "conflict": {
+    "lap_s": 96.861,
+    "note": "no time knob reaches the band without worsening the speed pattern; user decides",
+    "pattern": 0.9658,
+    "target_band_s": [
+     93.86,
+     94.36
+    ]
+   },
+   "knob": null,
+   "lap_before_s": 96.861,
+   "pattern_before": 0.9658,
+   "rules": null,
+   "target_s": 94.11,
+   "tests": [
+    {
+     "keeps_pattern": false,
+     "line_change_m": 0.3,
+     "name": "MU_LAT",
+     "pattern": 0.957,
+     "reachable": true,
+     "rules": [],
+     "scale": 1.0634724596515295,
+     "start": 1.95,
+     "value": 2.0737712963204826
+    },
+    {
+     "name": "P_ICE_MAX_W",
+     "reachable": false
+    },
+    {
+     "keeps_pattern": false,
+     "line_change_m": 0.511,
+     "name": "CL_CORNER_M2",
+     "pattern": 0.9538,
+     "reachable": true,
+     "rules": [],
+     "scale": 1.1205958865955474,
+     "start": 4.752640264026403,
+     "value": 5.325789130336363
+    },
+    {
+     "name": "CDA_STRAIGHT_M2",
+     "reachable": false
+    }
+   ]
+  }
+ },
+ "track": {
+  "key": "742c43d69d0b95bd",
+  "result": {
+   "mirror_x": true,
+   "official_path": {
+    "length_m": 5427.896317587006,
+    "rms_m": 0.0,
+    "scale": 1.0,
+    "sf_shift_m": 0.0
+   }
+  }
+ },
+ "video": {
+  "key": "b1177936051a5cb7",
+  "result": {
+   "lap_text_s": 94.11,
+   "sha256": "b38123f102311b7ca03046364ba9a0d810acef0b104ee355cd7d360a2e6245f8",
+   "video": "video.mp4",
+   "zoom": 28.0
+  }
+ }
+}
