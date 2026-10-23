@@ -78,7 +78,10 @@ def draw_speed(out, sim, ref, corners, ref_name, title, segments=()):
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(22, 10), sharex=False, gridspec_kw=dict(height_ratios=[3, 1], hspace=0.35))
     a1.plot(rd, ref.speed, color="#1f77b4", lw=1.3, label=ref_name)
     a1.plot(sim.distance, sim.speed, color="#d62728", lw=1.3, label="sim")
-    zs = F.clip_zones(sim.distance, sim.time_s, sim.speed, sim.throttle)
+    from weekend.shape_fit import clip_match                # sim side = its SUPERCLIP label, as the checks
+    cm = clip_match(sim, ref, 60.0)
+    zs = [(z["sim_m"][0], z["sim_m"][1], 0.0, z["sim_drop_kmh"]) for z in cm["zones"] if z["sim_m"]] + \
+         [(z["sim_m"][0], z["sim_m"][1], 0.0, z["sim_drop_kmh"]) for z in cm["extra"]]
     zr = F.clip_zones(rd, ref.time_s, ref.speed, ref.throttle)
     for z in zr:
         a1.axvspan(z[0], z[1], ymin=0.92, ymax=1.0, color="#1f77b4", alpha=0.5)
@@ -91,7 +94,7 @@ def draw_speed(out, sim, ref, corners, ref_name, title, segments=()):
     for sg in segments:                                      # per-section shape check (user rule 2026-10-23)
         if not sg["ok"]:
             a1.axvspan(sg["start_m"], sg["end_m"], ymin=0.0, ymax=0.06, color="#d62728", alpha=0.35)
-        a1.annotate(f"{sg['rmse_kmh']:.0f} km/h\n{sg['time_s']:+.2f} s",((sg["start_m"] + sg["end_m"]) / 2, 0.01),
+        a1.annotate(f"{sg['rmse_kmh']:.0f} km/h", ((sg["start_m"] + sg["end_m"]) / 2, 0.01),
                     xycoords=("data", "axes fraction"), ha="center", fontsize=8,
                     color="#d62728" if not sg["ok"] else "#2ca02c")
     for c in corners:
@@ -100,7 +103,7 @@ def draw_speed(out, sim, ref, corners, ref_name, title, segments=()):
     a1.set_ylabel("speed km/h"); a1.grid(alpha=0.3); a1.set_xticks(np.arange(0, L, 250))
     a1.legend(loc="upper left", bbox_to_anchor=(0, -0.02), ncol=3,
               title=f"top bars: clip zones (speed falling at full throttle) - blue {ref_name}, red sim; "
-                    f"bottom: per-section shape error (RMSE) + time lost, red = fails")
+                    f"bottom: per-section shape error vs FP1 x K (RMSE km/h), red = fails")
     g = np.linspace(0, L, 1000)
     dt = np.interp(g, sim.distance, sim.time_s) - np.interp(g, rd, ref.time_s)
     a2.plot(g, dt, color="#333"); a2.axhline(0, color="#999", lw=0.8)
