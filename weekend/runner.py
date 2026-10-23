@@ -19,7 +19,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
-from weekend import pipeline
+from weekend import new_track, pipeline
 from weekend.resolve import ROOT, Unresolved, load_notes, pack_path, resolve_pack
 
 ORDER = ["track", "base_line", "refs", "car_and_line", "time_knob", "final", "checks", "video"]
@@ -36,6 +36,7 @@ class State(TypedDict, total=False):
 
 def node_resolve(state: State) -> State:
     weekend = dict(track=state["track"], year=state["year"])
+    new_track.ensure_notes(state["track"], state["year"])   # a new track writes its own notes (ticket 15)
     while True:
         try:
             pack = resolve_pack(load_notes(), weekend)

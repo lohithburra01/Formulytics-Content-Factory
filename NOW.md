@@ -41,8 +41,10 @@ Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-d
 Ticket: .scratch/race-weekend-flow/issues/15-any-weekend.md (5-step plan agreed by user).
 Step 1 done (0b54cb3): shared track-build settings -> weekend/notes/season/track_build_defaults_2026.yaml.
 Step 2 done: track cards weekend/cards/<track>.yaml (Austin alt 171 m from airdensityonline 561 ft, length 5513).
-NEXT step 3: generator card+fetch_facts -> track/weekend notes; first remove hard-coded 'singapore' in weekend/*.py
-(run.py/simdoor.py use cache/singapore/_sg_grip.py; stages/line/pipeline/runner/nudge/mcp_server mention it).
+Step 3 done: weekend/new_track.py (runner node_resolve calls ensure_notes); Austin notes generated, pack 135 values 0 ASSUMED.
+  Austin choices to tune from data later: width 12 m (no width fit), grip start 1.0, inset 0 (run-off), gain cap 32.
+  _sg_grip.py stays in cache/singapore (generic code; moving it would change cache keys).
+NEXT step 4: `python -m weekend austin 2026` end to end (long run - run_in_background), then user judges 3 outcomes.
 
 ## RESUME HERE (2026-10-23, Austin FP1 weekend)
 User order (2026-10-23): "follow the spec and finish the tickets first" -> THEN make it work for any weekend.

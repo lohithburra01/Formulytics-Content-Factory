@@ -140,3 +140,18 @@ def test_stage_key_ignores_note_text_but_not_numbers():
     moved = copy.deepcopy(pack)
     moved["values"]["MASS_KG"]["value"] += 1
     assert pipeline.stage_key(st, moved, {}) != k0
+
+
+def test_new_track_generator_matches_singapore_hand_notes():
+    """Ticket 15: Singapore's card + its known OpenF1 facts give the same values as the hand-written notes."""
+    from weekend import new_track
+    facts = {"q2025": dict(session_key=9892, driver=63, lap_number=0, lap_s=89.158, sectors_s=[]),
+             "fp1_2026": dict(session_key=11378, driver=63, lap_number=23, lap_s=92.274,
+                              sectors_s=[27.237, 39.035, 26.002]), "fetched": "test"}
+    tn, wn = new_track.notes_for("singapore", 2026, new_track.load_card("singapore"), facts)
+    gen = {**Note(**tn).values, **Note(**wn).values}
+    hand = {k: v for n in load_notes() if n.scope.get("track") == "singapore" for k, v in n.values.items()}
+    same = ["track.length_m", "track.mirror_x", "video.track_name", "ref.q2025_lap_s", "track.path_ref_driver",
+            "line.base_inset_m", "ref.fp1_lap_s", "ref.fp1_sectors_s", "ref.q2025_csv_file", "ref.fp1_csv_file",
+            "track.path_samples_file", "RHO", "WARM_RHO"]
+    assert {k: gen[k].value for k in same} == {k: hand[k].value for k in same}

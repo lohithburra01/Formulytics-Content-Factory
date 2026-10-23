@@ -1,0 +1,25 @@
+{
+ "q2025": {
+  "session_key": 9884,
+  "driver": 1,
+  "lap_number": 11,
+  "lap_s": 92.51,
+  "sectors_s": [
+   24.914,
+   37.41,
+   30.186
+  ]
+ },
+ "fp1_2026": {
+  "session_key": 11389,
+  "driver": 3,
+  "lap_number": 14,
+  "lap_s": 95.86,
+  "sectors_s": [
+   25.634,
+   38.237,
+   31.989
+  ]
+ },
+ "fetched": "2026-10-23"
+}
