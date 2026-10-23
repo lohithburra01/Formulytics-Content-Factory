@@ -1,0 +1,8 @@
+# Track card (ticket 15): the only hand-written facts a new track needs. Everything else is fetched, computed or fitted.
+track: austin
+event_name: {value: "United States Grand Prix", source: "event name"}
+openf1: {country: "United States", circuit: "Austin"}
+length_m: {value: 5513.0, source: "FIA circuit length, Circuit of the Americas"}
+direction: {value: anticlockwise, source: "COTA runs anticlockwise (turn 1 uphill left)"}
+altitude_m: {value: 171.0, source: "airdensityonline.com track page: 561 ft"}
+street: {value: false, source: "permanent circuit"}

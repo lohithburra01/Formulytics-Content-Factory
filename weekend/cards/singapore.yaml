@@ -1,0 +1,8 @@
+# Track card (ticket 15): the only hand-written facts a new track needs. Everything else is fetched, computed or fitted.
+track: singapore
+event_name: {value: "Singapore Grand Prix", source: "event name"}
+openf1: {country: "Singapore", circuit: "Singapore"}
+length_m: {value: 4927.0, source: "FIA circuit length, Marina Bay 2024+ layout (registry note)"}
+direction: {value: anticlockwise, source: "Marina Bay runs anticlockwise"}
+altitude_m: {value: 15.0, source: "registry altitude (cache/_track_registry.py)"}
+street: {value: true, source: "street circuit"}

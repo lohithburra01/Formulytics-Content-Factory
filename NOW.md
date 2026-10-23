@@ -37,6 +37,13 @@ Grill + retro done. ALL decisions: `.scratch/race-weekend-flow/grill-decisions.m
 v1 renamed to `spec_v1_rejected.md` / `flow_v1_rejected.html`. **Spec v2 = `.scratch/race-weekend-flow/spec.md` (Status: ready-for-agent; seams: resolve_pack, run(pack), knowledge store API — user-approved).** `learn/` lessons = rejected format (user wants traced examples in chat).
 Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-decisions.md).
 
+## RESUME HERE (2026-10-23 late) - ticket 15 'any weekend' in progress
+Ticket: .scratch/race-weekend-flow/issues/15-any-weekend.md (5-step plan agreed by user).
+Step 1 done (0b54cb3): shared track-build settings -> weekend/notes/season/track_build_defaults_2026.yaml.
+Step 2 done: track cards weekend/cards/<track>.yaml (Austin alt 171 m from airdensityonline 561 ft, length 5513).
+NEXT step 3: generator card+fetch_facts -> track/weekend notes; first remove hard-coded 'singapore' in weekend/*.py
+(run.py/simdoor.py use cache/singapore/_sg_grip.py; stages/line/pipeline/runner/nudge/mcp_server mention it).
+
 ## RESUME HERE (2026-10-23, Austin FP1 weekend)
 User order (2026-10-23): "follow the spec and finish the tickets first" -> THEN make it work for any weekend.
 Done 2026-10-23 (commit baad75d): spec D21-D26 folded in; ticket 14 video text = decided time (1:30.524 shown);
