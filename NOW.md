@@ -53,8 +53,18 @@ Step 4 run 1 DONE (lineage fc4dfb6, log runs/austin_2026_run.log, video runs/aus
    real goes in-out-in-out-in (wider). Energy: sim clip zones do not match FP1 -> spec D28 + ticket 17.
   NEW PROCESS (spec D27, ticket 16): review stage writes line.svg + speed.svg and the run STOPS before the video;
    user OKs -> `python -m weekend.approve <track> <year>` -> rerun renders video. Show the user the SVGs, not the video.
-  NEXT: show Austin run-1 review SVGs -> user line nudges become notes (nudge flow) -> ticket 17 (clip zones, grip street-only)
-   -> rerun -> check clip zones + band + line BEFORE showing user.
+  User (2nd, angrier): I showed run-1 SVGs and asked them to repeat line comments already given -> NEVER re-ask;
+   convert given comments into rules immediately. Whole-lap correlation 0.964 is meaningless to the user.
+  Done: line rules note be0b433 (T1 646 apex outside; 3735 exit/3963 entry+exit/4223 entry outside);
+   ticket 17 code 5d6b7a9: sim CLIP_ZONES from FP1 (zone flush to sim braking start, FP1 rate), grip fixed 1.0
+   off-street (fit.range collapsed), checks all_ok now needs: no corner >10 km/h off, every section RMSE<=8 km/h
+   (features.segment_shapes), FP1 clip zones matched (features.clip_match). Run-1 lap fails 9/10 sections.
+  Austin run 2 DONE (log runs/austin_2026_run2.log, stopped at review, not shown as a result): lap 96.35, 9/10 sections
+   fail, clip zones not matched, rules T12-exit + 3963-exit unmet (gap 0.17/0.16 m). Diagnosis (scratchpad align_diag.py,
+   radius_diag.py): (a) sim corners sit +16..+44 m later than FP1's on the distance axis -> checks must align on corners;
+   (b) fast esses ~1300-1400 m and T19 ~4900 m: sim line radius ~1.5x what FP1 speed implies (sim 298 vs 241 km/h);
+   (c) braking before T1/T12: sim 32-53 km/h slower = brakes early. Was: NEXT: read checks; if sections/clips fail, fix BEFORE
+   showing the user; show SVGs only when checks are green or with a clear per-section gap list.
 
 ## RESUME HERE (2026-10-23, Austin FP1 weekend)
 User order (2026-10-23): "follow the spec and finish the tickets first" -> THEN make it work for any weekend.
