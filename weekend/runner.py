@@ -22,7 +22,8 @@ from langgraph.types import Command, interrupt
 from weekend import new_track, pipeline
 from weekend.resolve import ROOT, Unresolved, load_notes, pack_path, resolve_pack
 
-ORDER = ["track", "base_line", "refs", "car_and_line", "time_knob", "final", "checks", "video"]
+ORDER = ["track", "base_line", "refs", "car_and_line", "time_knob", "final", "checks", "review", "video"]
+APPROVED = "approved.json"   # written into the review dir by `python -m weekend.approve`
 LINEAGE_DIR = os.path.join(ROOT, "weekend", "lineage")
 
 
@@ -82,6 +83,10 @@ def node_lineage(state: State) -> State:
     return {"committed": head}
 
 
+def review_approved(state: State) -> bool:
+    return os.path.exists(os.path.join(state["done"]["review"]["dir"], APPROVED))
+
+
 def build(checkpointer):
     g = StateGraph(State)
     g.add_node("resolve", node_resolve)
@@ -89,7 +94,11 @@ def build(checkpointer):
     g.add_edge(START, "resolve")
     for name in ORDER:
         g.add_node(name, make_stage_node(name))
-        g.add_edge(prev, name); prev = name
+        if name == "video":                 # the video waits for the user's OK on the review pictures
+            g.add_conditional_edges(prev, review_approved, {True: name, False: END})
+        else:
+            g.add_edge(prev, name)
+        prev = name
     g.add_node("lineage", node_lineage)
     g.add_edge(prev, "lineage"); g.add_edge("lineage", END)
     return g.compile(checkpointer=checkpointer)
@@ -113,5 +122,9 @@ def run(track: str, year: int, resume: bool = False):
     if snap.next:                           # paused at an interrupt
         qs = [i.value for t in snap.tasks for i in t.interrupts]
         return dict(paused=True, questions=qs)
+    if "video" not in out["done"]:          # stopped for the review: user looks, then approves
+        rv = out["done"]["review"]
+        return dict(paused=True, review=dict(dir=rv["dir"], **rv["result"]), checks=out["done"]["checks"]["result"],
+                    next=f"check line.svg + speed.svg, then: python -m weekend.approve {track} {year}")
     return dict(paused=False, committed=out.get("committed"),
                 checks=out["done"]["checks"]["result"], video=out["done"]["video"]["dir"])

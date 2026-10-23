@@ -201,3 +201,22 @@ def median_abs(xs):
 def median(xs):
     xs = [x for x in xs if x is not None]
     return float(np.median(xs)) if xs else None
+
+
+def clip_zones(d, t, v, thr, min_len_m=20.0, join_m=40.0, v_min=200.0):
+    """Where the car clips: full throttle, no lift, speed falling on a straight (the only ERS evidence in
+    OpenF1 data - it publishes no deploy channel). Returns [(start_m, end_m, v_start, v_end)]."""
+    d, t, v, thr = (np.asarray(x, float) for x in (d, t, v, thr))
+    idx = np.where((thr >= 98) & (np.gradient(v, t) < -2) & (v > v_min))[0]
+    zones = []
+    if len(idx):
+        a = p = idx[0]
+        for j in list(idx[1:]) + [None]:
+            if j is None or d[j] - d[p] > join_m:
+                if d[p] - d[a] >= min_len_m:
+                    zones.append((float(d[a]), float(d[p]), float(v[a]), float(v[p])))
+                if j is not None:
+                    a = j
+            if j is not None:
+                p = j
+    return zones

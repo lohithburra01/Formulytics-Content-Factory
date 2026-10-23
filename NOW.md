@@ -48,7 +48,13 @@ Step 4 run 1 DONE (lineage fc4dfb6, log runs/austin_2026_run.log, video runs/aus
   pattern 0.964 (SG 0.953); lap 96.80 s NOT in band 93.86-94.36; tuned car alone 96.19 (slower than FP1 95.86!);
   knob conflict (MU_LAT/CL reach band but worsen pattern). Loss = 1.8 s at 3900-4340 m (T12-T15): sim corner mins
   ~30 m late and 10-35 km/h slower; fitted street_grip_k 0.676 (street-only factor, range 0.3-1.0, now cuts a permanent track).
-  NEXT: user judges line in video; then fix why the tuned car is slower than FP1 (suspects: grip k on permanent track, width 12 m).
+  User review of run 1 (2026-10-23, angry: 're-debugging the same things after the spec'):
+   line: T1 (~610 m, video 9 s) sim touches apex, real does NOT; T12-T15 (3780-4440 m, video 1:02+) sim hugs inside,
+   real goes in-out-in-out-in (wider). Energy: sim clip zones do not match FP1 -> spec D28 + ticket 17.
+  NEW PROCESS (spec D27, ticket 16): review stage writes line.svg + speed.svg and the run STOPS before the video;
+   user OKs -> `python -m weekend.approve <track> <year>` -> rerun renders video. Show the user the SVGs, not the video.
+  NEXT: show Austin run-1 review SVGs -> user line nudges become notes (nudge flow) -> ticket 17 (clip zones, grip street-only)
+   -> rerun -> check clip zones + band + line BEFORE showing user.
 
 ## RESUME HERE (2026-10-23, Austin FP1 weekend)
 User order (2026-10-23): "follow the spec and finish the tickets first" -> THEN make it work for any weekend.

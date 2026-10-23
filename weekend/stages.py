@@ -238,3 +238,4 @@ def car_and_line(p, out, up, weekend):
 
 
 import weekend.stages_finish  # noqa: E402,F401  (registers time_knob, final, checks, video)
+import weekend.stages_review  # noqa: E402,F401  (registers review: line + speed pictures before the video)
