@@ -42,6 +42,9 @@ values:
   line.fixed_point_tol_m: {value: 0.5, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "approved under D22 (user, 2026-10-20); proposed 2026-10-20: line counts as settled when it moves < 0.5 m", pending_review: false}
   sim.brake_preserve: {value: false, origin: COMPUTED, source: "test 2026-10-20 vs 2026 Singapore FP1 braking bands: on -> high-speed braking 43-59% stronger than FP1; off -> 6-31% weaker; off is closer (spec: wired, recorded off)"}
   check.flag_kmh: {value: 10.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing corner-compare flag (+-10 km/h, cache/_corner_compare.py)"}
+  check.segment_prominence_kmh: {value: 15.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-23, reason: "user 2026-10-23: separate the corners and match each shape; segments cut at the reference straight peaks that stand 15 km/h above their surroundings (number proposed by Claude)"}
+  check.segment_rmse_kmh: {value: 8.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-23, reason: "user 2026-10-23: visual shape match per corner, not the 96% correlation; a segment passes at RMSE <= 8 km/h vs FP1 (number proposed by Claude, tighten if pictures still look wrong)"}
+  check.clip_match_m: {value: 60.0, unit: m, origin: USER_DECISION, decided: 2026-10-23, reason: "spec D28: a sim clip zone matches a real one when it ends within 60 m and covers half of it (number proposed by Claude)"}
   # --- realism gate bands (grill D7: existing cache/_gate_2026.py bands) ---
   gate.gain_med_kmh_s: {value: [14.0, 28.0], unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band (real 2026 medians 16.6/24.2)"}
   gate.gain_peak_max_kmh_s: {value: 64.0, unit: km/h/s, origin: USER_DECISION, decided: 2026-10-19, reason: "grill D7: existing gate band (real peaks 55/61)"}

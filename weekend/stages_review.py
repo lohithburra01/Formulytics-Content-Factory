@@ -29,9 +29,13 @@ def _save(fig, path):
     fig.savefig(path, format="svg", metadata={"Date": None}, bbox_inches="tight")
 
 
-def _corners(up):
+def _report(up):
     with open(os.path.join(up["checks"], "report.json"), encoding="utf-8") as fh:
-        return json.load(fh)["features"].get("corners", [])
+        return json.load(fh)
+
+
+def _corners(up):
+    return _report(up)["features"].get("corners", [])
 
 
 def _lap(path):
@@ -66,7 +70,7 @@ def draw_line(out, outline, raceline, corners, title):
     _save(fig, os.path.join(out, "line.svg")); plt.close(fig)
 
 
-def draw_speed(out, sim, ref, corners, ref_name, title):
+def draw_speed(out, sim, ref, corners, ref_name, title, segments=()):
     plt = _plt()
     L = float(sim.distance.iloc[-1])
     rd = ref.distance.to_numpy(float) / float(ref.distance.iloc[-1]) * L      # reference on the sim's lap length
@@ -83,12 +87,19 @@ def draw_speed(out, sim, ref, corners, ref_name, title):
         m = (sim["mode"] == "SUPERCLIP").to_numpy()
         a1.fill_between(sim.distance, 0, 1, where=m, transform=a1.get_xaxis_transform(), color="#ff7f0e", alpha=0.12,
                         label="sim label SUPERCLIP")
+    for sg in segments:                                      # per-section shape check (user rule 2026-10-23)
+        if not sg["ok"]:
+            a1.axvspan(sg["start_m"], sg["end_m"], ymin=0.0, ymax=0.06, color="#d62728", alpha=0.35)
+        a1.annotate(f"{sg['rmse_kmh']:.0f} km/h\n{sg['time_s']:+.2f} s",((sg["start_m"] + sg["end_m"]) / 2, 0.01),
+                    xycoords=("data", "axes fraction"), ha="center", fontsize=8,
+                    color="#d62728" if not sg["ok"] else "#2ca02c")
     for c in corners:
         a1.annotate(f"C{c['id']}", (c["s_m"], c["ref"]), textcoords="offset points", xytext=(0, -16),
                     ha="center", fontsize=9, fontweight="bold")
     a1.set_ylabel("speed km/h"); a1.grid(alpha=0.3); a1.set_xticks(np.arange(0, L, 250))
     a1.legend(loc="upper left", bbox_to_anchor=(0, -0.02), ncol=3,
-              title=f"top bars: clip zones (speed falling at full throttle) - blue {ref_name}, red sim")
+              title=f"top bars: clip zones (speed falling at full throttle) - blue {ref_name}, red sim; "
+                    f"bottom: per-section shape error (RMSE) + time lost, red = fails")
     g = np.linspace(0, L, 1000)
     dt = np.interp(g, sim.distance, sim.time_s) - np.interp(g, rd, ref.time_s)
     a2.plot(g, dt, color="#333"); a2.axhline(0, color="#999", lw=0.8)
@@ -106,12 +117,13 @@ def review(p, out, up, weekend):
         outline = json.load(fh)
     with open(os.path.join(up["final"], "raceline.json"), encoding="utf-8") as fh:
         raceline = json.load(fh)
-    corners = _corners(up)
+    rep = _report(up)
+    corners = rep["features"].get("corners", [])
     sim = _lap(os.path.join(up["final"], "lap.csv"))
     fp1 = "ref.fp1_csv_file" in p
     ref = _lap(p.file("ref.fp1_csv_file") if fp1 else p.file("ref.q2025_csv_file"))
     ref_name = f"{weekend['year']} FP1" if fp1 else f"{weekend['year'] - 1} Q"
     title = f"{p['video.track_name']} {weekend['year']} - sim lap {sim.time_s.iloc[-1]:.3f} s"
     draw_line(out, outline, raceline, corners, title)
-    zr, zs = draw_speed(out, sim, ref, corners, ref_name, title)
+    zr, zs = draw_speed(out, sim, ref, corners, ref_name, title, rep.get("segments", []))
     return dict(line_svg="line.svg", speed_svg="speed.svg", ref=ref_name, clip_zones_ref=zr, clip_zones_sim=zs)

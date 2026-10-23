@@ -167,15 +167,21 @@ def checks(p, out, up, weekend):
         tk = json.load(fh)
     rules = tk["rules"] or cl["rules"]
     flagged = [c for c in feats["corners"] if abs(c["err"]) > p["check.flag_kmh"]]
+    shape_csv = os.path.join(up["refs"], "shape_ref.csv")
+    segs = F.segment_shapes(lap_csv, shape_csv, p["check.segment_prominence_kmh"], p["check.segment_rmse_kmh"])
+    clips = F.clip_match(lap_csv, shape_csv, p["check.clip_match_m"])
     res.update(features=feats, line_rules=rules, tuning_conflicts=cl["conflicts"], fixed_point=cl["fixed_point"],
-               knob=tk["knob"], knob_conflict=tk.get("conflict"), corners_flagged=flagged)
-    res["all_ok"] = bool(res["lap_in_band"] and all(x["ok"] for x in res["gate"]) and all(r["satisfied"] for r in rules))
+               knob=tk["knob"], knob_conflict=tk.get("conflict"), corners_flagged=flagged, segments=segs, clips=clips)
+    # user rule 2026-10-23: corner by corner, never the whole-lap correlation alone (spec D28)
+    res["all_ok"] = bool(res["lap_in_band"] and all(x["ok"] for x in res["gate"]) and all(r["satisfied"] for r in rules)
+                         and not flagged and all(x["ok"] for x in segs) and clips["ok"])
     with open(os.path.join(out, "report.json"), "w") as fh:
         json.dump(res, fh, indent=1, default=float)
     return dict(all_ok=res["all_ok"], lap_s=lap, lap_in_band=res["lap_in_band"],
                 gate_ok=all(x["ok"] for x in res["gate"]), rules_ok=all(r["satisfied"] for r in rules),
                 sectors=res.get("sectors"), corners_flagged=len(flagged), knob=tk["knob"],
-                pattern=res["pattern"], knob_conflict=tk.get("conflict"))
+                pattern=res["pattern"], knob_conflict=tk.get("conflict"),
+                segments_bad=[x for x in segs if not x["ok"]], clips_ok=clips["ok"])
 
 
 @stage("video", reads=["video."], needs=["track", "final", "refs"], code=["raceline_video.py"])

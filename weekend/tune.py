@@ -104,6 +104,10 @@ def tune(vals, ranges, raceline, ref, cfg, tol_kmh, tol_pct, max_sweeps, max_eva
         rows = []
         for name, group, sel, key, kind, sign in RULES:
             lo, hi = ranges[name]
+            if lo == hi:                      # collapsed range = fixed for this track, not tuned
+                vals[name] = float(lo)
+                rows.append(dict(name=name, value=float(lo), error=None, unit="", status="fixed"))
+                continue
             tol = tol_kmh if kind == "kmh" else tol_pct
             x, e, status = _solve(lap, vals, name, group, sel, key, sign, lo, hi, tol, max_eval)
             if status == "conflict":          # D6: never leave a number pinned at its range end

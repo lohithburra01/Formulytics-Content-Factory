@@ -220,3 +220,56 @@ def clip_zones(d, t, v, thr, min_len_m=20.0, join_m=40.0, v_min=200.0):
             if j is not None:
                 p = j
     return zones
+
+
+def segment_shapes(sim_csv, ref_csv, prominence_kmh, tol_rmse_kmh):
+    """User rule 2026-10-23: match the speed SHAPE corner by corner, never trust the whole-lap correlation.
+    The lap is cut at the reference's straight peaks (local maxima >= prominence); each segment holds one
+    braking zone + corner(s) + exit. Per segment: RMSE and worst gap (km/h) on a common lap-fraction grid,
+    and the time the sim loses (+) or gains (-) there. ok = RMSE <= tol."""
+    import pandas as pd
+    from scipy.signal import find_peaks
+    s, r = pd.read_csv(sim_csv), pd.read_csv(ref_csv)
+    L = float(s.distance.iloc[-1])
+    g = np.linspace(0.0, L, 4000, endpoint=False)
+    rd = r.distance.to_numpy(float) / float(r.distance.iloc[-1]) * L
+    vs, vr = np.interp(g, s.distance, s.speed), np.interp(g, rd, r.speed)
+    ts, tr = np.interp(g, s.distance, s.time_s), np.interp(g, rd, r.time_s)
+    pk, _ = find_peaks(vr, prominence=prominence_kmh)
+    cuts = [0] + [int(p) for p in pk if 0 < p < len(g) - 1] + [len(g) - 1]
+    out = []
+    for a, b in zip(cuts[:-1], cuts[1:]):
+        if b - a < 5:
+            continue
+        d = vs[a:b] - vr[a:b]
+        w = int(np.argmax(np.abs(d)))
+        e = float(np.sqrt(np.mean(d ** 2)))
+        out.append(dict(start_m=round(float(g[a])), end_m=round(float(g[b])), rmse_kmh=round(e, 1),
+                        worst_kmh=round(float(d[w]), 1), worst_at_m=round(float(g[a + w])),
+                        time_s=round(float((ts[b] - ts[a]) - (tr[b] - tr[a])), 3), ok=bool(e <= tol_rmse_kmh)))
+    return out
+
+
+def clip_match(sim_csv, ref_csv, tol_m):
+    """Spec D28: every reference clip zone needs a sim clip zone ending within tol_m and covering at least half
+    of it; a sim clip zone with
+    no reference partner is 'extra'. Distances on the sim's lap length."""
+    import pandas as pd
+    s, r = pd.read_csv(sim_csv), pd.read_csv(ref_csv)
+    L = float(s.distance.iloc[-1])
+    rd = r.distance.to_numpy(float) / float(r.distance.iloc[-1]) * L
+    zs = clip_zones(s.distance, s.time_s, s.speed, s.throttle)
+    zr = clip_zones(rd, r.time_s, r.speed, r.throttle)
+    used, rows = set(), []
+    for z in zr:
+        j = next((i for i, x in enumerate(zs) if i not in used and abs(x[1] - z[1]) <= tol_m
+                  and min(x[1], z[1]) - max(x[0], z[0]) >= 0.5 * (z[1] - z[0])), None)   # covers >= half of it
+        if j is not None:
+            used.add(j)
+        x = zs[j] if j is not None else None
+        rows.append(dict(ref_m=[round(z[0]), round(z[1])], ref_drop_kmh=round(z[3] - z[2], 1),
+                         sim_m=[round(x[0]), round(x[1])] if x else None,
+                         sim_drop_kmh=round(x[3] - x[2], 1) if x else None, ok=x is not None))
+    extra = [dict(sim_m=[round(x[0]), round(x[1])], sim_drop_kmh=round(x[3] - x[2], 1))
+             for i, x in enumerate(zs) if i not in used]
+    return dict(zones=rows, extra=extra, ok=all(z["ok"] for z in rows) and not extra)

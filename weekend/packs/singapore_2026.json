@@ -63,6 +63,17 @@
    "layer": "weekend",
    "note_id": "weekend/singapore_2026"
   },
+  "CLIP_ZONES": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "spec D28: no reference lap -> the old speed-fraction superclip rule; a weekend with FP1 overrides with its measured clip zones",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
   "CL_CORNER_M2": {
    "value": 4.3233,
    "unit": "m^2",
@@ -619,6 +630,17 @@
    "layer": "run",
    "note_id": "run/pipeline_settings"
   },
+  "check.clip_match_m": {
+   "value": 60.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "spec D28: a sim clip zone matches a real one when it ends within 60 m and covers half of it (number proposed by Claude)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
   "check.corner_prominence_kmh": {
    "value": 8.0,
    "unit": "km/h",
@@ -669,6 +691,28 @@
    "origin": "USER_DECISION",
    "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: braking onset = 5 km/h below the straight peak",
    "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.segment_prominence_kmh": {
+   "value": 15.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23: separate the corners and match each shape; segments cut at the reference straight peaks that stand 15 km/h above their surroundings (number proposed by Claude)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.segment_rmse_kmh": {
+   "value": 8.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23: visual shape match per corner, not the 96% correlation; a segment passes at RMSE <= 8 km/h vs FP1 (number proposed by Claude, tighten if pictures still look wrong)",
+   "decided": "2026-10-23",
    "file": false,
    "pending_review": false,
    "layer": "run",

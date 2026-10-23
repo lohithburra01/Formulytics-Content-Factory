@@ -59,6 +59,16 @@
    "layer": "car",
    "note_id": "car/f1_2026_car"
   },
+  "CLIP_ZONES": {
+   "value": "[[0.0871, 0.44, -18.18], [0.2255, 0.72, -9.72], [0.4382, 1.12, -11.61], [0.64, 2.88, -3.47]]",
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "weekend.features.clip_zones on the 2026 FP1 speed trace (full throttle, speed falling): [lap fraction at zone end, seconds, km/h per s] per zone (spec D28)",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
   "CL_CORNER_M2": {
    "value": 4.2,
    "unit": "m^2",
@@ -611,6 +621,17 @@
    "layer": "run",
    "note_id": "run/pipeline_settings"
   },
+  "check.clip_match_m": {
+   "value": 60.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "spec D28: a sim clip zone matches a real one when it ends within 60 m and covers half of it (number proposed by Claude)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
   "check.corner_prominence_kmh": {
    "value": 8.0,
    "unit": "km/h",
@@ -661,6 +682,28 @@
    "origin": "USER_DECISION",
    "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: braking onset = 5 km/h below the straight peak",
    "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.segment_prominence_kmh": {
+   "value": 15.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23: separate the corners and match each shape; segments cut at the reference straight peaks that stand 15 km/h above their surroundings (number proposed by Claude)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.segment_rmse_kmh": {
+   "value": 8.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23: visual shape match per corner, not the 96% correlation; a segment passes at RMSE <= 8 km/h vs FP1 (number proposed by Claude, tighten if pictures still look wrong)",
+   "decided": "2026-10-23",
    "file": false,
    "pending_review": false,
    "layer": "run",

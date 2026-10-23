@@ -78,6 +78,13 @@ SUPERCLIP_SPEED_FRAC = 0.96
 # 2026 China Q telemetry — a full-throttle decline of ~5-7 km/h per second.
 P_SUPERCLIP_NET_W    = 335_000
 
+# CLIP_ZONES — where the REAL car clips, read from its speed trace (spec D28): a JSON list of
+# [frac_end, duration_s, rate_kmh_s] per straight (frac_end = zone end as a fraction of the lap,
+# duration = how long it clipped, rate = its speed change per second, negative = losing speed).
+# Each zone is placed flush against the sim's nearest braking/lift point and the car follows the
+# real rate there. "" = no reference: the old speed-fraction rule above places superclip.
+CLIP_ZONES = ""
+
 # Override WARM_* defaults from calibration JSON if present.
 # Resolve relative to THIS file, not the CWD — otherwise importing sim_2026_lap
 # from any other directory silently skips the override and runs on stale defaults.
@@ -1168,6 +1175,32 @@ def _superclip_mask(v_profile, braking, ds, superclip_speed, max_s):
     return mask
 
 
+def _ref_clip_mask(v_profile, braking, ds, arc, track_length_m, zones):
+    """SUPERCLIP mask + per-station target rate (m/s^2) from the real car's clip zones (CLIP_ZONES).
+    Each zone ends at the sim's braking start nearest the real zone end and runs back for the real
+    zone's duration; stations get the real rate. Zones with no braking start within 150 m are skipped."""
+    n = len(braking)
+    mask = np.zeros(n, dtype=bool)
+    rate = np.zeros(n)
+    starts = [i for i in range(n) if braking[i] and not braking[(i - 1) % n]]
+    if not starts:
+        return mask, rate
+    dt = np.array([2.0 * ds[i] / max(v_profile[i] + v_profile[(i + 1) % n], 1e-3) for i in range(n)])
+    for frac_end, dur, rate_kmh_s in zones:
+        s_end = frac_end * track_length_m
+        dist = [min(abs(arc[b] - s_end), track_length_m - abs(arc[b] - s_end)) for b in starts]
+        j = int(np.argmin(dist))
+        if dist[j] > 150.0:
+            continue
+        k, acc = (starts[j] - 1) % n, 0.0
+        while acc < dur and not braking[k]:
+            mask[k] = True
+            rate[k] = rate_kmh_s / 3.6
+            acc += dt[k]
+            k = (k - 1) % n
+    return mask, rate
+
+
 def _pick_drive_mode(t_since_corner_exit):
     """Mode for a non-braking, non-superclip station: DEPLOY inside the
     post-corner-exit key-acceleration window, NORMAL after it. (SUPERCLIP is
@@ -1241,7 +1274,7 @@ def _battery_delta_for_mode(mode, dt, v=0.0):
 
 
 def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
-                               v0=None, soc0=SOC_INIT, superclip_mask=None):
+                               v0=None, soc0=SOC_INIT, superclip_mask=None, superclip_rate=None):
     """Walk the lap forward integrating speed and battery state.
 
     Modes are assigned as CONTIGUOUS blocks, never per-station:
@@ -1324,6 +1357,10 @@ def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
         a_long_power = P_total / (MASS_KG * max(v[i], V_FLOOR_MS))
         a_drag = drag_force(v[i], mode_here) / MASS_KG
         a_long = min(a_long_grip, a_long_power, A_ACC_LONG_MAX) - a_drag
+        if chosen == "SUPERCLIP" and superclip_rate is not None:
+            # real-car clip zone: follow the measured rate; the MGU-K harvests what the ICE gives beyond it
+            a_long = min(a_long, superclip_rate[i])
+            P_total = max(0.0, (MASS_KG * a_long + drag_force(v[i], mode_here)) * v[i])
 
         v_next = math.sqrt(max(V_FLOOR_MS ** 2,
                                v[i] * v[i] + 2.0 * a_long * ds[i]))
@@ -1331,7 +1368,10 @@ def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
         v[(i + 1) % n] = v_next
 
         dt = 2.0 * ds[i] / max(v[i] + v_next, 1e-3)
-        soc += _battery_delta_for_mode(chosen, dt, v[i]) / E_BATTERY_CAP_J
+        if chosen == "SUPERCLIP" and superclip_rate is not None:
+            soc += max(0.0, P_ICE_MAX_W - P_total) * dt / E_BATTERY_CAP_J
+        else:
+            soc += _battery_delta_for_mode(chosen, dt, v[i]) / E_BATTERY_CAP_J
         soc = min(1.0, max(0.0, soc))
         p_kw_arr[i] = P_total / 1000.0
         t += dt
@@ -1388,11 +1428,15 @@ def simulate_lap(raceline, arc, kappa, track_length_m, max_iters=8, tol_v=1.0):
         v_ns = forward_pass_energy_aware(
             v_grip, v_brake, kappa, arc, track_length_m, v0=v0,
             superclip_mask=None)[0]
-        sc_speed = SUPERCLIP_SPEED_FRAC * float(np.max(v_ns))
-        sc_mask = _superclip_mask(v_ns, braking, ds, sc_speed, SUPERCLIP_MAX_S)
+        sc_rate = None
+        if CLIP_ZONES:
+            sc_mask, sc_rate = _ref_clip_mask(v_ns, braking, ds, arc, track_length_m, json.loads(CLIP_ZONES))
+        else:
+            sc_speed = SUPERCLIP_SPEED_FRAC * float(np.max(v_ns))
+            sc_mask = _superclip_mask(v_ns, braking, ds, sc_speed, SUPERCLIP_MAX_S)
         v, soc, mode, p_kw, t_arr = forward_pass_energy_aware(
             v_grip, v_brake, kappa, arc, track_length_m, v0=v0,
-            superclip_mask=sc_mask)
+            superclip_mask=sc_mask, superclip_rate=sc_rate)
         v_end = v[-1]
         v_start = v[0]
         dv_closure = abs(v_end - v_start)

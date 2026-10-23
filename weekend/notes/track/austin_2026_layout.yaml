@@ -58,3 +58,9 @@ values:
     value: United States Grand Prix
     origin: KNOWLEDGE
     source: event name
+  fit.range.track.street_grip_k:
+    value:
+    - 1.0
+    - 1.0
+    origin: COMPUTED
+    source: street-grip factor applies to street circuits only (spec ticket 17); fixed at 1.0 here (permanent circuit)

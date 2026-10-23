@@ -18,6 +18,7 @@ import subprocess
 import sys
 from datetime import date
 
+import numpy as np
 import yaml
 
 from weekend import features as F
@@ -49,6 +50,18 @@ def ensure_facts(track, year, card):
 
 def _rel(p):
     return os.path.relpath(p, ROOT).replace("\\", "/")
+
+
+def clip_zones_ref(csv_path):
+    """Real clip zones as the sim reads them: [frac_end, duration_s, rate_kmh_s], rounded (stable notes)."""
+    import pandas as pd
+    r = pd.read_csv(csv_path)
+    L = float(r.distance.iloc[-1])
+    out = []
+    for a, b, va, vb in F.clip_zones(r.distance, r.time_s, r.speed, r.throttle):
+        ta, tb = (float(np.interp(x, r.distance, r.time_s)) for x in (a, b))
+        out.append([round(b / L, 4), round(tb - ta, 2), round((vb - va) / (tb - ta), 2)])
+    return out
 
 
 def notes_for(track, year, card, facts):
@@ -94,8 +107,15 @@ def notes_for(track, year, card, facts):
             source=f"ISA at altitude {alt:g} m ({card['altitude_m']['source']}): 1.225*(1-2.25577e-5 h)^4.2561"),
         "WARM_RHO": dict(value=rho, unit="kg/m^3", origin="COMPUTED", source="the sim forces WARM_RHO = RHO"),
     }
+    if not street:
+        tv["fit.range.track.street_grip_k"] = dict(value=[1.0, 1.0], origin="COMPUTED",
+            source="street-grip factor applies to street circuits only (spec ticket 17); fixed at 1.0 here "
+                   f"({card['street']['source']})")
     if fp1:
         fp1_csv = os.path.join(ROOT, "F1_Pipeline_Assets", "exports", f"reference_{year}_{track}_fp1.csv")
+        wv["CLIP_ZONES"] = dict(value=json.dumps(clip_zones_ref(fp1_csv)), origin="COMPUTED",
+            source=f"weekend.features.clip_zones on the {year} FP1 speed trace (full throttle, speed falling): "
+                   "[lap fraction at zone end, seconds, km/h per s] per zone (spec D28)")
         wv.update({
             "ref.fp1_csv_file": dict(value=_rel(fp1_csv), file=True, origin="MEASURED",
                 source=f"OpenF1 car_data, {year} {track} FP1 fastest lap, driver {fp1['driver']} ({fetched})"),
