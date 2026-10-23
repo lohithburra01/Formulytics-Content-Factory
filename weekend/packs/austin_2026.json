@@ -1222,11 +1222,11 @@
    "note_id": "track/austin_2026_line_rules"
   },
   "line.rule_retries": {
-   "value": 2,
+   "value": 4,
    "unit": "",
    "origin": "USER_DECISION",
-   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: rule weight x4 retries before reporting a violation",
-   "decided": "2026-10-20",
+   "reason": "user 2026-10-24: get the line right; Austin run 2 left two exit-wide rules 1-2 cm short of the 0.15 m tolerance after 2 retries (was 2, approved under D22)",
+   "decided": "2026-10-24",
    "file": false,
    "pending_review": false,
    "layer": "run",

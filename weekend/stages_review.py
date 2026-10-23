@@ -73,7 +73,8 @@ def draw_line(out, outline, raceline, corners, title):
 def draw_speed(out, sim, ref, corners, ref_name, title, segments=()):
     plt = _plt()
     L = float(sim.distance.iloc[-1])
-    rd = ref.distance.to_numpy(float) / float(ref.distance.iloc[-1]) * L      # reference on the sim's lap length
+    from weekend.shape_fit import warp                    # reference lined up corner to corner (as the checks)
+    rd = warp(sim.distance.to_numpy(float), sim.speed, ref.distance.to_numpy(float), ref.speed)(ref.distance)
     fig, (a1, a2) = plt.subplots(2, 1, figsize=(22, 10), sharex=False, gridspec_kw=dict(height_ratios=[3, 1], hspace=0.35))
     a1.plot(rd, ref.speed, color="#1f77b4", lw=1.3, label=ref_name)
     a1.plot(sim.distance, sim.speed, color="#d62728", lw=1.3, label="sim")
