@@ -4,6 +4,17 @@
   "year": 2026
  },
  "values": {
+  "ACCEL_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
   "A_ACC_LONG_MAX": {
    "value": 16.1865,
    "unit": "m/s^2",
@@ -37,6 +48,17 @@
    "layer": "car",
    "note_id": "car/f1_2026_car"
   },
+  "BRAKE_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
   "CDA_CORNER_M2": {
    "value": 1.79,
    "unit": "m^2",
@@ -60,10 +82,10 @@
    "note_id": "car/f1_2026_car"
   },
   "CLIP_ZONES": {
-   "value": "[[0.0871, 0.44, -18.18], [0.2255, 0.72, -9.72], [0.4382, 1.12, -11.61], [0.64, 2.88, -3.47]]",
+   "value": "[[0.0805, 0.0871, -18.18], [0.2153, 0.2255, -9.72], [0.4223, 0.4382, -11.61], [0.5922, 0.64, -3.47]]",
    "unit": "",
    "origin": "COMPUTED",
-   "source": "weekend.features.clip_zones on the 2026 FP1 speed trace (full throttle, speed falling): [lap fraction at zone end, seconds, km/h per s] per zone (spec D28)",
+   "source": "weekend.features.clip_zones on the 2026 FP1 speed trace (full throttle, speed falling): [lap fraction start, end, km/h per s] per zone (spec D28)",
    "file": false,
    "pending_review": false,
    "layer": "weekend",
@@ -156,6 +178,17 @@
    "pending_review": false,
    "layer": "regulations",
    "note_id": "regulations/fia_2026_power_unit"
+  },
+  "GRIP_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
   },
   "J_MAX_LAT_JERK": {
    "value": 12.0,
@@ -1370,6 +1403,128 @@
    "pending_review": false,
    "layer": "season",
    "note_id": "season/lap_target_rule_2026"
+  },
+  "shape.accel_range": {
+   "value": [
+    0.0,
+    2.5
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.bin_m": {
+   "value": 20.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.brake_range": {
+   "value": [
+    0.5,
+    4.0
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.curved_r_m": {
+   "value": 1000.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.enabled": {
+   "value": true,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: with FP1, fit the speed pattern section by section (shape_fit stage)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "shape.grip_range": {
+   "value": [
+    0.6,
+    1.5
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.k_iters": {
+   "value": 3,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.lap_tol_s": {
+   "value": 0.25,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.mu_long": {
+   "value": [
+    1.6,
+    1.8
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.passes": {
+   "value": 200,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
   },
   "sim.brake_preserve": {
    "value": false,

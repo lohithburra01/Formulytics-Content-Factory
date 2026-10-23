@@ -4,6 +4,17 @@
   "year": 2026
  },
  "values": {
+  "ACCEL_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
   "A_ACC_LONG_MAX": {
    "value": 16.1865,
    "unit": "m/s^2",
@@ -32,6 +43,17 @@
    "origin": "USER_DECISION",
    "reason": "kept: measured effect <= 0.001 s at x0.5 and x1.5 (2026-10-20)",
    "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "BRAKE_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
    "file": false,
    "pending_review": false,
    "layer": "car",
@@ -165,6 +187,17 @@
    "pending_review": false,
    "layer": "regulations",
    "note_id": "regulations/fia_2026_power_unit"
+  },
+  "GRIP_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
   },
   "J_MAX_LAT_JERK": {
    "value": 12.0,
@@ -1346,6 +1379,128 @@
    "pending_review": false,
    "layer": "season",
    "note_id": "season/lap_target_rule_2026"
+  },
+  "shape.accel_range": {
+   "value": [
+    0.0,
+    2.5
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.bin_m": {
+   "value": 20.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.brake_range": {
+   "value": [
+    0.5,
+    4.0
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.curved_r_m": {
+   "value": 1000.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.enabled": {
+   "value": false,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/shape_fit_default_2026"
+  },
+  "shape.grip_range": {
+   "value": [
+    0.6,
+    1.5
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.k_iters": {
+   "value": 3,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.lap_tol_s": {
+   "value": 0.25,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.mu_long": {
+   "value": [
+    1.6,
+    1.8
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.passes": {
+   "value": 200,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
   },
   "sim.brake_preserve": {
    "value": false,

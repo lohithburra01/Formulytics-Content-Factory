@@ -110,14 +110,54 @@ def time_knob(p, out, up, weekend):
                                                   origin="FITTED", note="time knob: tuned to the lap-time target, not physics"))
 
 
-@stage("final", reads=[SIM, "line.", "fit.range."], needs=["track", "base_line", "time_knob"], code=LINE_CODE)
+@stage("shape_fit", reads=[SIM, "shape.", "line.", "ref.", "check."], needs=["track", "base_line", "refs", "time_knob"],
+       code=LINE_CODE + ["weekend/shape_fit.py", "weekend/features.py"])
+def shape_fit(p, out, up, weekend):
+    """User rule 2026-10-24 (D25/D28): match the real lap's speed pattern section by section, a bit faster.
+    On the time-knob line: fit GRIP/ACCEL/BRAKE maps + MU_LONG to the reference x K, K solved so the lap
+    lands on the decided time. Off (shape.enabled false) = the time-knob car unchanged."""
+    import shutil
+    import pandas as pd
+    from weekend import line as LN, shape_fit as SF
+    from weekend.features import clip_zones
+    with open(os.path.join(up["time_knob"], "car.json"), encoding="utf-8") as fh:
+        car = json.load(fh)
+    shutil.copyfile(os.path.join(up["time_knob"], "knots.npy"), os.path.join(out, "knots.npy"))
+    if not p["shape.enabled"]:
+        with open(os.path.join(out, "car.json"), "w") as fh:
+            json.dump(car, fh, indent=1)
+        return dict(enabled=False, k=1.0)
+    with open(os.path.join(up["refs"], "done.json"), encoding="utf-8") as fh:
+        R = json.load(fh)
+    ref = pd.read_csv(os.path.join(up["refs"], R["shape_ref_csv"]))
+    vals = p.sim_vals(); vals.update(car)
+    LN.setup(os.path.join(up["base_line"], "raceline.json"), os.path.join(up["track"], "sim_outline.json"), _line_prm(p))
+    rl, _ = LN.O.line_of(np.load(os.path.join(up["time_knob"], "knots.npy")))
+    L = float(ref.distance.iloc[-1])
+    zones = []
+    for a, b, va, vb in clip_zones(ref.distance, ref.time_s, ref.speed, ref.throttle):
+        dt = float(np.interp(b, ref.distance, ref.time_s) - np.interp(a, ref.distance, ref.time_s))
+        zones.append([round(a / L, 5), round(b / L, 5), round((vb - va) / max(dt, 1e-3), 2)])
+    sh = p.prefixed("shape.")
+    cfg = dict(bin_m=sh["bin_m"], curved_r_m=sh["curved_r_m"], passes=int(sh["passes"]), mu_long=list(sh["mu_long"]),
+               k_iters=int(sh["k_iters"]), lap_tol_s=sh["lap_tol_s"], grip_range=tuple(sh["grip_range"]),
+               accel_range=tuple(sh["accel_range"]), brake_range=tuple(sh["brake_range"]),
+               prominence_kmh=p["check.segment_prominence_kmh"], tol_rmse_kmh=p["check.segment_rmse_kmh"])
+    fitted, rep = SF.fit(vals, rl, ref, float(ref.time_s.iloc[-1]), R["target_s"], zones, cfg)
+    car.update(fitted)
+    with open(os.path.join(out, "car.json"), "w") as fh:
+        json.dump(car, fh, indent=1, sort_keys=True)
+    return dict(enabled=True, **rep)
+
+
+@stage("final", reads=[SIM, "line.", "fit.range."], needs=["track", "base_line", "shape_fit"], code=LINE_CODE)
 def final(p, out, up, weekend):
     from weekend import line as LN
     vals = p.sim_vals()
-    with open(os.path.join(up["time_knob"], "car.json"), encoding="utf-8") as fh:
+    with open(os.path.join(up["shape_fit"], "car.json"), encoding="utf-8") as fh:
         vals.update(json.load(fh))
     LN.setup(os.path.join(up["base_line"], "raceline.json"), os.path.join(up["track"], "sim_outline.json"), _line_prm(p))
-    rl, _ = LN.O.line_of(np.load(os.path.join(up["time_knob"], "knots.npy")))
+    rl, _ = LN.O.line_of(np.load(os.path.join(up["shape_fit"], "knots.npy")))
     sim = simdoor.configure(vals)
     arc, kappa, L = sim._arc_kappa_closed(rl)
     write_raceline(os.path.join(out, "sim_raceline.json"), rl, arc, kappa, L)
@@ -131,7 +171,7 @@ def final(p, out, up, weekend):
     return lap_summary(os.path.join(out, "lap.csv"))
 
 
-@stage("checks", reads=["check.", "fit.", "ref.", "gate."], needs=["refs", "final", "car_and_line", "time_knob"],
+@stage("checks", reads=["check.", "fit.", "ref.", "gate."], needs=["refs", "final", "car_and_line", "time_knob", "shape_fit"],
        code=["weekend/features.py", "cache/_gate_2026.py", "cache/_track_registry.py"])
 def checks(p, out, up, weekend):
     from weekend import features as F
@@ -167,9 +207,14 @@ def checks(p, out, up, weekend):
         tk = json.load(fh)
     rules = tk["rules"] or cl["rules"]
     flagged = [c for c in feats["corners"] if abs(c["err"]) > p["check.flag_kmh"]]
-    shape_csv = os.path.join(up["refs"], "shape_ref.csv")
-    segs = F.segment_shapes(lap_csv, shape_csv, p["check.segment_prominence_kmh"], p["check.segment_rmse_kmh"])
-    clips = F.clip_match(lap_csv, shape_csv, p["check.clip_match_m"])
+    import pandas as pd
+    from weekend import shape_fit as SF
+    with open(os.path.join(up["shape_fit"], "done.json"), encoding="utf-8") as fh:
+        k = json.load(fh).get("k", 1.0)
+    sim_df, ref_df = pd.read_csv(lap_csv), pd.read_csv(os.path.join(up["refs"], "shape_ref.csv"))
+    # corner-aligned, against the decided shape (reference x K, D25); never the whole-lap correlation alone
+    segs = SF.sections(sim_df, ref_df, k, p["check.segment_prominence_kmh"], p["check.segment_rmse_kmh"])
+    clips = SF.clip_match(sim_df, ref_df, p["check.clip_match_m"])
     res.update(features=feats, line_rules=rules, tuning_conflicts=cl["conflicts"], fixed_point=cl["fixed_point"],
                knob=tk["knob"], knob_conflict=tk.get("conflict"), corners_flagged=flagged, segments=segs, clips=clips)
     # user rule 2026-10-23: corner by corner, never the whole-lap correlation alone (spec D28)

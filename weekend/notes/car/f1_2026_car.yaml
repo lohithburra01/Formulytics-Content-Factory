@@ -10,6 +10,9 @@ values:
   A_ACC_LONG_MAX: {value: 16.1865, unit: m/s^2, origin: COMPUTED, source: "1.65 g, matches real 2026 peak corner-exit gain ~55-58 km/h/s (sim comment)"}
   P_SUPERCLIP_NET_W: {value: 335000, unit: W, origin: COMPUTED, source: "tuned to China 2026 Q superclip decline 5-7 km/h/s"}
   CLIP_ZONES: {value: "", origin: USER_DECISION, decided: 2026-10-23, reason: "spec D28: no reference lap -> the old speed-fraction superclip rule; a weekend with FP1 overrides with its measured clip zones"}
+  GRIP_MAP: {value: "", origin: USER_DECISION, decided: 2026-10-24, reason: "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled"}
+  ACCEL_MAP: {value: "", origin: USER_DECISION, decided: 2026-10-24, reason: "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled"}
+  BRAKE_MAP: {value: "", origin: USER_DECISION, decided: 2026-10-24, reason: "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled"}
   WARM_MASS_KG: {value: 768.0, unit: kg, origin: KNOWLEDGE, source: "same as MASS_KG (FIA 2026 minimum)"}
   WARM_A_LAT_MAX: {value: 24.55040666666667, unit: m/s^2, origin: COMPUTED, source: "vehicle_calibration.json v_apex_hairpin_obs 19.19^2 / 15 m (Canada 2025)"}
   WARM_A_BRK_MAX: {value: 47.35287, unit: m/s^2, origin: COMPUTED, source: "vehicle_calibration.json mu_long_obs 4.827 x 9.81 (Canada 2025)"}

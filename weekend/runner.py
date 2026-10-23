@@ -22,7 +22,7 @@ from langgraph.types import Command, interrupt
 from weekend import new_track, pipeline
 from weekend.resolve import ROOT, Unresolved, load_notes, pack_path, resolve_pack
 
-ORDER = ["track", "base_line", "refs", "car_and_line", "time_knob", "final", "checks", "review", "video"]
+ORDER = ["track", "base_line", "refs", "car_and_line", "time_knob", "shape_fit", "final", "checks", "review", "video"]
 APPROVED = "approved.json"   # written into the review dir by `python -m weekend.approve`
 LINEAGE_DIR = os.path.join(ROOT, "weekend", "lineage")
 

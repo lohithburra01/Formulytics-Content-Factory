@@ -53,14 +53,14 @@ def _rel(p):
 
 
 def clip_zones_ref(csv_path):
-    """Real clip zones as the sim reads them: [frac_end, duration_s, rate_kmh_s], rounded (stable notes)."""
+    """Real clip zones as the sim reads them: [frac_start, frac_end, rate_kmh_s], rounded (stable notes)."""
     import pandas as pd
     r = pd.read_csv(csv_path)
     L = float(r.distance.iloc[-1])
     out = []
     for a, b, va, vb in F.clip_zones(r.distance, r.time_s, r.speed, r.throttle):
         ta, tb = (float(np.interp(x, r.distance, r.time_s)) for x in (a, b))
-        out.append([round(b / L, 4), round(tb - ta, 2), round((vb - va) / (tb - ta), 2)])
+        out.append([round(a / L, 4), round(b / L, 4), round((vb - va) / (tb - ta), 2)])
     return out
 
 
@@ -113,9 +113,11 @@ def notes_for(track, year, card, facts):
                    f"({card['street']['source']})")
     if fp1:
         fp1_csv = os.path.join(ROOT, "F1_Pipeline_Assets", "exports", f"reference_{year}_{track}_fp1.csv")
+        wv["shape.enabled"] = dict(value=True, origin="USER_DECISION", decided="2026-10-24",
+            reason="user 2026-10-24: with FP1, fit the speed pattern section by section (shape_fit stage)")
         wv["CLIP_ZONES"] = dict(value=json.dumps(clip_zones_ref(fp1_csv)), origin="COMPUTED",
             source=f"weekend.features.clip_zones on the {year} FP1 speed trace (full throttle, speed falling): "
-                   "[lap fraction at zone end, seconds, km/h per s] per zone (spec D28)")
+                   "[lap fraction start, end, km/h per s] per zone (spec D28)")
         wv.update({
             "ref.fp1_csv_file": dict(value=_rel(fp1_csv), file=True, origin="MEASURED",
                 source=f"OpenF1 car_data, {year} {track} FP1 fastest lap, driver {fp1['driver']} ({fetched})"),

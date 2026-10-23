@@ -79,11 +79,29 @@ SUPERCLIP_SPEED_FRAC = 0.96
 P_SUPERCLIP_NET_W    = 335_000
 
 # CLIP_ZONES — where the REAL car clips, read from its speed trace (spec D28): a JSON list of
-# [frac_end, duration_s, rate_kmh_s] per straight (frac_end = zone end as a fraction of the lap,
-# duration = how long it clipped, rate = its speed change per second, negative = losing speed).
-# Each zone is placed flush against the sim's nearest braking/lift point and the car follows the
-# real rate there. "" = no reference: the old speed-fraction rule above places superclip.
+# [frac_start, frac_end, rate_kmh_s] per straight (lap fractions; rate = its speed change per second,
+# negative = losing speed). The car follows the real rate there (the real car clips before it brakes,
+# not flush against the brake point). "" = no reference: the old speed-fraction rule above places superclip.
 CLIP_ZONES = ""
+
+# GRIP_MAP — per-corner cornering-speed scale FITTED to the real lap (the sim's track is flat 2-D; real
+# corners have camber, crests and kerbs it cannot see). JSON list of [frac_start, frac_end, speed_scale];
+# v_grip in that stretch of the lap is multiplied by speed_scale. "" = no map (every corner scale 1).
+GRIP_MAP = ""
+
+# ACCEL_MAP — per-stretch drive scale FITTED to the real lap: the real car's deployment strategy and
+# traction differ per straight (energy is held back on some, spent on others). JSON list of
+# [frac_start, frac_end, scale]; the car's available forward acceleration there is multiplied by scale.
+# "" = no map.
+ACCEL_MAP = ""
+_accel_scale = None   # per-station array built from ACCEL_MAP by simulate_lap (runtime, not a constant)
+
+# BRAKE_MAP — per-braking-zone scale FITTED to the real lap (gradient, bumps and kerbs the flat 2-D track
+# cannot see change how hard each zone can be braked). JSON [[frac_start, frac_end, scale], ...] on the
+# braking grip there. "" = no map.
+BRAKE_MAP = ""
+_brake_scale = None
+_lat_scale = None     # per-station lateral-capacity scale (GRIP_MAP squared), runtime
 
 # Override WARM_* defaults from calibration JSON if present.
 # Resolve relative to THIS file, not the CWD — otherwise importing sim_2026_lap
@@ -1005,10 +1023,14 @@ def compute_v_brake_backward(v_grip, kappa, arc, track_length_m, n_iters=3):
             # and eases toward the apex — the real sharp-bite-then-trail signature.
             mode_ip = "CORNER"
             a_lat_max = a_lat_max_banked(v[ip], mode_ip, _bank_at(ip))
+            if _lat_scale is not None:
+                a_lat_max *= _lat_scale[ip]   # GRIP_MAP: lateral capacity = speed scale squared
             if a_lat_max <= 0.0:
                 continue
             ratio_sq = min(1.0, (a_lat_used / a_lat_max) ** 2)
             a_long_grip = MU_LONG * (G + downforce(v[ip], mode_ip) / MASS_KG) * math.sqrt(1.0 - ratio_sq)
+            if _brake_scale is not None:
+                a_long_grip *= _brake_scale[ip]
             # Trail-brake release: the driver uses progressively less of the
             # available braking grip as speed falls toward the apex (the rest of
             # the friction circle goes to rotating the car). Drag is not a driver
@@ -1070,6 +1092,8 @@ def _ideal_speed_profile(v_grip, v_brake, kappa, ds, v0):
         mode_here = aero_mode(kappa[i])
         a_lat_used = abs(kappa[i]) * vi * vi
         a_lat_max = a_lat_max_banked(vi, mode_here, _bank_at(i))
+        if _lat_scale is not None:
+            a_lat_max *= _lat_scale[i]   # GRIP_MAP: lateral capacity = speed scale squared
         ratio_sq = min(1.0, (a_lat_used / max(a_lat_max, 1e-6)) ** 2)
         a_long_grip = MU_LONG * (G + downforce(vi, mode_here) / MASS_KG) * math.sqrt(1.0 - ratio_sq)
         a_long_power = P / (MASS_KG * max(vi, V_FLOOR_MS))
@@ -1201,6 +1225,20 @@ def _ref_clip_mask(v_profile, braking, ds, arc, track_length_m, zones):
     return mask, rate
 
 
+def _ref_clip_mask_frac(braking, arc, track_length_m, zones):
+    """SUPERCLIP mask + per-station target rate (m/s^2) placed where the real car clipped, by lap fraction
+    ([frac_start, frac_end, rate_kmh_s] per zone). Inside a zone the label is SUPERCLIP even where the sim
+    has to shed speed faster (the speed still follows the fitted limits)."""
+    f = (np.asarray(arc) - arc[0]) / track_length_m
+    mask = np.zeros(len(braking), dtype=bool)
+    rate = np.zeros(len(braking))
+    for f0, f1, r in zones:
+        m = (f >= f0) & (f < f1)
+        mask |= m
+        rate[m] = r / 3.6
+    return mask, rate
+
+
 def _pick_drive_mode(t_since_corner_exit):
     """Mode for a non-braking, non-superclip station: DEPLOY inside the
     post-corner-exit key-acceleration window, NORMAL after it. (SUPERCLIP is
@@ -1325,13 +1363,19 @@ def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
             # spurious jump into the REGEN entry (observed: 290 -> 317 km/h,
             # acceleration under braking). v[i+1] must be DERIVED, never read.
             chosen = "REGEN"
+            if superclip_rate is not None and superclip_mask is not None and superclip_mask[i]:
+                chosen = "SUPERCLIP"   # the real car was at full throttle clipping here (CLIP_ZONES), not braking
             mode_arr[i] = chosen
             v_next = min(v[i], v_grip[(i + 1) % n], v_brake[(i + 1) % n])
             v[(i + 1) % n] = v_next
             dt = 2.0 * ds[i] / max(v[i] + v_next, 1e-3)
-            soc += _battery_delta_for_mode("REGEN", dt) / E_BATTERY_CAP_J
+            if chosen == "SUPERCLIP":     # full throttle, MGU-K harvesting what the ICE gives (as a superclip)
+                soc += _battery_delta_for_mode("SUPERCLIP", dt) / E_BATTERY_CAP_J
+                p_kw_arr[i] = P_SUPERCLIP_NET_W / 1000.0
+            else:
+                soc += _battery_delta_for_mode("REGEN", dt) / E_BATTERY_CAP_J
+                p_kw_arr[i] = -P_MGU_REGEN_MAX_W / 1000.0
             soc = min(1.0, max(0.0, soc))
-            p_kw_arr[i] = -P_MGU_REGEN_MAX_W / 1000.0
             t += dt
             t_arr[i] = t
             t_since_corner_exit += dt
@@ -1348,6 +1392,8 @@ def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
         P_total = _power_for_mode(chosen, v[i])
         a_lat_used = abs(kappa[i]) * v[i] * v[i]
         a_lat_max = a_lat_max_banked(v[i], mode_here, _bank_at(i))
+        if _lat_scale is not None:
+            a_lat_max *= _lat_scale[i]   # GRIP_MAP: lateral capacity = speed scale squared
         ratio_sq = min(1.0, (a_lat_used / max(a_lat_max, 1e-6)) ** 2)
         # ACCEL grip uses the driven-axle traction μ (MU_DRIVE < MU_LONG): the
         # friction circle's longitudinal capacity for putting power DOWN, not the
@@ -1356,7 +1402,10 @@ def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
         a_long_grip = MU_DRIVE * (G + downforce(v[i], mode_here) / MASS_KG) * math.sqrt(1.0 - ratio_sq)
         a_long_power = P_total / (MASS_KG * max(v[i], V_FLOOR_MS))
         a_drag = drag_force(v[i], mode_here) / MASS_KG
-        a_long = min(a_long_grip, a_long_power, A_ACC_LONG_MAX) - a_drag
+        a_drive = min(a_long_grip, a_long_power, A_ACC_LONG_MAX)
+        if _accel_scale is not None:
+            a_drive *= _accel_scale[i]
+        a_long = a_drive - a_drag
         if chosen == "SUPERCLIP" and superclip_rate is not None:
             # real-car clip zone: follow the measured rate; the MGU-K harvests what the ICE gives beyond it
             a_long = min(a_long, superclip_rate[i])
@@ -1414,6 +1463,27 @@ def simulate_lap(raceline, arc, kappa, track_length_m, max_iters=8, tol_v=1.0):
     kappa_smooth = median_filter(kappa_grip, size=5, mode="wrap")
     v_grip = np.array([v_grip_static(k, _bank_at(i))
                        for i, k in enumerate(kappa_smooth)])
+    global _accel_scale, _brake_scale, _lat_scale
+    _lat_scale = None
+    if GRIP_MAP:
+        f = (np.asarray(arc) - arc[0]) / track_length_m
+        gs = np.ones(n)
+        for f0, f1, sc in json.loads(GRIP_MAP):
+            gs[(f >= f0) & (f < f1)] *= sc
+        v_grip = v_grip * gs
+        _lat_scale = gs ** 2
+    _accel_scale = None
+    _brake_scale = None
+    if BRAKE_MAP:
+        f = (np.asarray(arc) - arc[0]) / track_length_m
+        _brake_scale = np.ones(n)
+        for f0, f1, sc in json.loads(BRAKE_MAP):
+            _brake_scale[(f >= f0) & (f < f1)] *= sc
+    if ACCEL_MAP:
+        f = (np.asarray(arc) - arc[0]) / track_length_m
+        _accel_scale = np.ones(n)
+        for f0, f1, sc in json.loads(ACCEL_MAP):
+            _accel_scale[(f >= f0) & (f < f1)] *= sc
 
     ds = np.diff(np.concatenate([arc, [track_length_m]]))
     v0 = 60.0   # initial guess, refined by closure
@@ -1430,7 +1500,7 @@ def simulate_lap(raceline, arc, kappa, track_length_m, max_iters=8, tol_v=1.0):
             superclip_mask=None)[0]
         sc_rate = None
         if CLIP_ZONES:
-            sc_mask, sc_rate = _ref_clip_mask(v_ns, braking, ds, arc, track_length_m, json.loads(CLIP_ZONES))
+            sc_mask, sc_rate = _ref_clip_mask_frac(braking, arc, track_length_m, json.loads(CLIP_ZONES))
         else:
             sc_speed = SUPERCLIP_SPEED_FRAC * float(np.max(v_ns))
             sc_mask = _superclip_mask(v_ns, braking, ds, sc_speed, SUPERCLIP_MAX_S)
