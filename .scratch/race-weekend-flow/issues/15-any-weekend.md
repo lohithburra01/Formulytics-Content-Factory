@@ -1,6 +1,6 @@
 # 15 — Any weekend: a new track makes its own notes
 
-**Status:** in progress - step 1 done (shared track-build settings -> season/track_build_defaults_2026.yaml, Singapore values identical); step 2 done (weekend/cards/austin.yaml + singapore.yaml: name, OpenF1 names, length, direction, altitude, street); step 3 done (weekend/new_track.py, runner calls it; Austin pack 135 values 0 ASSUMED; test vs Singapore hand notes)
+**Status:** in progress - step 1 done (shared track-build settings -> season/track_build_defaults_2026.yaml, Singapore values identical); step 2 done (weekend/cards/austin.yaml + singapore.yaml: name, OpenF1 names, length, direction, altitude, street); step 3 done (weekend/new_track.py, runner calls it; Austin pack 135 values 0 ASSUMED; test vs Singapore hand notes); step 4 run 1 done (lineage fc4dfb6): pattern 0.964, lap 96.80 NOT in band 93.86-94.36, knob conflict; 1.8 s lost at 3900-4340 m (T12-T15), fitted grip k 0.676
 
 ## Why
 Tickets 01-14 proved the pipeline on Singapore, whose notes were written by hand.

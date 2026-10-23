@@ -44,7 +44,11 @@ Step 2 done: track cards weekend/cards/<track>.yaml (Austin alt 171 m from airde
 Step 3 done: weekend/new_track.py (runner node_resolve calls ensure_notes); Austin notes generated, pack 135 values 0 ASSUMED.
   Austin choices to tune from data later: width 12 m (no width fit), grip start 1.0, inset 0 (run-off), gain cap 32.
   _sg_grip.py stays in cache/singapore (generic code; moving it would change cache keys).
-NEXT step 4: `python -m weekend austin 2026` end to end (long run - run_in_background), then user judges 3 outcomes.
+Step 4 run 1 DONE (lineage fc4dfb6, log runs/austin_2026_run.log, video runs/austin_2026/video/b1177936051a5cb7/video.mp4):
+  pattern 0.964 (SG 0.953); lap 96.80 s NOT in band 93.86-94.36; tuned car alone 96.19 (slower than FP1 95.86!);
+  knob conflict (MU_LAT/CL reach band but worsen pattern). Loss = 1.8 s at 3900-4340 m (T12-T15): sim corner mins
+  ~30 m late and 10-35 km/h slower; fitted street_grip_k 0.676 (street-only factor, range 0.3-1.0, now cuts a permanent track).
+  NEXT: user judges line in video; then fix why the tuned car is slower than FP1 (suspects: grip k on permanent track, width 12 m).
 
 ## RESUME HERE (2026-10-23, Austin FP1 weekend)
 User order (2026-10-23): "follow the spec and finish the tickets first" -> THEN make it work for any weekend.
