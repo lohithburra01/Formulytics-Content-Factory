@@ -37,7 +37,24 @@ Grill + retro done. ALL decisions: `.scratch/race-weekend-flow/grill-decisions.m
 v1 renamed to `spec_v1_rejected.md` / `flow_v1_rejected.html`. **Spec v2 = `.scratch/race-weekend-flow/spec.md` (Status: ready-for-agent; seams: resolve_pack, run(pack), knowledge store API — user-approved).** `learn/` lessons = rejected format (user wants traced examples in chat).
 Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-decisions.md).
 
-## Next action  (RESUME HERE - 2026-10-20 late)
+## RESUME HERE (2026-10-23, Austin FP1 weekend)
+User order (2026-10-23): "follow the spec and finish the tickets first" -> THEN make it work for any weekend.
+Done 2026-10-23 (commit baad75d): spec D21-D26 folded in; ticket 14 video text = decided time (1:30.524 shown);
+ticket 12 guards (pre-commit golden replay via core.hooksPath weekend/hooks; no-delete PreToolUse hook);
+ticket 11 nudge flow (python -m weekend.nudge preview|apply <note.json> <track> <year>); stage keys include own source file.
+Pack: 143 values, 0 ASSUMED, 0 pending_review.
+Ticket 13 DONE 2026-10-23: two runs byte-identical (incl. video), lineage 5fbb42e. Tickets 01-14 done/closed.
+Austin data FETCHED 21:00: reference_2025_austin_q.csv (VER pole 92.510), cache/austin/path_samples.json (top-10),
+reference_2026_austin_fp1.csv (#3 95.860, sectors 25.634/38.237/31.989), cache/austin/fetch_facts.json.
+Known: no-delete hook false-positives on command TEXT that quotes 'rm'/'Remove-Item' -> put such text in a script file.
+NEXT after 13 (not in spec yet = new ticket 15 "any weekend"): `python -m weekend <track> <year>` must create
+a new track's notes itself. Pieces already built: weekend/fetch_weekend.py (waits out OpenF1 401, fetches last-year Q
+lap + top-10 path samples + this-year FP1 lap + facts -> cache/<track>/fetch_facts.json; running for Austin:
+runs/austin_fetch.log), track stage works without an SVG. Austin = COTA 5513 m, anticlockwise (mirror_x true).
+Wikimedia Austin_circuit.svg is unusable (multi-path) -> cache/austin/dl/_unused_*.
+Gap noticed: car_and_line needs an FP1 shape ref (pre-FP1 branch has none) - fine for post-FP1 runs.
+
+## Next action (old, 2026-10-20 late)
 Goal (user): the WHOLE pipeline finished, tested on Singapore 2026. Plan = `.scratch/race-weekend-flow/spec.md`
 + tickets `.scratch/race-weekend-flow/issues/01-13` (each file has a Status line - read those first).
 Pipeline map (how the old bat works): `.scratch/race-weekend-flow/evidence/pipeline_map_singapore.md`.

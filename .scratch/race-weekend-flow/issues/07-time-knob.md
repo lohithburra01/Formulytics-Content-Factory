@@ -4,7 +4,7 @@
 
 **Blocked by:** 03, 06
 
-**Status:** code done; run 1 lap 90.464 s INVALID (brake_preserve bug, fixed 2026-10-20); needs rerun
+**Status:** superseded 2026-10-23 by ticket 13 proof run (all stages ran clean twice, identical). Old note: code done; run 1 lap 90.464 s INVALID (brake_preserve bug, fixed 2026-10-20); needs rerun
 
 - [ ] Lap inside the target band, or the gap reported per sector
 - [ ] Knob choice + test result recorded in the pack

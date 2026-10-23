@@ -4,9 +4,9 @@
 
 **Blocked by:** 01
 
-**Status:** code done, untested
+**Status:** done (2026-10-23): 3 renders (ticket 14, proof run 1, proof run 2) byte-identical sha 8eab1481
 
-- [ ] Singapore video renders with zoom 28 from the pack
-- [ ] Two renders compared; byte-identical or frame-identical (whichever OpenCV allows) and recorded
+- [x] Singapore video renders with zoom 28 from the pack
+- [x] Two renders compared; byte-identical or frame-identical (whichever OpenCV allows) and recorded
 
 Spec: ../spec.md. Pipeline facts: ../evidence/pipeline_map_singapore.md

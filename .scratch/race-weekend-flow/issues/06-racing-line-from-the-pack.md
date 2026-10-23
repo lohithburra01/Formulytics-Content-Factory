@@ -4,7 +4,7 @@
 
 **Blocked by:** 02, 05
 
-**Status:** code done; run 1 completed but INVALID (brake_preserve bug, fixed 2026-10-20); needs rerun
+**Status:** superseded 2026-10-23 by ticket 13 proof run (all stages ran clean twice, identical). Old note: code done; run 1 completed but INVALID (brake_preserve bug, fixed 2026-10-20); needs rerun
 
 - [ ] T8->T9 wide entry stored as a direction-only rule and satisfied
 - [ ] No car value typed by hand between rounds; loop stops when the line change is below a pack tolerance

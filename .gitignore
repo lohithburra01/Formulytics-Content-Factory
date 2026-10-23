@@ -20,3 +20,4 @@ cache/ext/kadiri/
 # pipeline run folders (re-creatable from the committed packs)
 runs/
 weekend/.search_cache/
+runs_proof2/

@@ -4,7 +4,7 @@
 
 **Blocked by:** 02, 03, 04, 05, 06, 07, 08
 
-**Status:** run 1 went track..checks (shows the runner works); results invalid (brake_preserve bug); video + lineage commit pending
+**Status:** superseded 2026-10-23 by ticket 13 proof run (all stages ran clean twice, identical). Old note: run 1 went track..checks (shows the runner works); results invalid (brake_preserve bug); video + lineage commit pending
 
 - [ ] `python -m weekend singapore 2026` runs the whole chain
 - [ ] Killed mid-run -> resumes without redoing finished steps (test)

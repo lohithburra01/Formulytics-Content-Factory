@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 03
 
-**Status:** code done; run 1 report (GAIN median 31.8 fail) is INVALID - made with brake_preserve bug on (fixed simdoor.py 2026-10-20); needs rerun
+**Status:** superseded 2026-10-23 by ticket 13 proof run (all stages ran clean twice, identical). Old note: code done; run 1 report (GAIN median 31.8 fail) is INVALID - made with brake_preserve bug on (fixed simdoor.py 2026-10-20); needs rerun
 
 - [ ] Report lists every braking zone / straight / corner of Singapore with value, reference, error, pass/fail
 - [ ] Per-sector time gaps (3 official sectors) reported
