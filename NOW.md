@@ -37,6 +37,28 @@ Grill + retro done. ALL decisions: `.scratch/race-weekend-flow/grill-decisions.m
 v1 renamed to `spec_v1_rejected.md` / `flow_v1_rejected.html`. **Spec v2 = `.scratch/race-weekend-flow/spec.md` (Status: ready-for-agent; seams: resolve_pack, run(pack), knowledge store API — user-approved).** `learn/` lessons = rejected format (user wants traced examples in chat).
 Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-decisions.md).
 
+## RESUME HERE (2026-10-24 morning) - Austin video rendered from the SVG-map fast path
+User rules today: NO OpenF1 GPS position data for the line (user, angry); line = sim physics line on the user's
+map SVG (F1_Pipeline_Assets/tracks/united_states_grand_prix_user_map.svg, 5513 m, 15 m = map stroke, mirrored);
+direction + S/F from speed-trace match to FP1 (corr 0.973, S/F 2272 m along drawn path). Speed fit approved
+('all good'); do not touch it. Zoom 25 chosen. Elevation = main-folder method (OpenF1 location z only):
+F1_Pipeline_Assets/tracks/united_states_grand_prix_elevation.json (127-157 m).
+Result: runs/austin_2026/svg_line (final lap 93.90 in band, 9/10 sections, 4/4 clips); video
+runs/austin_2026/svg_line/video/austin_2026_optimal_lap.mp4. Scripts that made it: weekend/_fastpath/*.py.
+NOT yet in the pipeline (next ticket): track stage from a map SVG (card field), direction/SF by speed match,
+elevation stage, zoom-preview frames before render, line-round/knob speed-ups; T1 apex rule not applied on SVG line;
+C9 approach section 12.7 km/h (user said fine). Run times must stay short (user: 50-min runs unacceptable).
+
+## RESUME HERE (2026-10-24) - speed pattern fitted, Austin run 3 running
+User (very angry 2026-10-24): stop 50-min runs; match FP1 speed pattern per section + line right; don't stop.
+Done (ad55f5c + next commit): shape_fit stage (weekend/shape_fit.py) after time_knob: GRIP/ACCEL/BRAKE maps (20 m bins)
+ + MU_LONG fitted to FP1 x K (D25), K solved to decided time; FP1 clip zones placed on sim axis (SUPERCLIP label);
+ checks: corner+peak aligned sections (RMSE<=8) + SUPERCLIP-vs-FP1 clip match. Final lap = 0.24 s -> fast loop.
+ Tested on run-2 line: lap 94.07 in band, 0/10 sections fail, 4/4 clip zones matched, no extras.
+ Sim gained GRIP_MAP/ACCEL_MAP/BRAKE_MAP/CLIP_ZONES (car defaults "" -> Singapore golden byte-identical).
+ line.rule_retries 2->4 (two exit-wide rules missed 0.15 m tol by 1-2 cm). shape.enabled default off (season), Austin on.
+Run 3 (runs/austin_2026_run3.log) = full chain; then check rules/sections/clips and show user line.svg + speed.svg.
+
 ## RESUME HERE (2026-10-23 late) - ticket 15 'any weekend' in progress
 Ticket: .scratch/race-weekend-flow/issues/15-any-weekend.md (5-step plan agreed by user).
 Step 1 done (0b54cb3): shared track-build settings -> weekend/notes/season/track_build_defaults_2026.yaml.

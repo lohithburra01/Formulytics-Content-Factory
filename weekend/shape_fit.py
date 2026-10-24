@@ -150,7 +150,7 @@ class Fit:
                 clip_zone = (mode[m] == "SUPERCLIP").any()
                 ref_brakes = a_r[m].mean() < -10
                 sim_brakes = brk[m].max() > 0
-                if self.curved[j] and (ds > dr + 1.0 or (ds < dr - 1.0 and (not ref_brakes or not sim_brakes))):
+                if self.curved[j] and abs(ds - dr) > 1.0:   # corner speed limit follows the target both ways
                     sg[j] = float(np.clip(sg[j] * (dr / ds) ** 0.7, *cfg["grip_range"]))
                 if (ref_brakes or sim_brakes) and a_s[m].mean() < -5:
                     mu = (g >= self.edges[max(j - 2, 0)] / self.L0 * L) & (g < self.edges[j + 1] / self.L0 * L)

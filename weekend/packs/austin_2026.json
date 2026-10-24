@@ -1429,11 +1429,11 @@
   "shape.accel_range": {
    "value": [
     0.0,
-    2.5
+    3.5
    ],
    "unit": "",
    "origin": "USER_DECISION",
-   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "reason": "limits raised 2026-10-24 (user: C2, C8 and the corner before C2 dropped far too much on the SVG line; all three were at the old limits); user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
    "decided": "2026-10-24",
    "file": false,
    "pending_review": false,
@@ -1454,11 +1454,11 @@
   "shape.brake_range": {
    "value": [
     0.5,
-    4.0
+    6.0
    ],
    "unit": "",
    "origin": "USER_DECISION",
-   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "reason": "limits raised 2026-10-24 (user: C2, C8 and the corner before C2 dropped far too much on the SVG line; all three were at the old limits); user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
    "decided": "2026-10-24",
    "file": false,
    "pending_review": false,
@@ -1490,11 +1490,11 @@
   "shape.grip_range": {
    "value": [
     0.6,
-    1.5
+    2.2
    ],
    "unit": "",
    "origin": "USER_DECISION",
-   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "reason": "limits raised 2026-10-24 (user: C2, C8 and the corner before C2 dropped far too much on the SVG line; all three were at the old limits); user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
    "decided": "2026-10-24",
    "file": false,
    "pending_review": false,
