@@ -37,6 +37,12 @@ Grill + retro done. ALL decisions: `.scratch/race-weekend-flow/grill-decisions.m
 v1 renamed to `spec_v1_rejected.md` / `flow_v1_rejected.html`. **Spec v2 = `.scratch/race-weekend-flow/spec.md` (Status: ready-for-agent; seams: resolve_pack, run(pack), knowledge store API — user-approved).** `learn/` lessons = rejected format (user wants traced examples in chat).
 Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-decisions.md).
 
+## RESUME HERE (2026-10-24, after Austin video) - START HERE
+Austin 2026 DONE: video runs/austin_2026/svg_line/video/austin_2026_optimal_lap.mp4 (zoom 25, elevation, 1:34.110).
+NEXT = ticket 18 (.scratch/race-weekend-flow/issues/18-map-svg-pipeline.md): put the map-SVG track, speed-matched
+S/F, elevation stage, zoom preview and the run-time cuts INTO the pipeline so the next weekend runs by itself, fast.
+Read first: spec D27-D31, evidence/austin_2026_session_log.md (mistakes not to repeat), memory index.
+
 ## RESUME HERE (2026-10-24 morning) - Austin video rendered from the SVG-map fast path
 User rules today: NO OpenF1 GPS position data for the line (user, angry); line = sim physics line on the user's
 map SVG (F1_Pipeline_Assets/tracks/united_states_grand_prix_user_map.svg, 5513 m, 15 m = map stroke, mirrored);
@@ -44,7 +50,7 @@ direction + S/F from speed-trace match to FP1 (corr 0.973, S/F 2272 m along draw
 ('all good'); do not touch it. Zoom 25 chosen. Elevation = main-folder method (OpenF1 location z only):
 F1_Pipeline_Assets/tracks/united_states_grand_prix_elevation.json (127-157 m).
 Result: runs/austin_2026/svg_line (final lap 93.90 in band, 9/10 sections, 4/4 clips); video
-runs/austin_2026/svg_line/video/austin_2026_optimal_lap.mp4. Scripts that made it: weekend/_fastpath/*.py.
+runs/austin_2026/svg_line/video/austin_2026_optimal_lap.mp4 (RENDERED 1080x1920 93.9 s). Scripts that made it: weekend/_fastpath/*.py.
 NOT yet in the pipeline (next ticket): track stage from a map SVG (card field), direction/SF by speed match,
 elevation stage, zoom-preview frames before render, line-round/knob speed-ups; T1 apex rule not applied on SVG line;
 C9 approach section 12.7 km/h (user said fine). Run times must stay short (user: 50-min runs unacceptable).

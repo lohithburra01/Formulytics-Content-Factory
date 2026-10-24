@@ -1,6 +1,6 @@
 # 16 — Review pictures before the video (spec D27)
 
-**Status:** code written 2026-10-23 (weekend/stages_review.py, weekend/approve.py, runner gate); first Austin review render running
+**Status:** done (2026-10-24): review stage (line.svg + speed.svg, corner-aligned FP1, section RMSE, SUPERCLIP clip bars) + approve gate; zoom preview frames -> ticket 18.
 
 ## What
 - Stage `review` (after `checks`, before `video`): `line.svg` + `speed.svg` in runs/<track>_<year>/review/<key>/.

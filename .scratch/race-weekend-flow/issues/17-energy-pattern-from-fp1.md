@@ -1,6 +1,6 @@
 # 17 — Energy pattern = FP1 (spec D28)
 
-**Status:** code done 2026-10-23 (CLIP_ZONES from FP1 in sim, segment + clip + corner checks fail the run, grip fixed 1.0 off-street); Austin run 2 pending
+**Status:** done (2026-10-24): clip zones placed at aligned FP1 positions, SUPERCLIP label inside real zones, clip check 4/4 on Austin; grip fixed 1.0 off-street.
 
 ## Why (Austin run 1)
 FP1 clips on 4 straights (440-476 m 303->295, 1177-1233 m 284->277, 2308-2395 m 282->269, back straight 3237-3498 m
