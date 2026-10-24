@@ -23,9 +23,9 @@ values:
     reason: 'user 2026-10-24: real car double-apexes T13/T14 (the base line merged them into one corner at 3963 m)'
     decided: '2026-10-24'
   line.rule.t13_t14_wide:
-    value: between T13 and T14 the car runs wide (in-out-in-OUT-in)|3965|at|outside
+    value: between T13 and T14 the car drifts out (in-out-in-OUT-in)|3965|at|outside|0.6
     origin: USER_DECISION
-    reason: 'user 2026-10-24: real car is wide between the T13 and T14 apexes, the sim hugs the inside 3875-4050 m'
+    reason: 'user 2026-10-24: real car is wide between the T13 and T14 apexes, the sim hugs the inside 3875-4050 m; 0.6 across (not the full edge: a full-edge swing in 130 m made a kink that broke the FP1 speed pattern, 2026-10-24)'
     decided: '2026-10-24'
   line.rule.t14_apex:
     value: T14 apex inside|4030|at|inside

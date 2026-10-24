@@ -45,8 +45,11 @@ def _offsets(rl):
 def rule_gaps(off):
     """Per rule: min distance (m) from the line to the required bound inside its window."""
     out = []
-    for idx, side in O.G.get("rules", []):
-        g = (O.G["hi"][idx] - off[idx]) if side > 0 else (off[idx] - O.G["lo"][idx])
+    for rule in O.G.get("rules", []):
+        idx, side = rule[0], rule[1]
+        f = rule[2] if len(rule) > 2 else 1.0        # how far across toward that side (1 = the edge bound)
+        lo, hi = O.G["lo"][idx], O.G["hi"][idx]
+        g = np.maximum(lo + f * (hi - lo) - off[idx], 0.0) if side > 0 else np.maximum(off[idx] - (hi - f * (hi - lo)), 0.0)
         out.append(float(g.min()))
     return out
 
@@ -105,6 +108,8 @@ def resolve_rules(rules, prm):
             nxt = apexes[j + 1] if j + 1 < len(apexes) else apexes[0] + L
             gap = nxt - apexes[j]
             lo_m, hi_m = apexes[j] + (1 - a1) * gap, apexes[j] + (1 - a0) * gap
+        elif r["phase"] == "at":          # a point on the lap (e.g. a second apex the base line merged away)
+            lo_m, hi_m = r["apex_m"] - 10.0, r["apex_m"] + 10.0
         else:
             w = prm["apex_win"]
             idx = np.arange(i_ap - w, i_ap + w + 1) % len(arc)
@@ -133,10 +138,11 @@ def seed_rules(k, resolved, frac):
     return k
 
 
-def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, steps=None, log=print, rule_w0=None):
+def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, steps=None, log=print, rule_w0=None,
+             only_m=None):
     K = setup(base_rl_file, outline_file, prm)
     resolved = resolve_rules(rules, prm)
-    O.G["rules"] = [(r["idx"], r["side"]) for r in resolved]
+    O.G["rules"] = [(r["idx"], r["side"], r["rule"].get("frac", 1.0)) for r in resolved]
     # weights learned by an earlier call (previous tune<->line round) carry over: no re-climbing from 1.5
     O.G["rule_w"] = list(rule_w0) if rule_w0 is not None and len(rule_w0) == len(resolved) else [prm["rule_w"]] * len(resolved)
     k = np.zeros(K) if init_knots is None else np.asarray(init_knots, float)
@@ -145,6 +151,9 @@ def optimise(vals, base_rl_file, outline_file, prm, rules, init_knots=None, step
     steps = steps or prm["steps_first"]
     t0 = time.time(); retries = 0
     local = None          # on a retry: only the knots near the unmet rules move (the rest of the lap is done)
+    if only_m is not None:   # fix one stretch of an existing line: only knots inside [lo_m, hi_m] move
+        ka = O.G["arc"][O.G["kidx"]]
+        local = [j for j, a_ in enumerate(ka) if only_m[0] <= a_ <= only_m[1]]
     while True:
         state = dict(O.G)
         with ProcessPoolExecutor(prm["workers"], initializer=_init, initargs=(state, vals)) as ex:

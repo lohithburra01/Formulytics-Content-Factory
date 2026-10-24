@@ -178,8 +178,10 @@ def _bands(edges):
 def _rules(p):
     out = []
     for k, v in sorted(p.prefixed("line.rule.").items()):
-        label, apex_m, phase, side = v.split("|")
-        out.append(dict(label=label, apex_m=float(apex_m), phase=phase, side=side))
+        parts = v.split("|")                       # label|metres|phase|side[|how far across, 0..1]
+        label, apex_m, phase, side = parts[:4]
+        out.append(dict(label=label, apex_m=float(apex_m), phase=phase, side=side,
+                        frac=float(parts[4]) if len(parts) > 4 else 1.0))
     return out
 
 

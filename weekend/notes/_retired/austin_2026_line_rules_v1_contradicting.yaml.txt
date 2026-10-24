@@ -1,0 +1,33 @@
+id: track/austin_2026_line_rules
+layer: track
+scope:
+  track: austin
+  year: 2026
+links:
+- track/austin_2026_layout
+values:
+  line.rule.t1_apex_off:
+    value: T1 real car does not touch the apex (FP1 video 9 s)|646|apex|outside
+    origin: USER_DECISION
+    reason: 'user review of Austin run 1 video: at 9 s the sim touches the T1 apex, the real car does not; direction only, the optimiser decides the amount'
+    decided: '2026-10-23'
+  line.rule.t12_exit_wide:
+    value: T12 exit wide before the next corner (in-out-in-out-in)|3735|exit|outside
+    origin: USER_DECISION
+    reason: 'user review of Austin run 1 video from 1:02: sim hugs the inside through T12-T15, the real car goes inside-outside-inside-outside-inside (wider)'
+    decided: '2026-10-23'
+  line.rule.t14_entry_wide:
+    value: corner at 3963 m entered from the outside (in-out-in-out-in)|3963|entry|outside
+    origin: USER_DECISION
+    reason: 'user review of Austin run 1 video from 1:02: real car is wide between the inside touches'
+    decided: '2026-10-23'
+  line.rule.t14_exit_wide:
+    value: corner at 3963 m exit wide (in-out-in-out-in)|3963|exit|outside
+    origin: USER_DECISION
+    reason: 'user review of Austin run 1 video from 1:02: real car is wide between the inside touches'
+    decided: '2026-10-23'
+  line.rule.t15_entry_wide:
+    value: T15 entered from the outside (in-out-in-out-in)|4223|entry|outside
+    origin: USER_DECISION
+    reason: 'user review of Austin run 1 video from 1:02: real car is wide before the last inside touch'
+    decided: '2026-10-23'
