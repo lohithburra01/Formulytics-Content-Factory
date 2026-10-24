@@ -37,6 +37,14 @@ Grill + retro done. ALL decisions: `.scratch/race-weekend-flow/grill-decisions.m
 v1 renamed to `spec_v1_rejected.md` / `flow_v1_rejected.html`. **Spec v2 = `.scratch/race-weekend-flow/spec.md` (Status: ready-for-agent; seams: resolve_pack, run(pack), knowledge store API — user-approved).** `learn/` lessons = rejected format (user wants traced examples in chat).
 Today's goal: Singapore 2026 thin end-to-end proof (see done criteria in grill-decisions.md).
 
+## RESUME HERE (2026-10-24 evening) - Austin 2025 vs 2026 dual video
+Folder runs/austin_2026/vs2025/. Style = Singapore dual (cache/era2017/dual_lap_video_v3.py, no elevation, zoom 28).
+Car A = VER 2025 Q pole real trace (ver2025_q.csv, official 92.510) on its OWN line austin_2025_ver_raceline.json
+(_car2025_austin.py fit cda 1.659 cl 5.355, corr 0.951; _opt_line_2025_austin.py apex-w 1.5 -> k25_rl.json).
+Car B = runs/austin_2026/svg_line/final (93.90). Backup: austin_2025_vs_2026_sameline.mp4 (both on 2026 line).
+Final render -> austin_2025_vs_2026.mp4 (log render_ownline.log). If it did not finish, rerun the command in render_ownline.log's
+source (same args as the --frames preview, without --frames).
+
 ## RESUME HERE (2026-10-24, after Austin video) - START HERE
 Austin 2026 DONE: video runs/austin_2026/svg_line/video/austin_2026_optimal_lap.mp4 (zoom 25, elevation, 1:34.110).
 NEXT = ticket 18 (.scratch/race-weekend-flow/issues/18-map-svg-pipeline.md): put the map-SVG track, speed-matched
