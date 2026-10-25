@@ -68,8 +68,13 @@
   + F1 TV Access login, NOT set up). Cache f1_cache/2026/..United_States../2026-10-24_Qualifying is EMPTY (failed load).
   Engine now has get_trace_f1ih(year, gp, session_name, driver, lap_number=None) in hifi_delta_v2.py = F1IH backend car_data +
   OpenF1 laps, no FastF1. Same trace dict as get_trace -> calculate_delta. SIN Q VER/LEC = delta_1.csv exactly; US GP Q NOR vs VER
-  -0.165 s. Backend gives 500 for 'Race'. NOT wired into optimal_x_quali / lap_compare_optimal / notebooks: they still need a FastF1
-  session (laps, telemetry dist/speed/time), so uncached sessions still fail there.
+  Backend gives 500 for 'Race'. Deleted laps (track limits) are skipped via OpenF1 race_control (OpenF1 /laps doesn't flag them).
+  2026-10-25 SWITCHED: optimal_x_quali.py data section (load_session/clean_trace/top_n) + lap_compare_optimal main now use
+  the F1IH backend (car_data has 'distance') + OpenF1; no FastF1. delta_graph/driver_lines/character_lines follow via load_traces.
+  Session codes Q/SQ/R/S/FP1-3 map to OpenF1 names; track = country/city/GP name. Singapore Q vs old FastF1 traces: same lap
+  times, dist end, gates within 0.6 m, speed by lap fraction mean 0.05 km/h, delta +0.054, same character signs (cached lines reused);
+  ~345 samples per lap instead of ~680 (car data only, FastF1 merged car+pos). US GP Q TOP2 = ANT 94.035 vs LEC 94.198
+  (LEC's Q2 lap), final +0.163 s. Preview video + delta_graph run OK. Notebooks + _template_baker.py still use FastF1 (untouched).
 
 # >>> CURRENT STATE (2026-10-09, engine2) <<<
 - PAPER SEARCH (2026-10-09): only 2026 car-model papers found: Saxena (BITS Pilani, SSRN 7045379, code zenodo 10.5281/

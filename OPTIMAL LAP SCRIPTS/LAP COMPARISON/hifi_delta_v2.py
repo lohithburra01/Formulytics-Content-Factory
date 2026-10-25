@@ -22,6 +22,7 @@ Usage
 """
 
 import os
+import re
 import sys
 import numpy as np
 import pandas as pd
@@ -29,7 +30,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import f1ih_port as fp
 
-__all__ = ['get_trace', 'get_trace_f1ih', 'calculate_delta']
+__all__ = ['get_trace', 'get_trace_f1ih', 'f1ih_session', 'f1ih_ranking', 'calculate_delta']
 
 def _secs(x):
     return x.total_seconds() if pd.notna(x) else None
@@ -62,44 +63,78 @@ def get_trace(session, driver, lap=None):
     return {'driver': driver, 'full_name': full_name, 'lap_number': int(lap['LapNumber']),
             'lap_time': lap['LapTime'].total_seconds(), 'samples': samples}
 
+OPENF1 = 'https://api.openf1.org/v1/'
+F1IH_CAR = 'https://backend.f1insightshub.com/fastf1/car_data'
+SESSION_CODES = {'Q': 'Qualifying', 'SQ': 'Sprint Qualifying', 'R': 'Race', 'S': 'Sprint',
+                 'FP1': 'Practice 1', 'FP2': 'Practice 2', 'FP3': 'Practice 3'}
+
+_GET_CACHE = {}
+
 def _get(url, params):
+    """GET json, memoised per run (OpenF1 allows 30 requests/minute; 429 -> wait and retry)."""
     import requests, time
-    for _ in range(4):
+    key = (url, tuple(sorted(params.items())))
+    if key in _GET_CACHE: return _GET_CACHE[key]
+    for i in range(8):
         r = requests.get(url, params=params, timeout=180)
-        if r.status_code == 200: return r.json()
-        time.sleep(3)
+        if r.status_code == 200:
+            _GET_CACHE[key] = r.json(); return _GET_CACHE[key]
+        time.sleep(10 if r.status_code == 429 else 3)
     raise RuntimeError(f'{url} {params} -> HTTP {r.status_code} {r.text[:120]}')
+
+def f1ih_session(year, gp, session_name):
+    """(OpenF1 session, OpenF1 meeting) for the most recent session of that name that has run.
+    gp: country, location or meeting name ('United States', 'Austin', 'Singapore Grand Prix');
+    session_name: 'Qualifying', 'Practice 1', ... or a code ('Q', 'SQ', 'FP1', ...)."""
+    session_name = SESSION_CODES.get(str(session_name).upper(), session_name)
+    all_ses = _get(OPENF1 + 'sessions', {'year': year, 'session_name': session_name})
+    ses = [s for s in all_ses if gp.lower() in (s['country_name'] + '|' + s['location']).lower()]
+    if not ses:   # match on meeting name instead
+        keys = {m['meeting_key'] for m in _get(OPENF1 + 'meetings', {'year': year}) if gp.lower() in m['meeting_name'].lower()}
+        ses = [s for s in all_ses if s['meeting_key'] in keys]
+    ses = [s for s in ses if pd.Timestamp(s['date_start']) <= pd.Timestamp.now(tz='UTC')]   # 'United States' = Austin + Las Vegas
+    if not ses: raise ValueError(f'no OpenF1 session {year} {gp} {session_name} (yet)')
+    ses = max(ses, key=lambda s: s['date_start'])   # most recent one that has run
+    return ses, _get(OPENF1 + 'meetings', {'meeting_key': ses['meeting_key']})[0]
+
+def deleted_laps(session_key):
+    """{(driver_number, lap_number)} deleted by race control (track limits etc.); OpenF1 /laps doesn't flag them."""
+    out = set()
+    for m in _get(OPENF1 + 'race_control', {'session_key': session_key}):
+        g = re.search(r'CAR (\d+) .*DELETED.*? LAP (\d+)', m.get('message') or '')
+        if g: out.add((int(g.group(1)), int(g.group(2))))
+    return out
+
+def f1ih_ranking(year, gp, session_name):
+    """[(driver code, fastest lap s)] for the session, fastest first (OpenF1 laps)."""
+    ses, _ = f1ih_session(year, gp, session_name)
+    code = {x['driver_number']: x['name_acronym'] for x in _get(OPENF1 + 'drivers', {'session_key': ses['session_key']})}
+    best, gone = {}, deleted_laps(ses['session_key'])
+    for l in _get(OPENF1 + 'laps', {'session_key': ses['session_key']}):
+        if l.get('lap_duration') and l['driver_number'] in code and (l['driver_number'], l['lap_number']) not in gone:
+            best[code[l['driver_number']]] = min(best.get(code[l['driver_number']], 1e9), l['lap_duration'])
+    return sorted(best.items(), key=lambda kv: kv[1])
 
 def get_trace_f1ih(year, gp, session_name, driver, lap_number=None):
     """Same trace as get_trace, without FastF1: car data from F1InsightsHub's backend
     (backend.f1insightshub.com/fastf1/car_data, what their site uses) and lap/sector times
-    from OpenF1 /laps (what their site uses). gp: OpenF1 country or meeting name, e.g.
-    'United States'; session_name: 'Qualifying', 'Practice 1', 'Sprint Qualifying', ...
-    lap_number=None picks the driver's fastest timed lap."""
-    O = 'https://api.openf1.org/v1/'
-    ses = [s for s in _get(O + 'sessions', {'year': year, 'session_name': session_name})
-           if gp.lower() in (s['country_name'] + '|' + s['location']).lower()]
-    meet = None
-    if not ses:   # match on meeting name instead
-        meet = [m for m in _get(O + 'meetings', {'year': year}) if gp.lower() in m['meeting_name'].lower()]
-        ses = [s for s in _get(O + 'sessions', {'year': year, 'session_name': session_name})
-               if meet and s['meeting_key'] == meet[0]['meeting_key']]
-    ses = [s for s in ses if pd.Timestamp(s['date_start']) <= pd.Timestamp.now(tz='UTC')]   # 'United States' = Austin + Las Vegas
-    if not ses: raise ValueError(f'no OpenF1 session {year} {gp} {session_name} (yet)')
-    ses = max(ses, key=lambda s: s['date_start'])   # most recent one that has run
-    meet = _get(O + 'meetings', {'meeting_key': ses['meeting_key']})[0]
-    d = [x for x in _get(O + 'drivers', {'session_key': ses['session_key']})
+    from OpenF1 /laps (what their site uses). gp / session_name as in f1ih_session.
+    lap_number=None picks the driver's fastest lap that wasn't deleted. Extra keys: 'car' (backend rows:
+    date, distance m, speed km/h, ...), 'lap' (OpenF1 lap), 'event' (meeting name)."""
+    ses, meet = f1ih_session(year, gp, session_name)
+    d = [x for x in _get(OPENF1 + 'drivers', {'session_key': ses['session_key']})
          if x['name_acronym'] == driver or str(x['driver_number']) == str(driver)]
     if not d: raise ValueError(f'driver {driver} not in session')
     d = d[0]
-    laps = [l for l in _get(O + 'laps', {'session_key': ses['session_key'], 'driver_number': d['driver_number']})
+    laps = [l for l in _get(OPENF1 + 'laps', {'session_key': ses['session_key'], 'driver_number': d['driver_number']})
             if l.get('lap_duration')]
-    if not laps: return None
-    lap = (min(laps, key=lambda l: l['lap_duration']) if lap_number is None
+    gone = deleted_laps(ses['session_key'])
+    valid = [l for l in laps if (l['driver_number'], l['lap_number']) not in gone]
+    if not valid: return None
+    lap = (min(valid, key=lambda l: l['lap_duration']) if lap_number is None
            else next(l for l in laps if l['lap_number'] == lap_number))
-    car = _get('https://backend.f1insightshub.com/fastf1/car_data',
-               {'driver_number': d['driver_number'], 'lap_number': lap['lap_number'],
-                'session_key': f"{year}|{meet['meeting_name']}|{ses['session_name']}"})
+    car = _get(F1IH_CAR, {'driver_number': d['driver_number'], 'lap_number': lap['lap_number'],
+                          'session_key': f"{year}|{meet['meeting_name']}|{ses['session_name']}"})
     if not car: return None
 
     ms = pd.to_datetime([c['date'] for c in car]).asi8 // 10**6
@@ -108,7 +143,7 @@ def get_trace_f1ih(year, gp, session_name, driver, lap_number=None):
     samples = [dict(_ms=float(t), speed=c['speed'], throttle=c['throttle'], brake=c['brake'], rpm=c['rpm'],
                     nGear=c['n_gear'], drs=c['drs'], **meta) for t, c in zip(ms, car)]
     return {'driver': d['name_acronym'], 'full_name': d['full_name'], 'lap_number': lap['lap_number'],
-            'lap_time': lap['lap_duration'], 'samples': samples}
+            'lap_time': lap['lap_duration'], 'samples': samples, 'car': car, 'lap': lap, 'event': meet['meeting_name']}
 
 def calculate_delta(ref, tgt, max_points=800):
     """Returns (dist, delta). max_points=800 is their chart/CSV downsampling

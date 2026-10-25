@@ -24,10 +24,10 @@ import hifi_delta_v2 as H
 
 
 # ==========================================
-# 1. DELTA ENGINE -- hifi_delta_v2.py (exact F1InsightsHub port, fed from FastF1 car data)
+# 1. DELTA ENGINE -- hifi_delta_v2.py (exact F1InsightsHub port, fed from F1InsightsHub backend car data)
 # ==========================================
 def calculate_hifi_delta(ref_trace, tgt_trace):
-    """Delta (s, + = target slower) on ref_trace['dist']. Each trace needs 'f1ih' = H.get_trace(session, driver, lap)
+    """Delta (s, + = target slower) on ref_trace['dist']. Each trace needs 'f1ih' = H.get_trace_f1ih(...) (or H.get_trace(session, driver, lap))
     for the same lap; the engine's distance grid is mapped onto ref_trace['dist'] by lap fraction."""
     grid, delta = H.calculate_delta(ref_trace['f1ih'], tgt_trace['f1ih'], max_points=None)
     ok = np.isfinite(delta)
@@ -97,10 +97,7 @@ def main():
     traces = [{'dist': Z[d + "_dist"].astype(float), 'speed': Z[d + "_speed"].astype(float),
                'time': Z[d + "_time"].astype(float), 'lap_time': float(Z[d + "_lap_time"]), 'driver': d}
               for d in drivers]
-    import fastf1
-    s = fastf1.get_session(int(a.year), a.track, a.session)
-    s.load(telemetry=True, laps=True, weather=False, messages=False)
-    for tr in traces: tr['f1ih'] = H.get_trace(s, tr['driver'])      # fastest lap, as in the npz
+    for tr in traces: tr['f1ih'] = H.get_trace_f1ih(int(a.year), a.track, a.session, tr['driver'])   # fastest lap, as in the npz
     line_paths = dict(kv.split("=", 1) for kv in a.lines.split(","))
     render(traces, a.outline, line_paths, a.track, a.year, a.session, a.out, a.zoom, a.trail_frames, a.fps, a.max_seconds)
 

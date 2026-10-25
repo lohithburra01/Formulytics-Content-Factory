@@ -6,8 +6,9 @@ Edit the SETTINGS block below (or pass the same things on the command line) and 
     python optimal_x_quali.py --track "Singapore" --year 2026 --session SQ --drivers VER,RUS
     python optimal_x_quali.py --track "Singapore" --drivers "VER 2026 SQ,RUS 2025 Q"     (cross-session)
 
-No dropdowns, no driver database: the track is any name FastF1 understands, the drivers are TOP2 (fastest two
-of the session) or any two codes you type. Timing = hifi_delta_v2.py (exact F1InsightsHub delta port, FastF1 car data).
+No dropdowns, no driver database: the track is a country, city or GP name, the drivers are TOP2 (fastest two
+of the session) or any two codes you type. Timing = hifi_delta_v2.py (exact F1InsightsHub delta port). Data = F1InsightsHub
+backend car data + OpenF1 laps (no FastF1: F1's archive returns 401 since 2026-10-15).
 Road + lines = the optimal-lap run for the track (F1_Pipeline_Assets/tracks/<track>_lapcomp.json, optimal_lines.py).
 The faster lap is P1/reference. Each driver gets his own optimiser line (character_lines.per_driver_lines: same
 optimiser as the optimal lap, CdA/CL/margin changed very slightly, cornering car from the data). First run per
@@ -16,7 +17,7 @@ track+driver pair: two optimiser runs, 4 workers, low priority, ~10 min each; af
 # ==========================================================================================
 # SETTINGS
 # ==========================================================================================
-TRACK = "Singapore Grand Prix"   # any FastF1 event name: "Singapore", "Monza", "British Grand Prix", ...
+TRACK = "Singapore Grand Prix"   # country, city or GP name: "Singapore", "Austin", "British Grand Prix", ...
 YEAR = 2026
 SESSION = "SQ"                   # Q, SQ, R, S, FP1, FP2, FP3
 DRIVERS = "TOP2"                 # "TOP2"  or  "VER,RUS"  or  "VER 2026 SQ,HAM 2019 Q" (year/session per driver)
@@ -49,39 +50,38 @@ RING_SAT = 0.80          # car-dot border = team colour at 80 % saturation
 DIM = 0.55               # opacity of the red/green metres line
 
 
-# ------------------------------------------------------------------ data (notebook logic)
+# ------------------------------------------------------------------ data (F1InsightsHub backend + OpenF1, no FastF1)
+# F1's livetiming archive (FastF1's source) returns 401 since 2026-10-15. Car data now comes from
+# backend.f1insightshub.com/fastf1/car_data (FastF1 car data, distance included) and lap/sector times from OpenF1.
+H = LCO.H
+
 def load_session(year, track, session):
-    import fastf1
-    s = fastf1.get_session(int(year), track, session)
-    s.load(telemetry=True, laps=True, weather=False, messages=False)
-    return s
+    ses, meet = H.f1ih_session(int(year), track, session)
+    return {'year': int(year), 'track': track, 'session': session, 'event': meet['meeting_name'], 'openf1': ses}
 
 
 def clean_trace(session, driver):
-    laps = session.laps.pick_drivers(driver) if hasattr(session.laps, "pick_drivers") else session.laps.pick_driver(driver)
-    if laps.empty:
-        raise SystemExit(f"No laps for {driver} in {session.event['EventName']} {session.name}")
-    lap = laps.pick_fastest()
-    tel = lap.get_telemetry().dropna(subset=['Distance', 'Speed', 'X', 'Y']).drop_duplicates(subset=['Time'])
-    dist = tel['Distance'].values.astype(float); dist -= dist[0]
-    t = tel['Time'].dt.total_seconds().values
+    f = H.get_trace_f1ih(session['year'], session['track'], session['session'], driver)
+    if f is None:
+        raise SystemExit(f"No laps for {driver} in {session['event']} {session['session']}")
+    car = pd.DataFrame(f['car'])
+    car['t'] = (pd.to_datetime(car['date']) - pd.to_datetime(car['date'].iloc[0])).dt.total_seconds()
+    car = car.dropna(subset=['distance', 'speed']).drop_duplicates(subset=['t'])
+    dist = car['distance'].values.astype(float); dist -= dist[0]
+    t = car['t'].values
     # official sector gates (distance in own telemetry, cumulative official time) - as the v2 notebook's get_trace
-    sec = [lap[k].total_seconds() if pd.notna(lap[k]) else None for k in ('Sector1Time', 'Sector2Time')]
+    sec = [f['lap'].get(k) for k in ('duration_sector_1', 'duration_sector_2')]
     gates = {}
     if sec[0] is not None:
         gates['S1'] = (float(np.interp(sec[0], t, dist)), sec[0])
         if sec[1] is not None:
             gates['S2'] = (float(np.interp(sec[0] + sec[1], t, dist)), sec[0] + sec[1])
-    return {'dist': dist, 'speed': tel['Speed'].values / 3.6, 'time': t, 'f1ih': LCO.H.get_trace(session, driver, lap),
-            'lap_time': lap['LapTime'].total_seconds(), 'driver': driver, 'gates': gates}
+    return {'dist': dist, 'speed': car['speed'].values / 3.6, 'time': t, 'f1ih': f,
+            'lap_time': float(f['lap_time']), 'driver': f['driver'], 'gates': gates}
 
 
 def top_n(session, n):
-    seen = []
-    for _, lap in session.laps.pick_quicklaps().sort_values(by='LapTime').iterrows():
-        if lap['Driver'] not in seen: seen.append(lap['Driver'])
-        if len(seen) == n: break
-    return seen
+    return [d for d, _ in H.f1ih_ranking(session['year'], session['track'], session['session'])[:n]]
 
 
 def parse_drivers(spec, year, session):
@@ -122,7 +122,7 @@ def load_traces(track, year, session, spec, log=print):
     traces.sort(key=lambda tr: tr['lap_time'])        # faster lap = P1 = reference
     if traces[0]['label'] == traces[1]['label']:
         traces[1]['label'] += "*"
-    event = get(*picks[0][1:]).event['EventName']
+    event = get(*picks[0][1:])['event']
     return traces, event, same
 
 
