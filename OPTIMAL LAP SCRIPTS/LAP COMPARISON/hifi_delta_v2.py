@@ -30,7 +30,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import f1ih_port as fp
 
-__all__ = ['get_trace', 'get_trace_f1ih', 'f1ih_session', 'f1ih_ranking', 'calculate_delta']
+__all__ = ['get_trace', 'get_trace_f1ih', 'f1ih_session', 'f1ih_classification', 'f1ih_ranking', 'calculate_delta']
 
 def _secs(x):
     return x.total_seconds() if pd.notna(x) else None
@@ -104,6 +104,18 @@ def deleted_laps(session_key):
         g = re.search(r'CAR (\d+) .*DELETED.*? LAP (\d+)', m.get('message') or '')
         if g: out.add((int(g.group(1)), int(g.group(2))))
     return out
+
+def f1ih_classification(year, gp, session_name):
+    """Driver codes in official classified order (OpenF1 /session_result; for qualifying = the grid order,
+    Q3 decides the top 10, not the fastest lap of the whole session). Falls back to f1ih_ranking."""
+    ses, _ = f1ih_session(year, gp, session_name)
+    code = {x['driver_number']: x['name_acronym'] for x in _get(OPENF1 + 'drivers', {'session_key': ses['session_key']})}
+    try:
+        res = [r for r in _get(OPENF1 + 'session_result', {'session_key': ses['session_key']}) if str(r.get('position') or '').isdigit()]
+    except RuntimeError:
+        res = []
+    if not res: return [d for d, _ in f1ih_ranking(year, gp, session_name)]
+    return [code[r['driver_number']] for r in sorted(res, key=lambda r: int(r['position'])) if r['driver_number'] in code]
 
 def f1ih_ranking(year, gp, session_name):
     """[(driver code, fastest lap s)] for the session, fastest first (OpenF1 laps)."""

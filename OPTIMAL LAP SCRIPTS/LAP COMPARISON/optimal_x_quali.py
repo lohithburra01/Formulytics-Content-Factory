@@ -81,7 +81,7 @@ def clean_trace(session, driver):
 
 
 def top_n(session, n):
-    return [d for d, _ in H.f1ih_ranking(session['year'], session['track'], session['session'])[:n]]
+    return H.f1ih_classification(session['year'], session['track'], session['session'])[:n]   # official order (Q3 decides)
 
 
 def parse_drivers(spec, year, session):
