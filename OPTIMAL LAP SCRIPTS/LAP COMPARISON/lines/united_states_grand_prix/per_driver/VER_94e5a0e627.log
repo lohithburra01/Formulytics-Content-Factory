@@ -1,0 +1,28 @@
+[opt26] apex penalty on 18 corners at [616, 824, 1196, 1318, 1533, 1681, 1861, 2130, 2516, 3702, 3915, 4036, 4189, 4402, 4524, 4677, 4930, 5219]
+[opt26] 2704 stations, 226 knots, corridor median 14.4 m
+[opt26] base 100.417s
+[opt26] step 0.5 sweep 0: 99.202s (-1.215) acc 6 t 26s
+[opt26] step 0.5 sweep 1: 98.786s (-1.632) acc 3 t 50s
+[opt26] step 0.5 sweep 2: 98.662s (-1.755) acc 3 t 73s
+[opt26] step 0.5 sweep 3: 98.608s (-1.810) acc 3 t 95s
+[opt26] step 0.5 sweep 4: 98.576s (-1.841) acc 3 t 119s
+[opt26] step 0.5 sweep 5: 98.564s (-1.853) acc 1 t 141s
+[opt26] step 0.5 sweep 6: 98.555s (-1.863) acc 1 t 162s
+[opt26] step 0.5 sweep 7: 98.550s (-1.867) acc 1 t 183s
+[opt26] step 0.25 sweep 0: 98.422s (-1.996) acc 10 t 224s
+[opt26] step 0.25 sweep 1: 98.381s (-2.036) acc 8 t 244s
+[opt26] step 0.25 sweep 2: 98.348s (-2.069) acc 7 t 265s
+[opt26] step 0.25 sweep 3: 98.333s (-2.084) acc 4 t 286s
+[opt26] step 0.25 sweep 4: 98.331s (-2.086) acc 2 t 307s
+[opt26] step 0.25 sweep 5: 98.324s (-2.093) acc 2 t 328s
+[opt26] step 0.25 sweep 6: 98.322s (-2.095) acc 1 t 349s
+[opt26] step 0.25 sweep 7: 98.318s (-2.099) acc 1 t 369s
+[opt26] step 0.25 sweep 8: 98.317s (-2.100) acc 1 t 390s
+[opt26] step 0.25 sweep 9: 98.315s (-2.102) acc 1 t 411s
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[opt26] apex gaps 616:0.22 824:0.08 1197:0.24 1318:0.09 1534:0.01 1682:0.09 1861:0.21 2130:0.26 2516:0.20 3703:0.16 3915:0.03 4037:0.23 4189:0.15 4402:0.28 4524:0.11 4678:0.06 4930:0.26 5220:0.15 pure lap 94.253s
+[opt26] done: 98.315s (base 100.417), viol 0.023 m

@@ -1,0 +1,44 @@
+[opt26] apex penalty on 19 corners at [616, 862, 1118, 1300, 1472, 1654, 1830, 1950, 2104, 2502, 3687, 3917, 4037, 4195, 4389, 4509, 4669, 4933, 5221]
+[opt26] 2704 stations, 226 knots, corridor median 14.4 m
+[opt26] base 191.426s
+[opt26] step 1.0 sweep 0: 159.330s (-32.095) acc 22 t 23s
+[opt26] step 1.0 sweep 1: 134.180s (-57.246) acc 14 t 43s
+[opt26] step 1.0 sweep 2: 117.797s (-73.628) acc 10 t 65s
+[opt26] step 1.0 sweep 3: 109.628s (-81.797) acc 8 t 88s
+[opt26] step 1.0 sweep 4: 105.849s (-85.577) acc 8 t 111s
+[opt26] step 1.0 sweep 5: 104.885s (-86.541) acc 4 t 132s
+[opt26] step 1.0 sweep 6: 104.314s (-87.112) acc 4 t 154s
+[opt26] step 1.0 sweep 7: 104.127s (-87.298) acc 4 t 176s
+[opt26] step 1.0 sweep 8: 103.774s (-87.652) acc 4 t 199s
+[opt26] step 1.0 sweep 9: 103.717s (-87.709) acc 1 t 222s
+[opt26] step 1.0 sweep 10: 103.476s (-87.950) acc 4 t 244s
+[opt26] step 1.0 sweep 11: 103.440s (-87.985) acc 3 t 266s
+[opt26] step 0.5 sweep 0: 101.666s (-89.760) acc 31 t 288s
+[opt26] step 0.5 sweep 1: 100.467s (-90.958) acc 23 t 311s
+[opt26] step 0.5 sweep 2: 100.166s (-91.259) acc 15 t 332s
+[opt26] step 0.5 sweep 3: 99.978s (-91.448) acc 11 t 354s
+[opt26] step 0.5 sweep 4: 99.920s (-91.506) acc 1 t 375s
+[opt26] step 0.5 sweep 5: 99.882s (-91.543) acc 1 t 396s
+[opt26] step 0.5 sweep 6: 99.866s (-91.559) acc 1 t 418s
+[opt26] step 0.5 sweep 7: 99.855s (-91.570) acc 3 t 440s
+[opt26] step 0.5 sweep 8: 99.847s (-91.579) acc 2 t 461s
+[opt26] step 0.5 sweep 9: 99.847s (-91.579) acc 1 t 482s
+[opt26] step 0.25 sweep 0: 99.242s (-92.184) acc 30 t 523s
+[opt26] step 0.25 sweep 1: 98.862s (-92.564) acc 30 t 543s
+[opt26] step 0.25 sweep 2: 98.693s (-92.733) acc 22 t 564s
+[opt26] step 0.25 sweep 3: 98.633s (-92.792) acc 20 t 585s
+[opt26] step 0.25 sweep 4: 98.555s (-92.870) acc 16 t 605s
+[opt26] step 0.25 sweep 5: 98.517s (-92.908) acc 1 t 626s
+[opt26] step 0.25 sweep 6: 98.497s (-92.928) acc 1 t 646s
+[opt26] step 0.25 sweep 7: 98.436s (-92.990) acc 9 t 667s
+[opt26] step 0.25 sweep 8: 98.398s (-93.028) acc 7 t 687s
+[opt26] step 0.25 sweep 9: 98.375s (-93.051) acc 4 t 708s
+[opt26] step 0.25 sweep 10: 98.356s (-93.069) acc 3 t 729s
+[opt26] step 0.25 sweep 11: 98.325s (-93.101) acc 3 t 750s
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[opt26] apex gaps 616:0.17 862:0.02 1118:0.00 1300:0.00 1472:0.04 1654:0.15 1830:0.09 1950:0.81 2104:0.11 2503:0.15 3687:0.19 3917:0.00 4037:0.22 4195:0.00 4389:0.25 4509:0.10 4669:0.09 4933:0.04 5221:0.11 pure lap 96.314s
+[opt26] done: 98.325s (base 191.426), viol 0.004 m
