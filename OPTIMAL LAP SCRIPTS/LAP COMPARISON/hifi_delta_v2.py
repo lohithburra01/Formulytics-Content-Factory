@@ -98,11 +98,23 @@ def f1ih_session(year, gp, session_name):
     return ses, _get(OPENF1 + 'meetings', {'meeting_key': ses['meeting_key']})[0]
 
 def deleted_laps(session_key):
-    """{(driver_number, lap_number)} deleted by race control (track limits etc.); OpenF1 /laps doesn't flag them."""
+    """{(driver_number, lap_number)} deleted by race control (track limits etc.); OpenF1 /laps doesn't flag them.
+    Race control's 'LAP n' isn't OpenF1's lap number (US GP 2026 Q: VER 'TIME 1:34.482 ... LAP 12' = OpenF1 lap 11),
+    so the lap is matched by its time, or (no time given) as the driver's last lap finished before the message."""
+    laps = [l for l in _get(OPENF1 + 'laps', {'session_key': session_key}) if l.get('lap_duration') and l.get('date_start')]
     out = set()
     for m in _get(OPENF1 + 'race_control', {'session_key': session_key}):
-        g = re.search(r'CAR (\d+) .*DELETED.*? LAP (\d+)', m.get('message') or '')
-        if g: out.add((int(g.group(1)), int(g.group(2))))
+        g = re.search(r'CAR (\d+) .*DELETED', m.get('message') or '')
+        if not g: continue
+        mine = [l for l in laps if l['driver_number'] == int(g.group(1))]
+        t = re.search(r'TIME (\d+):(\d+\.\d+)', m['message'])
+        if t:
+            secs = int(t.group(1)) * 60 + float(t.group(2))
+            hit = [l for l in mine if abs(l['lap_duration'] - secs) < 0.0005]
+        else:
+            end = lambda l: pd.Timestamp(l['date_start']) + pd.Timedelta(seconds=l['lap_duration'])
+            hit = sorted([l for l in mine if end(l) <= pd.Timestamp(m['date'])], key=end)[-1:]
+        out.update((l['driver_number'], l['lap_number']) for l in hit)
     return out
 
 def f1ih_classification(year, gp, session_name):
