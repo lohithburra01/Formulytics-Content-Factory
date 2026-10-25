@@ -1,0 +1,30 @@
+{
+  "track_name": "United States Grand Prix",
+  "outline": "F1_Pipeline_Assets/tracks/united_states_grand_prix_lapcomp_outline.json",
+  "raceline": "F1_Pipeline_Assets/tracks/united_states_grand_prix_lapcomp_raceline.json",
+  "zoom": 28,
+  "note": "Austin 2026: sandbox svg_line road with the 2 drawn kerb cusps (3.69, 4.20 km) rounded R10 (_round_cusps.py); optimiser base = smoothed road centreline (_centre_base.py, sigma 16 m) so apex offsets never pinch into needles. CCW track optimised on the x-mirror. Fleet-median 2026 car, rho 1.205 (171 m).",
+  "optimiser": {
+    "script": "cache/bahrain/_opt_line_2026.py",
+    "mirror": true,
+    "cda": 0.6139,
+    "cl": 4.97,
+    "margin": 0.3,
+    "args": [
+      "--base",
+      "LAP COMPARISON/austin/cbase_s16.json",
+      "--outline",
+      "F1_Pipeline_Assets/tracks/united_states_grand_prix_lapcomp_mirror_outline.json",
+      "--rho",
+      "1.205",
+      "--apex-w",
+      "1.5",
+      "--steps",
+      "0.5,0.25",
+      "--max-sweeps",
+      "12",
+      "--init-knots",
+      "LAP COMPARISON/austin/ref2_knots.npy"
+    ]
+  }
+}
