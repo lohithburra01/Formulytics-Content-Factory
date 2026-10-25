@@ -13,6 +13,10 @@ Usage
     tgt = get_trace(session, 'LEC')
     dist, delta = calculate_delta(ref, tgt)
 
+    # without FastF1 (F1's archive returns 401 since 2026-10-15): F1IH backend car data + OpenF1 laps
+    ref = get_trace_f1ih(2026, 'United States', 'Qualifying', 'NOR')
+    tgt = get_trace_f1ih(2026, 'United States', 'Qualifying', 'VER')
+
     dist   their distance grid along the lap, metres
     delta  seconds, + = target slower
 """

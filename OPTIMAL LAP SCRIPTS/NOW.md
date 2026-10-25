@@ -1,3 +1,104 @@
+# >>> AUSTIN LAP COMPARISON (2026-10-25) <<<
+- Recipe F1_Pipeline_Assets/tracks/united_states_grand_prix_lapcomp.json (+ _lapcomp_outline/_mirror_outline/_raceline.json); work in LAP COMPARISON/austin/.
+- User: old Austin lines had 2 'sharp forced pushes' to the apex (3.69 km, 4.20 km). ROOT CAUSE: optimiser offsets the line along the BASE
+  line's normals; the base was tight (R~8 m) at those hairpins, so apex offsets pinched into needles (rounding the drawn kerb cusp alone
+  made it WORSE, R 4.8 m). FIX: base = smoothed road centreline (_centre_base.py sigma 16, Rmin 13.8, seeded knots) + cusps rounded R10
+  (_round_cusps.py). New ref line Rmin 15.1 m everywhere, spikes 0.03 (old 0.084), apex gaps <=0.23 m. Plot LAP COMPARISON/austin/check_ref2.png.
+- Next: user approves plot -> make_lap_comparison.bat, United States Grand Prix / 2026 / Q / TOP2 (per-driver lines ~10 min each, then cached).
+
+# >>> PORTIMAO GT3 (2026-10-14) <<<
+- 2026-10-15: ALL GT3 files moved to GT3/ (scripts+data GT3/portimao, assets/, videos/; bats in GT3/). Committed on
+  f1hotlap_lohith_v2: 4438ebd renderer, 89d9b43 v1+car, 77bb580 real trace, bb0c427 v2 reshape, d9cf3b3 quali+elev. Pushed (GT3 only) to Optimal-Lap main b6116390.
+- QUALI (2026-10-15, user Option A, ship this): GT3/portimao/videos/portimao_gt3_2026_optimal_lap_quali.mp4 (GT3/make_portimao_gt3_lap_quali.bat),
+  zoom 28 (user rule). v2 car/line/track + tyre grip x1.112 (mu_lat 1.86) -> sim 1:39.850 < GT Open 2025 pole 1:39.966.
+  + 3D elevation flyover version: GT3/portimao/videos/portimao_gt3_2026_optimal_lap_quali_elev.mp4 (same bat; z = 2021 FastF1 by lap fraction,
+  GT3/portimao/assets/portimao_gt3real_elevation.json via GT3/portimao/_build_elevation.py). HUD 1:39.817.
+  LATEST (user): zoom 25 + flyover 1.7x -> GT3/portimao/videos/portimao_gt3_2026_optimal_lap_quali_elev_z25.mp4 (new raceline_video.py
+  flag --elev-scale, default 1.0 = other tracks unchanged).
+- v2 = CURRENT: GT3/portimao/videos/portimao_gt3_2026_optimal_lap_v2.mp4 (GT3/make_portimao_gt3_lap_v2.bat). User rejected v1 (pattern-search +
+  apex hack line, cl fitted to a GT Open lap time). v2 is built ONLY from the real AMG GT3 Evo onboard trace
+  (GT3/portimao/real_amg_gt3_trackday.json, OCR'd): car = measured envelope (gt3_car_measured.json: 319 kW, CdA 1.09,
+  mu_lat 1.67, cl 0.39, braking mu 1.42 + trail release, traction 0.85 g; _fit_envelope.py + _fit_power_runs.py), hills from
+  2021 FastF1 z (sim_gt3_car.py slope term, GT3 file only), track SVG reshaped so the TUM engine line drives the real curvature
+  g_lat*g/v^2 (reshape_track.py it 4). Sim 1:43.61 vs real ~1:43.0, speed RMSE 6.3 km/h (was 16.2), 0 off-track.
+  Residuals: T1 -15 km/h, T5 hairpin +10. Anchored (shape-preserving) reshape plateaued at ~10 km/h (reshape_anchored.py).
+  v1 files untouched. Next: same real-trace method for F1 lines (user: "even for f1"); Fri 16 Oct GTWC data.
+- Rwanda 2030-V8 lap PARKED by user: only an oblique official render exists; top-right complex ambiguous
+  (F1_Pipeline_Assets/tracks/rwanda_trace/). Spec: cache/rwanda_portimao_spec_2026-10-14.md.
+
+# >>> LAP COMPARISON (2026-10-09) <<<
+- New folder LAP COMPARISON/: user's LAPCOMP.IPYNB (delta engine + bake timing; NEVER tweak them) -> lap_compare_optimal.py
+  = notebook delta engine/timing verbatim, drawn on the optimal-lap road (raceline_video helpers), each car on ITS OWN line.
+- Singapore 2026 SQ VER 1:31.156 vs RUS 1:31.276: singapore_2026_sq_VER_vs_RUS.mp4 (zoom 28). VER = shipped v4b line;
+  RUS = same optimiser re-run, setup cda .542 cl 4.19 margin 0.34 from k3w knots (singapore_sq/rus_d_real.json):
+  lateral gap mean 0.10 m (1.0% of 10 m width), max 1.14 m, length -0.01%. Variants a/b/c in singapore_sq/ (b = 5 m off at one corner, rejected).
+
+- 2026-10-10 CONSOLIDATED SCRIPT: LAP COMPARISON/optimal_x_quali.py (no dropdowns/DB json). SETTINGS block or CLI:
+  --track (any FastF1 name) --year --session --drivers TOP2|"VER,RUS"|"VER 2026 SQ,HAM 2019 Q"; zoom 30 default.
+  Duel HUD: centre gap counter (+s big, metres small) with P1 name left / P2 right, names slide-swap on lead change
+  (0.5 m hysteresis); all text white; heatmap trails, P2 hue +10 deg. Old leaderboard gone. Faster lap = ref/P1.
+  Output singapore_grand_prix_2026_sq_VER_vs_RUS.mp4 (old singapore_2026_sq_VER_vs_RUS.mp4 kept). Awaiting user's visual feedback.
+  2026-10-10 v2 (user-approved look): zoom 40 default, white dot borders (team-colour ring rejected), HUD = dim GAP label,
+  hero +0.023 s, thin dim red/green "+N METERS" (sign vs faster-lap car), dim P1/P2 over driver codes at +-250 px.
+  make_lap_comparison.bat / plain run prompts Track/Year/Session/Drivers(TOP2)/Zoom(40). Video ..._VER_vs_RUS_v2.mp4.
+  Offered, not done: dark fade behind HUD (road shows through), name-tag overlap when cars level.
+  DATA-DRIVEN P2 LINE (2026-10-10, mockup only, NOT wired into the video yet): LAP COMPARISON/driver_lines.py.
+  User: optimiser-variant lines look "fakely nudged". New P2 line = P1 line + per-corner lateral bumps (entry/apex/exit,
+  +-2 m, inside P1's own wall margin) fitted so apex curvature gives the SAME lateral g at P2's real min speed and the
+  turning centroid moves by the measured apex timing (measured from each driver's own braking point). Identical elsewhere.
+  Singapore VER/RUS: 9/12 corners changed, gap mean 0.27 m max 3.25 m. mockups/lines_VER_vs_RUS.png. Awaiting approval.
+  -> REJECTED by user ("much more fake", "not honest"). Replaced by LAP COMPARISON/character_lines.py: measure car character
+  from real lap (RUS vs VER: top x0.995, corner min x1.010 = U-car), CdA/CL scaled (0.5674/4.4543), SAME optimiser + apex
+  touch, 4 workers at BelowNormal priority (user: machine crashed, don't push it). Result: lines 0.00 m mean, 0.25 m max
+  = physically identical. mockups/character_lines_VER_vs_RUS.png. Asked user how to proceed.
+  USER METHOD (current): every driver gets his OWN optimiser line, params changed very slightly (character_lines.py
+  per_driver_lines: CdA +-1.5%, CL +-2%, margin +-0.03; sign from data, cornering car = +CL/+CdA). Singapore: VER vs
+  RUS gap mean 0.07 m, max 1.14 m, all apexes touched. mockups/per_driver_lines_VER_vs_RUS.png. WIRED into optimal_x_quali.py
+  (2026-10-10). HOW TO RUN: double-click LAP COMPARISON/make_lap_comparison.bat -> prompts Track/Year/Session/Drivers/Zoom.
+  Needs F1_Pipeline_Assets/tracks/<slug>_lapcomp.json (only Singapore has one) - write it when shipping each optimal lap.
+  2026-10-20 DELTA ENGINE = exact F1InsightsHub port (from the DELTA RECREATION repo): LAP COMPARISON/hifi_delta_v2.py
+  + f1ih_port.py, fed from FastF1 car data, reproduces their CSV exports exactly. One engine, no --delta-engine switch.
+  Callers: lap_compare_optimal.calculate_hifi_delta (adapter: delta on ref dist by lap fraction; traces carry 'f1ih' =
+  H.get_trace(session, drv, lap)), optimal_x_quali, delta_graph (plots the engine's 800-pt series), both notebooks.
+  SIN Q VER/LEC: identical to delta_1.csv (final +0.054, -0.167..+0.188 s). delta_engine_v2.py / hifi_delta_v2_prev.py = old, unused.
+  2026-10-20 VERIFIED: make_lap_comparison.bat video gap = new engine (frames -0.080/-0.106 s vs old -0.64/-0.74); vs delta_1.csv mean 0.5 ms,
+  max 10 ms. Engine = COPIES of DELTA RECREATION files (f1ih_port identical; hifi_delta_v2 only import path differs) - re-copy if those change.
+  Check plot: LAP COMPARISON/singapore_grand_prix_2026_q_VER_vs_LEC_delta_vs_csv.png (user said not needed).
+  2026-10-25 F1 ARCHIVE 401: livetiming.formula1.com/static returns 401 since 2026-10-15 (FastF1 issue #978; fix = FastF1 3.9.0
+  + F1 TV Access login, NOT set up). Cache f1_cache/2026/..United_States../2026-10-24_Qualifying is EMPTY (failed load).
+  Engine now has get_trace_f1ih(year, gp, session_name, driver, lap_number=None) in hifi_delta_v2.py = F1IH backend car_data +
+  OpenF1 laps, no FastF1. Same trace dict as get_trace -> calculate_delta. SIN Q VER/LEC = delta_1.csv exactly; US GP Q NOR vs VER
+  -0.165 s. Backend gives 500 for 'Race'. NOT wired into optimal_x_quali / lap_compare_optimal / notebooks: they still need a FastF1
+  session (laps, telemetry dist/speed/time), so uncached sessions still fail there.
+
+# >>> CURRENT STATE (2026-10-09, engine2) <<<
+- PAPER SEARCH (2026-10-09): only 2026 car-model papers found: Saxena (BITS Pilani, SSRN 7045379, code zenodo 10.5281/
+  zenodo.22261052, github i4mGr0ot/F1-Aero-ERS-Joint-Optimization) - 4 tracks, grip re-fitted PER TRACK to hit pole
+  (calibrated_hifi_2026.json mu_eff 1.76-2.30); un-fitted traces RMS 27-60 km/h. Waterloo arXiv 2608.27707 = solver
+  benchmark using TUM 2019 car scaled to 400/350 kW. SAE 2026-01-0268 (Oxford Brookes, GT-Suite, paywalled) not read.
+  TUM laptime-simulation cloned cache/ext/tum_laptimesim (F1_Shanghai.ini = 2019 car).
+- RSS 2026 CAR (user: "just use it"): Race Sim Studio 'Formula Hybrid X 2026' Assetto Corsa data from github VOID4age
+  (cache/ext/void4age, RSS copyright files; user accepted). cache/rss2026/rss_car.py reads every value from the files;
+  sim_rss2026.py = sim_2026_lap.py (untouched) with car patched in memory, run on the 9 shipped racelines.
+  RESULT (score_rss.py, rss_vs_real.png): median |lap err| 3.71 s (ALL too fast, Monza -9.6, Silverstone -8.2),
+  RMSE 28.4 km/h vs old engine 1.31 s / 21.5. Top speeds +15..40 km/h over real. RSS data dated Nov 2024 = pre-season guess.
+- USER REJECTED ENGINE2 (and engine2-on-raceline): "do not use them at all", shapes unnatural. Do not use; keep files.
+  Open issue: pattern hybrid under-shoots peak speeds (mean -5.9 km/h, 71% of peaks) - see memory feedback-no-engine2.
+- ENGINE2 (in progress): cache/engine2/ = new regulation-faithful QSS engine (engine2.py). FIA PU regs verified from the
+  FIA PDF (Issue 6): ERS-K 350 kW (5.4.6), propulsion P=1800-5v / override 7100-20v (5.4.7), 4 MJ SoC (5.4.8), 8.5-9 MJ
+  harvest/lap (5.4.9), 3000 MJ/h fuel. 2026 Q energy by event: 9 MJ/250 kW superclip pre-Suzuka, 7 MJ/350 kW from Miami.
+  Track = IDENTIFIED from the real 2025 Q lap (corner/trail-brake mask -> effective curvature, no SVG). 2025 car fit:
+  fit25.json (RMSE 4-10 km/h). Energy policy = optimal-control cruise speed (singular arc) + per-straight raise
+  (optimise_vcap2; line-crossing straight split). Data prefers deploy profile iii (250 kW): in-sample RMSE 14.9 vs 18.0/18.6.
+  In-sample (PROFILE=iii POLICY=vcap2 TAG=_fade): median |lap err| 0.55 s, RMSE 14.4 km/h (fit26_all_vcap2_iii_fade.json).
+  BLIND LOO DONE (fit26_loo_vcap2_iii_fade.json, loo_seq.log): median |lap err| 0.67 s, trace RMSE 14.8 km/h (12 tracks).
+  Old shipped engine 1.31 s / 21.5; pattern hybrid 0.44 s / 11.6 -> engine2 beats old, NOT the hybrid. 50/50 ensemble 0.53/11.4.
+  Engine2 car on our SVG racelines (variant_a.py, per-fold params): +3.92 s / 28.2 -> fitted car is tied to identified tracks.
+  Proof page: https://claude.ai/artifact/LSKkNHbGAwBPV1w6bFktxQ (cache/engine2/engine2_proof.html, build_page.py).
+  Baselines to beat (same harness): old physics 1.31 s / 21.5 km/h; pattern hybrid 0.44 s / 11.8 km/h.
+  Research: github.com/Mahdi-Kadiri/f1-2026-lap-energy-simulator (MIT, cloned cache/ext/kadiri) = best public 2026 model;
+  its own validation 18-25 km/h RMSE. Sim-racing AC mods are closed/unvalidated.
+
 # >>> CURRENT STATE (2026-09-30) - read this block first <<<
 - PATTERN STUDY (2026-10-09): cache/hypo/README.md. 12 real 2025/2026 Q pairs -> universal patterns (energy
   clipping shape on straights, corner ratios, braking). HYBRID predictor (2025 pole x median growth +3.5%, ratio-field
@@ -56,6 +157,27 @@
   renderer cache/era2017/dual_lap_video_v3.py). User spec: fixed zoom 19 following the 2026 car (no dynamic zoom - smooth
   motion = retention), speed-heatmap trail/dot (2017 dulled), trailing car on top at 70% opacity, minimap under the cars,
   lap times not stopwatch, 2017 = HAM 1:30.076 (min-time line, cl -18.1%).
+- BAHRAIN v2 "WHAT COULD HAVE BEEN" (2026-10-02, satire: the Bahrain GP moved to Sepang): bahrain_2026_what_could_have_been.mp4
+  (+ _clean.mp4 without jets; make_bahrain_2026_what_could_have_been.bat). MIN-TIME line for the 2026 car
+  (cache/bahrain/_opt_line_2026.py, 0.17 s/eval, corridor road-0.5 m), knobs RE-FITTED on that line by the unchanged autofit
+  (cache/bahrain/_autofit_rl_in.py adds --raceline-in): cda 0.777 cl 4.200 -> 1:31.278 (v1 1:32.186), gate 8/9 (GAIN cap as v1),
+  worst corner 10 km/h (v1 15), corr 0.976, on-track OK. Title via new raceline_video --title flag (default unchanged).
+  Jets: cache/bahrain/_jet_flyover.py post-process (3-ship vic, contrails, ground shadow), t0 85.5 s, 2.8 s crossing.
+  v1 files untouched; v1 autofit outputs backed up in cache/bahrain/v1_backup (cache/autofit_bahrain* now = v2).
+  v2b (CURRENT, user: "not touching inside apexes, too wide"; jets as hook from 13 s, bottom-right -> top-left):
+  optimiser --apex-w penalty (each corner's min gap to inside bound, cache/bahrain/_apex_gaps.py), margin 0.3 ->
+  all apexes <=0.37 m from bound; pure min-time was TRAPPED wide (apex line is 1.2 s faster on same knobs). Knob fixed
+  point cda 0.787 cl 3.639 -> 1:32.197, gate 8/9 (GAIN 28.6), corr 0.974, T14/T15 +17/+14 km/h over target (low-speed
+  tier not fitted). CL 3.64 is low vs fleet: the old min-curvature line's missed apexes were being absorbed by higher CL.
+  v2a videos/line backed up in cache/bahrain/v2/v2a_backup.
+  FINAL (2026-10-02): bahrain_grand_prix_2026_the_lap_that_never_was.mp4. User: title must stay "THE OPTIMAL LAP"
+  (+ BAHRAIN GRAND PRIX) - satire only as 3rd line --tagline "THE LAP THAT NEVER WAS"; jets must NOT be a re-encode
+  (x264 post-pass looked worse/choppy) -> raceline_video.py --jets "t0,dur,x0,y0,x1,y1" draws jet_overlay.py in-loop
+  with 6-sample motion blur. Old what_could_have_been*.mp4 kept (superseded).
+  AIRCRAFT (latest): user wants it SUBTLE - only 2 flights: B-2 at 13 s (BR->TL, 3.2 s) and SR-71 (user's fav) at 58 s
+  opposite direction (2.6 s), both with contrails, ~1.9x old fighter size. raceline_video.py --flights "b2:...;sr71:..."
+  (jet_overlay.py: sprites, directional motion blur, merged-silhouette outline). Fence (fence_overlay.py, --fence) was
+  built but user cancelled it - flag off, unused. Previous render backed up in cache/bahrain/v2/v2c_backup.
 - NEXT: Sepang FP1 (Fri 2026-10-02) verification: fetch --country Bahrain --circuit "Kuala Lumpur".
   Deferred: line optimiser is min-curvature not min-time at hairpin combos (Sepang T1) - engine-wide fix
   needs the full backtest.
