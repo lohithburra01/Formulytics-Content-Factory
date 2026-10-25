@@ -25,7 +25,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import f1ih_port as fp
 
-__all__ = ['get_trace', 'calculate_delta']
+__all__ = ['get_trace', 'get_trace_f1ih', 'calculate_delta']
 
 def _secs(x):
     return x.total_seconds() if pd.notna(x) else None
@@ -57,6 +57,54 @@ def get_trace(session, driver, lap=None):
 
     return {'driver': driver, 'full_name': full_name, 'lap_number': int(lap['LapNumber']),
             'lap_time': lap['LapTime'].total_seconds(), 'samples': samples}
+
+def _get(url, params):
+    import requests, time
+    for _ in range(4):
+        r = requests.get(url, params=params, timeout=180)
+        if r.status_code == 200: return r.json()
+        time.sleep(3)
+    raise RuntimeError(f'{url} {params} -> HTTP {r.status_code} {r.text[:120]}')
+
+def get_trace_f1ih(year, gp, session_name, driver, lap_number=None):
+    """Same trace as get_trace, without FastF1: car data from F1InsightsHub's backend
+    (backend.f1insightshub.com/fastf1/car_data, what their site uses) and lap/sector times
+    from OpenF1 /laps (what their site uses). gp: OpenF1 country or meeting name, e.g.
+    'United States'; session_name: 'Qualifying', 'Practice 1', 'Sprint Qualifying', ...
+    lap_number=None picks the driver's fastest timed lap."""
+    O = 'https://api.openf1.org/v1/'
+    ses = [s for s in _get(O + 'sessions', {'year': year, 'session_name': session_name})
+           if gp.lower() in (s['country_name'] + '|' + s['location']).lower()]
+    meet = None
+    if not ses:   # match on meeting name instead
+        meet = [m for m in _get(O + 'meetings', {'year': year}) if gp.lower() in m['meeting_name'].lower()]
+        ses = [s for s in _get(O + 'sessions', {'year': year, 'session_name': session_name})
+               if meet and s['meeting_key'] == meet[0]['meeting_key']]
+    ses = [s for s in ses if pd.Timestamp(s['date_start']) <= pd.Timestamp.now(tz='UTC')]   # 'United States' = Austin + Las Vegas
+    if not ses: raise ValueError(f'no OpenF1 session {year} {gp} {session_name} (yet)')
+    ses = max(ses, key=lambda s: s['date_start'])   # most recent one that has run
+    meet = _get(O + 'meetings', {'meeting_key': ses['meeting_key']})[0]
+    d = [x for x in _get(O + 'drivers', {'session_key': ses['session_key']})
+         if x['name_acronym'] == driver or str(x['driver_number']) == str(driver)]
+    if not d: raise ValueError(f'driver {driver} not in session')
+    d = d[0]
+    laps = [l for l in _get(O + 'laps', {'session_key': ses['session_key'], 'driver_number': d['driver_number']})
+            if l.get('lap_duration')]
+    if not laps: return None
+    lap = (min(laps, key=lambda l: l['lap_duration']) if lap_number is None
+           else next(l for l in laps if l['lap_number'] == lap_number))
+    car = _get('https://backend.f1insightshub.com/fastf1/car_data',
+               {'driver_number': d['driver_number'], 'lap_number': lap['lap_number'],
+                'session_key': f"{year}|{meet['meeting_name']}|{ses['session_name']}"})
+    if not car: return None
+
+    ms = pd.to_datetime([c['date'] for c in car]).asi8 // 10**6
+    meta = dict(lapDuration=lap['lap_duration'], lapDurationS1=lap['duration_sector_1'],
+                lapDurationS2=lap['duration_sector_2'], lapNumber=lap['lap_number'], position=None)
+    samples = [dict(_ms=float(t), speed=c['speed'], throttle=c['throttle'], brake=c['brake'], rpm=c['rpm'],
+                    nGear=c['n_gear'], drs=c['drs'], **meta) for t, c in zip(ms, car)]
+    return {'driver': d['name_acronym'], 'full_name': d['full_name'], 'lap_number': lap['lap_number'],
+            'lap_time': lap['lap_duration'], 'samples': samples}
 
 def calculate_delta(ref, tgt, max_points=800):
     """Returns (dist, delta). max_points=800 is their chart/CSV downsampling
