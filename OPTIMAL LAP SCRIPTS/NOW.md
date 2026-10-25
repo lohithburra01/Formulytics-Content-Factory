@@ -5,6 +5,8 @@
   made it WORSE, R 4.8 m). FIX: base = smoothed road centreline (_centre_base.py sigma 16, Rmin 13.8, seeded knots) + cusps rounded R10
   (_round_cusps.py). New ref line Rmin 15.1 m everywhere, spikes 0.03 (old 0.084), apex gaps <=0.23 m. Plot LAP COMPARISON/austin/check_ref2.png.
 - Next: user approves plot -> make_lap_comparison.bat, United States Grand Prix / 2026 / Q / TOP2 (per-driver lines ~10 min each, then cached).
+- 2026-10-25 DONE: LAP COMPARISON/united_states_grand_prix_2026_q_ANT_vs_VER.mp4 (TOP2 = official order ANT 1:34.035, VER 1:34.214; final +0.179 s;
+  F1IH backend data, zoom 40). Per-driver lines cached (lines/united_states_grand_prix/per_driver ANT_fd40e3bd9f, VER_94e5a0e627): Rmin 15.0 m, same as ref.
 
 # >>> PORTIMAO GT3 (2026-10-14) <<<
 - 2026-10-15: ALL GT3 files moved to GT3/ (scripts+data GT3/portimao, assets/, videos/; bats in GT3/). Committed on
