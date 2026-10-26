@@ -40,5 +40,9 @@ Total 2252 N; front wing 981 N free air -> 1747 N at 8 cm (inviscid, keeps risin
 Picture: spikes/pterasoftware/pterasoftware_f1_wings.png. Wings only, no floor/body/wheels.
 WaterLily settled wake: 7.3M cells, 8 body lengths in 115 s -> spikes/waterlily/wake_384.png (domain small: 0.5 L upstream, 2.5 L wake).
 
+## DECISION (user, 2026-10-26): go with PteraSoftware
+Reason: fast and light (CPU, no GPU heat). Known and accepted limits: wings only (no floor/diffuser/body/wheels),
+no separated wake, inviscid ground effect (no stall close to the ground). WaterLily spikes kept for reference only.
+
 ## Next
-User decides: next spike (settled wake + top-down picture + Ahmed-body drag check) or other direction.
+Design the PteraSoftware pipeline: 2026 front/rear wing geometry, driven per frame by the optimal-lap trace (speed, ride height, yaw).
