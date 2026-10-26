@@ -64,5 +64,14 @@ corner speed difference across the span.
   drafted, user stopped it - not applied); colour range too wide (all teal); front wake rises ~1.1 m in 1 s (check core
   params); placeholder wings (NACA0012 -8 deg) -> downforce far too low; constant ride height; no straight mode.
 
+## v7 (2026-10-26) - jitter FIXED (user feedback on v6: streamlines look bad + video jittery)
+- Root cause: heading from the raw 0.5 m raceline zigzagged ~0.6 deg/frame -> yaw rate jumped 0 <-> 1 rad/s per frame
+  -> yaw_rate x r term in the car-frame streamlines jumped up to 17 m/s at 11 m -> the whole field whipped about.
+- hairpin_v7.py: Gaussian-smooth the raceline (sigma 1 m) before heading. Yaw-rate jump/frame median 0.44 -> 0.013 rad/s,
+  line shift max 4 cm. Output spikes/hairpin/out_v7/ (austin_hairpin_v7.mp4). Consecutive frames checked: steady shape.
+- NOTE: hairpin_v6.py (and so v7) contains the x10 tip close-up inset + colour norm 0.85-1.15 that the user had stopped;
+  they ARE drawn in v7 frames. Ask the user whether to keep or remove.
+
 ## Next
-User reviews the v6 frames FIRST and gives feedback; only then read/judge frames. Then iterate the look toward usable.
+User watches v7 for smoothness. Then the remaining look issues: colour range, front wake rising ~1.2 m (core params),
+tip-vortex visibility, inset keep/remove, placeholder wings.
