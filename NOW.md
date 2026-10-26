@@ -34,5 +34,11 @@ Julia 1.13.3 via juliaup + WaterLily + CUDA.jl works on the RTX 4060 Laptop. Ahm
 0.26M cells 5.4 ms/step | 2.1M 17.8 ms | 7.1M 59 ms | 16.8M 138 ms (~8.3 ns/cell/step, ~170 B/cell). GPU hit 82 C / 95 W at 16.8M.
 Forces printed are NOT meaningful (include ground plane, 100 steps only). Raw: spikes/waterlily/bench_2026-10-26.txt
 
+## PteraSoftware spike (throwaway, spikes/pterasoftware/, py3.11 venv; 5.1 needs py>=3.11)
+F1-ish front+rear wing (NACA0012, -8 deg, 70 m/s, front 8 cm off ground): free wake 180 steps 47 s CPU; steady 37 ms/case.
+Total 2252 N; front wing 981 N free air -> 1747 N at 8 cm (inviscid, keeps rising, no stall). Wake rises (upwash) - correct sign.
+Picture: spikes/pterasoftware/pterasoftware_f1_wings.png. Wings only, no floor/body/wheels.
+WaterLily settled wake: 7.3M cells, 8 body lengths in 115 s -> spikes/waterlily/wake_384.png (domain small: 0.5 L upstream, 2.5 L wake).
+
 ## Next
 User decides: next spike (settled wake + top-down picture + Ahmed-body drag check) or other direction.

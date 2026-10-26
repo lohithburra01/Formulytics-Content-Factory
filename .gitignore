@@ -15,3 +15,5 @@ out/
 
 # Local Claude settings
 .claude/settings.local.json
+*.bin
+.venv*/
