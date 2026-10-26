@@ -1,0 +1,11 @@
+┌ Warning: Using WaterLily in serial (ie. JULIA_NUM_THREADS=1) is not recommended because it defaults to serial CPU execution.
+│ Use JULIA_NUM_THREADS=auto, or any number of threads greater than 1, to allow multi-threading in CPU backends.
+│ For a low-overhead single-threaded CPU only backend set: WaterLily.set_backend("SIMD")
+└ @ WaterLily C:\Users\91910\.julia\packages\WaterLily\V6kyE\src\WaterLily.jl:218
+GPU: NVIDIA GeForce RTX 4060 Laptop GPU
+n= 128 cells=  0.26M  5.4 ms/step  20.79 ns/cell/step  conv_time=1.50 L  Cd~-0.057 Cl~-0.830  [temp,W,mem] 62, 22.52 W, 1954 MiB
+n= 256 cells=  2.10M  17.8 ms/step  8.48 ns/cell/step  conv_time=0.75 L  Cd~-0.050 Cl~-0.573  [temp,W,mem] 75, 85.18 W, 2210 MiB
+n= 384 cells=  7.08M  59.3 ms/step  8.38 ns/cell/step  conv_time=0.50 L  Cd~-0.043 Cl~-0.408  [temp,W,mem] 78, 91.91 W, 3042 MiB
+n= 512 cells= 16.78M  138.1 ms/step  8.23 ns/cell/step  conv_time=0.37 L  Cd~-0.043 Cl~-0.320  [temp,W,mem] 82, 95.08 W, 4835 MiB
+
+[exited with code 0]
