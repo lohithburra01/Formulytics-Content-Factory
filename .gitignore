@@ -18,3 +18,4 @@ out/
 *.bin
 .venv*/
 spikes/hairpin/out/f_*.png
+spikes/hairpin/out_v*/f_*.png
