@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from hairpin_trails import FPS, WINDOW_S, RHO, WINGS, lap_data, g, op, pr, ps
 
 OUT = Path(__file__).parent / "out_v4"
+LAST = []                         # last frame's vortex segments + yaw rate, for streamline drawing
 TRAIL_S = 1.0
 SUBSTEPS = 6
 N_SPAN = 6                        # panels per half wing -> 13 strip boundaries per wing
@@ -152,6 +153,7 @@ def main():
         if old.any():
             zcheck.append(nodes[0][old][..., 2].mean() - WINGS[0][4])
         if tf >= t[ic] + WINDOW_S[0]:
+            LAST[:] = [A2, B2, G2, R2, (pose(tf)[2] - pose(tf - 0.01)[2]) / 0.01]
             t0 = time.time(); draw(f, P, (x0, y0), h, V, nodes, birth, tf, log); tt["draw"] += time.time() - t0
         if f % 30 == 0:
             print(f"frame {f}/{len(t_frames)}  wake nodes {sum(n_.shape[0] * n_.shape[1] for n_ in nodes)}  segs {len(A2)}  "

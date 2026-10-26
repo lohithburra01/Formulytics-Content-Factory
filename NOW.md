@@ -52,5 +52,17 @@ still: out/hairpin_entry_apex_exit.png. Known: slight jitter in front trails (vo
 (NACA0012 single element, -8 deg) -> downforce far below a real 2026 car; constant ride height; no straight mode; no
 corner speed difference across the span.
 
+## Hairpin v2-v6 (2026-10-26) - CURRENT = v6 STREAMLINES, user: "very very rough draft, far from usable"
+- spikes/hairpin/hairpin_v4.py = physics core: per frame Ptera steady VLM strip circulations (N_SPAN 6) -> ring-vortex
+  lattice in WORLD frame (streamwise + spanwise shed legs, bound at 1/4 chord, ground image), wake row shed every substep
+  (6/frame), numba Biot-Savart. Substep times end at frame time (bug fixed: rows were drawn ahead of the car).
+- v5 = same in the original Ptera plot style (dots) -> user REJECTED dots ("why are they points").
+- v6 (hairpin_v6.py) = streamlines of air velocity relative to the turning car frame (u_ind - V*fwd - yaw_rate x r),
+  seeds: rake ahead of each wing + rings round tips. Lines curve with the hairpin. Frames: spikes/hairpin/out_v6/
+  (v6_entry_apex_exit.png, austin_hairpin_v6.mp4). 0.9 s/frame (Ptera 34 ms, wake 0.2 s, streamlines+draw 0.66 s).
+- Not done / known: tip-vortex corkscrew real but ~10 cm wide -> invisible at 12 m view (an x10 tip close-up inset was
+  drafted, user stopped it - not applied); colour range too wide (all teal); front wake rises ~1.1 m in 1 s (check core
+  params); placeholder wings (NACA0012 -8 deg) -> downforce far too low; constant ride height; no straight mode.
+
 ## Next
-Design the PteraSoftware pipeline: 2026 front/rear wing geometry, driven per frame by the optimal-lap trace (speed, ride height, yaw).
+User reviews the v6 frames FIRST and gives feedback; only then read/judge frames. Then iterate the look toward usable.
