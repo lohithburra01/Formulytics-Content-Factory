@@ -13,3 +13,15 @@ __pycache__/
 # Blender autosave/backup files
 *.blend1
 *.blend2
+
+# Blender scenes (multi-GB; builder addon.blend > 2 GB breaks GitHub LFS)
+*.blend
+
+# Rendered videos
+*.mp4
+
+# Satellite imagery (Esri tiles, mosaics, review crops)
+OPTIMAL LAP SCRIPTS/cache/era2017/sat/
+
+# Separate project with its own git
+airflow_sim_on_track/
