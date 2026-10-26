@@ -44,5 +44,13 @@ WaterLily settled wake: 7.3M cells, 8 body lengths in 115 s -> spikes/waterlily/
 Reason: fast and light (CPU, no GPU heat). Known and accepted limits: wings only (no floor/diffuser/body/wheels),
 no separated wake, inviscid ground effect (no stall close to the ground). WaterLily spikes kept for reference only.
 
+## Austin hairpin spike (spikes/hairpin/, 2026-10-26) - plan WORKS
+Per frame: lap data (raceline + FP1 2026 speed aligned by speed shape, corr 0.68) -> Ptera steady VLM in ground effect
+(49 ms) -> 4 tip trails released in WORLD frame, moved by Biot-Savart + ground image, 4 substeps (44 ms) -> draw north-up.
+Trails follow the hairpin by themselves (no bending step). Video: spikes/hairpin/out/austin_hairpin_trails.mp4,
+still: out/hairpin_entry_apex_exit.png. Known: slight jitter in front trails (vortex 8 cm off ground), crude wings
+(NACA0012 single element, -8 deg) -> downforce far below a real 2026 car; constant ride height; no straight mode; no
+corner speed difference across the span.
+
 ## Next
 Design the PteraSoftware pipeline: 2026 front/rear wing geometry, driven per frame by the optimal-lap trace (speed, ride height, yaw).

@@ -17,3 +17,4 @@ out/
 .claude/settings.local.json
 *.bin
 .venv*/
+spikes/hairpin/out/f_*.png
