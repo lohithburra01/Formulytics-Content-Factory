@@ -72,6 +72,18 @@ corner speed difference across the span.
 - NOTE: hairpin_v6.py (and so v7) contains the x10 tip close-up inset + colour norm 0.85-1.15 that the user had stopped;
   they ARE drawn in v7 frames. Ask the user whether to keep or remove.
 
+## v8 (2026-10-27) - user confirmed v7 smooth, asked "fix all" (colour, wake rise, tip vortex, wings)
+- wings_v8.py: cambered inverted NACA-type sections (custom outline), tuned in Ptera to ClA front 0.92 / rear 0.72 m^2
+  (ASSUMED 2026 level; no published wing split found). Front-wing outer 0.35 m/side lifted 0.15 m (user's choice).
+  At 84 km/h: front 308 N, rear 242 N (were 201 / 51).
+- hairpin_v8.py: wake shed from real panel TE/quarter-chord points; diverging colour (blue slower / grey / red faster),
+  range frozen at first frame; x10 inset REMOVED (user ok); two slices across the car 1 m behind each wing (streamplot
+  of induced flow over streamwise vorticity) -> tip vortices clearly visible. 1.8 s/frame, 6 min render. out_v8/.
+- WAKE RISE NOT FIXED. Diagnosis (front wing only, scratch runs): ground image pushes the downforce tip vortices
+  INWARD (tip spacing 1.90 -> 0.68 m in 0.1 s); close pair then self-lifts fast. Without image: spacing ~1.5 m, rise
+  ~0.9 m/s = textbook Gamma/(2 pi b). Rear-wing upwash ~doubles it. Raised tips did NOT help (0.5 s: spacing 0.17 m,
+  rise +2.2 m). Missing physics: front tyres behind the tips, endplates, viscous ground secondary vorticity (rebound).
+- Diverging colour is dominated by the yaw-rate term in corners (inside faster) - physically right, note for the user.
+
 ## Next
-User watches v7 for smoothness. Then the remaining look issues: colour range, front wake rising ~1.2 m (core params),
-tip-vortex visibility, inset keep/remove, placeholder wings.
+User decides wake-rise remedy (options: no ground image for wake advection; damped image / rebound model; accept).
