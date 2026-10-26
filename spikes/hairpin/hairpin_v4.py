@@ -100,7 +100,7 @@ def main():
         t0 = time.time(); sheet = wing_sheet(float(pose(tf)[3])); tt["ptera"] += time.time() - t0
         t0 = time.time()
         for sub in range(SUBSTEPS):
-            ts = tf + sub * dts
+            ts = tf - (SUBSTEPS - 1 - sub) * dts      # substeps end exactly at the frame time
             x0, y0, h, _ = pose(ts)
             fwd, left = np.array([np.cos(h), np.sin(h)]), np.array([-np.sin(h), np.cos(h)])
             segA, segB, segG, segR = [], [], [], []
@@ -160,8 +160,8 @@ def main():
     print("per frame: " + "  ".join(f"{k_} {1e3 * x_ / n:.0f} ms" for k_, x_ in tt.items()))
     print(f"front-wing wake older than 0.5 s sits {np.mean(zcheck) * 100:+.1f} cm vs the wing height (+ = rises, right for downforce)")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", str(OUT / "f_%04d.png"),
-                    "-pix_fmt", "yuv420p", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", str(OUT / "austin_hairpin_v4.mp4")], check=True)
-    print("saved", OUT / "austin_hairpin_v4.mp4")
+                    "-pix_fmt", "yuv420p", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", str(OUT / (OUT.name.replace("out_", "austin_hairpin_") + ".mp4"))], check=True)
+    print("saved", OUT / (OUT.name.replace("out_", "austin_hairpin_") + ".mp4"))
 
 
 _first = [None]
