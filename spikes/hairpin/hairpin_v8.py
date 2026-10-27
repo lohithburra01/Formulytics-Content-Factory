@@ -34,6 +34,7 @@ OUT = Path(__file__).parent / "out_v8"
 SLICE_BEHIND = 1.0                         # m behind each wing's trailing edge
 DIV = LinearSegmentedColormap.from_list("div", ["#2b5fa8", "#9a9a9a", "#c0392b"])
 _state = {"first": None, "norm": None, "wnorm": None}
+EXTRA = None                               # optional hook(top, side, slices, cos h, sin h, sheet) to draw more shapes
 
 
 def wing_sheet(V):
@@ -210,12 +211,14 @@ def draw(f, P, c0, h, V, w, sheet, segs, log):
         ax_.streamplot(lat, zz, vy, vz, color="#333", linewidth=0.5, density=1.3, arrowsize=0.6, zorder=2)
         ax_.axhline(0, color="k", lw=2)
         ax_.set_xlim(1.6, -1.6); ax_.set_ylim(0, 1.4); ax_.set_aspect("equal")    # looking forward from behind: left on the left
-        ax_.set_title(f"slice {SLICE_BEHIND:.0f} m behind {name} wing, looking forward", fontsize=9)
+        ax_.set_title(f"slice {SLICE_BEHIND:.1f} m behind {name} wing, looking forward", fontsize=9)
         ax_.tick_params(labelsize=7); ax_.set_xlabel("m, + = car left", fontsize=7)
     fig.colorbar(pm, ax=sl, shrink=0.8, pad=0.01, label="swirl (streamwise vorticity, 1/s)")
     b.axhline(0, color="k", lw=2); b.text(-3.8, 0.04, "ground", fontsize=8)
     b.set_xlim(-4, 12); b.set_ylim(-0.1, 2.0); b.set_aspect("equal")
     b.set_title("Side view (distance behind the car, height above ground)", fontsize=10); b.set_xlabel("m behind car centre")
+    if EXTRA:
+        EXTRA(a, b, sl, c, s_, sheet)
     fig.savefig(OUT / f"f_{f - _state['first']:04d}.png", dpi=100); plt.close(fig)
 
 

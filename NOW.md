@@ -85,5 +85,17 @@ corner speed difference across the span.
   rise +2.2 m). Missing physics: front tyres behind the tips, endplates, viscous ground secondary vorticity (rebound).
 - Diverging colour is dominated by the yaw-rate term in corners (inside faster) - physically right, note for the user.
 
+## v9 (2026-10-27) - CURRENT: endplates + tyres (user asked "can we not have endplates and tyres?")
+- hairpin_v9.py (switches ENDPLATES, TYRES, REAR): endplates = vertical Ptera plates 2 cm outboard of the front-wing
+  tips (touching -> singular tip strip). Gamma per strip from KJ vector form F = rho Gamma V x l (matches v8 on flat wing).
+  Tyres = lines of 3D doublets (2 pi U R^2 per length) + ground image, moving with the car; wake nodes pushed out of
+  tyres; streamlines stop at a tyre. Tyre flow is in wake motion, streamlines and slices. No tyre wake, no wing-tyre
+  coupling in loads. Sizes ASSUMED: front axle x 1.65, |y| 0.80, w 0.30; rear x -1.75, |y| 0.78, w 0.40; R 0.36.
+- Test (front wing only, 0.5 s, vorticity centres): base 0.34 m apart / 1.38 m high; tyres 0.26/0.65; endplates
+  0.54/0.62; both 1.06/0.40. With rear wing: base 2.42 m high -> both 0.97 m.
+- Full v9 render: height at 0.5 s median 0.86 m (p90 1.20), spacing median 0.34 m (p10 0.11) -> collapse still
+  happens often, mostly near the apex. Colour fixed 0.75-1.25 (tyres give 0..2x). Slices 1.5 m behind each wing.
+  2.2 s/frame, 8 min render. out_v9/austin_hairpin_v9.mp4. Wake looks less regular than v8 (user to judge smoothness).
+
 ## Next
-User decides wake-rise remedy (options: no ground image for wake advection; damped image / rebound model; accept).
+User watches v9. Remaining physics gap: no viscous ground layer (rebound), no tyre wake, no body/floor.

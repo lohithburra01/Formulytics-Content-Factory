@@ -14,6 +14,7 @@ from hairpin_trails import g
 WINGS = [("front", 2.75, 0.95, 0.45, 0.10, -1.5, -0.08, 0.45),
          ("rear", -2.45, 0.50, 0.55, 0.80, -20.0, -0.12, 0.50)]
 SECTIONS = {"front": [(0.60, 0.0), (0.35, 0.15)], "rear": [(0.50, 0.0)]}
+SPACING = "cosine"                 # spanwise panel spacing per section
 TARGET = {"front": 0.90, "rear": 0.75}
 
 
@@ -44,7 +45,7 @@ def install(v4):
         n_sp = [max(2, round(v4.N_SPAN * dy / half)) for dy, _ in SECTIONS[name]] + [None]
         xs = [g.wing_cross_section.WingCrossSection(
             airfoil=af, num_spanwise_panels=n, chord=chord, Lp_Wcsp_Lpp=(0.0, dy, dz),
-            control_surface_symmetry_type="symmetric", spanwise_spacing="cosine" if n else None) for (dy, dz), n in zip(steps, n_sp)]
+            control_surface_symmetry_type="symmetric", spanwise_spacing=SPACING if n else None) for (dy, dz), n in zip(steps, n_sp)]
         return g.wing.Wing(wing_cross_sections=xs, name=name, Ler_Gs_Cgs=(-x, 0.0, z),
                            angles_Gs_to_Wn_ixyz=(0.0, pitch, 0.0), symmetric=True, symmetryNormal_G=(0.0, 1.0, 0.0),
                            symmetryPoint_G_Cg=(0.0, 0.0, 0.0), num_chordwise_panels=5, chordwise_spacing="uniform")
