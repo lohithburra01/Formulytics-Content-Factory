@@ -97,5 +97,14 @@ corner speed difference across the span.
   happens often, mostly near the apex. Colour fixed 0.75-1.25 (tyres give 0..2x). Slices 1.5 m behind each wing.
   2.2 s/frame, 8 min render. out_v9/austin_hairpin_v9.mp4. Wake looks less regular than v8 (user to judge smoothness).
 
+- JITTER FIX (user: "the jitter is back"): measured streamline 2nd frame difference in car axes (scratch jit3.py).
+  v8-like 4.1 cm/frame; v9 17.6 (endplates x3, tyres x3). Not streamline step (ds/2 no change), not wake substeps
+  (x2 = worse -> sheet instability), push-out minor. Causes: (1) thin cores let close sheets churn -> RC0/NU_T
+  0.04/0.004 -> 0.12/0.012 in v9 (6.3 cm); (2) lines just ahead of a front tyre hit it in one frame, slip past next
+  (18 cm vs 1.7) -> lines seeded within 0.10 m of a front tyre's width now always end just ahead of it. Result 1.4 cm/frame
+  (p95 5.4). Front tip-ring lines are now short (end at the tyres); slices show the tip vortices.
+- Re-rendered v9: front wake height at 0.5 s median 0.38 m (p90 0.73). Core 0.12 m is a smoothing choice, real tip
+  cores are a few cm.
+
 ## Next
 User watches v9. Remaining physics gap: no viscous ground layer (rebound), no tyre wake, no body/floor.

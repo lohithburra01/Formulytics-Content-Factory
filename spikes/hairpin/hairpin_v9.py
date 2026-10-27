@@ -33,6 +33,10 @@ EP_GAP, EP_BOTTOM, EP_HEIGHT = 0.02, 0.03, 0.30          # m
 # tyres: x of axle ahead of car centre, |y| of tyre centre, width, radius (m)
 TYRE_SET = [(1.65, 0.80, 0.30, 0.36), (-1.75, 0.78, 0.40, 0.36)]
 TYRE_PTS = 7
+SHADOW_MARGIN = 0.10             # m each side of a front tyre: seeds there end at the tyre (see trace)
+# vortex core 3x v4 (0.04 m, 0.004 m^2/s): thin cores let the many close wake sheets (endplates, tyres) wrinkle
+# and churn differently every frame -> streamline jitter 17.6 -> 6.3 cm/frame at 0.12 m (measured, 2026-10-27)
+v4.RC0, v4.NU_T = 0.12, 0.012
 on_frame = None                    # hook(tf, nodes, cg, birth) for diagnostics
 draw = v8.draw
 v8.OUT = OUT
@@ -142,6 +146,16 @@ def trace(seeds, A, B, G, rc, cx, cy, V, fx, fy, w, ds, nsteps):
     if TYRES:
         lx = (out[..., 0] - cx) * fx + (out[..., 1] - cy) * fy
         ly = -(out[..., 0] - cx) * fy + (out[..., 1] - cy) * fx
+        # lines seeded in line with a front tyre always end just ahead of it: otherwise they hit it in one frame and
+        # slip past in the next, and their whole downstream part jumps (measured: 18 cm/frame vs 1.7 for the rest)
+        xa, ya, wd, R = TYRE_SET[0]
+        shadow = np.zeros(len(out), bool)
+        for sd in (1, -1):
+            shadow |= np.abs(ly[:, 0] - sd * ya) < wd / 2 + SHADOW_MARGIN
+        for i in np.nonzero(shadow)[0]:
+            j = np.argmax(lx[i] < xa + R + 0.03)
+            if j > 0:
+                out[i, j:] = out[i, j - 1]
         inside = np.zeros(lx.shape, bool)
         for xa, ya, wd, R in TYRE_SET:
             for sd in (1, -1):
