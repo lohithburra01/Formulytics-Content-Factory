@@ -1,0 +1,10 @@
+[telemetry] 308 samples, lap_time=74.759s, v=[72,343] km/h, soc=no, mode=yes
+[telemetry] 2304 samples, lap_time=77.265s, v=[65,333] km/h, soc=yes, mode=yes
+  frame 300/2378
+  frame 600/2378
+  frame 900/2378
+  frame 1200/2378
+  frame 1500/2378
+  frame 1800/2378
+  frame 2100/2378
+[dual-v3] saved -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\mexico_2018_vs_2026\mexico_2018_vs_2026.mp4  (2378 frames)
