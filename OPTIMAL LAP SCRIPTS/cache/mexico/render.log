@@ -1,0 +1,50 @@
+[elev] 700 pts, 2226.6-2229.1 m ASL (span 2.5 m) — openf1 location.z only (altitude), 2025 Q pole lap NOR; distance from car data
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2304 samples, lap_time=76.758s, v=[66,335] km/h, soc=yes, mode=yes
+[kerbs] outer=698 corner zones, inner=813 corner zones
+[corridor.iqp] widths: right=[4.53,5.60]  left=[4.53,5.60]
+[raceline] loaded precomputed: 2120 pts, track_length=4242 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-787,666] Y[-575,471]
+[diag] visual   X[-794,674] Y[-586,477]
+[render] 2303 frames at 30fps (76.76s)
+  frame 60/2303
+  frame 120/2303
+  frame 180/2303
+  frame 240/2303
+  frame 300/2303
+  frame 360/2303
+  frame 420/2303
+  frame 480/2303
+  frame 540/2303
+  frame 600/2303
+  frame 660/2303
+  frame 720/2303
+  frame 780/2303
+  frame 840/2303
+  frame 900/2303
+  frame 960/2303
+  frame 1020/2303
+  frame 1080/2303
+  frame 1140/2303
+  frame 1200/2303
+  frame 1260/2303
+  frame 1320/2303
+  frame 1380/2303
+  frame 1440/2303
+  frame 1500/2303
+  frame 1560/2303
+  frame 1620/2303
+  frame 1680/2303
+  frame 1740/2303
+  frame 1800/2303
+  frame 1860/2303
+  frame 1920/2303
+  frame 1980/2303
+  frame 2040/2303
+  frame 2100/2303
+  frame 2160/2303
+  frame 2220/2303
+  frame 2280/2303
+  frame 2303/2303
+[render] saved -> mexico_city_grand_prix_2026_optimal_lap.mp4

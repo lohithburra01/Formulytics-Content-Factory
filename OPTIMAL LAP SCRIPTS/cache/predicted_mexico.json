@@ -1,0 +1,71 @@
+{
+ "track": "mexico",
+ "rho": 0.9824,
+ "t25_s": 75.84,
+ "lap_band_s": [
+  76.447,
+  80.068
+ ],
+ "vtop_target_kmh": 353.4,
+ "corners": [
+  {
+   "s_m": 1196.9,
+   "s_frac": 0.2806,
+   "v25_kmh": 107.0,
+   "v26_target_kmh": 102.3
+  },
+  {
+   "s_m": 1263.4,
+   "s_frac": 0.2962,
+   "v25_kmh": 112.0,
+   "v26_target_kmh": 106.9
+  },
+  {
+   "s_m": 2086.5,
+   "s_frac": 0.48917,
+   "v25_kmh": 74.0,
+   "v26_target_kmh": 71.6
+  },
+  {
+   "s_m": 2226.9,
+   "s_frac": 0.52208,
+   "v25_kmh": 85.0,
+   "v26_target_kmh": 82.0
+  },
+  {
+   "s_m": 2568.1,
+   "s_frac": 0.60207,
+   "v25_kmh": 194.0,
+   "v26_target_kmh": 180.0
+  },
+  {
+   "s_m": 2929.2,
+   "s_frac": 0.68673,
+   "v25_kmh": 186.0,
+   "v26_target_kmh": 173.0
+  },
+  {
+   "s_m": 3601.7,
+   "s_frac": 0.8444,
+   "v25_kmh": 136.0,
+   "v26_target_kmh": 128.5
+  },
+  {
+   "s_m": 3769.3,
+   "s_frac": 0.8837,
+   "v25_kmh": 68.0,
+   "v26_target_kmh": 65.8
+  },
+  {
+   "s_m": 3949.4,
+   "s_frac": 0.92593,
+   "v25_kmh": 105.0,
+   "v26_target_kmh": 100.5
+  }
+ ],
+ "cda0": 0.75,
+ "cl0": 4.6,
+ "ref_used": "2025_q",
+ "transfer": "transfer_2026.json",
+ "warnings": []
+}

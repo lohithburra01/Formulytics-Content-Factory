@@ -1,0 +1,7 @@
+[autofit] mexico it0: cda=0.750 cl=4.600 lap=76.67s vtop=334.6 (f1=-14.6) tier[v25>170] f2=-4.1
+[autofit] mexico it1: cda=0.660 cl=5.000 lap=75.46s vtop=344.2 (f1=-5.0) tier[v25>170] f2=+1.8  RAIL-VIOLATION
+[autofit] mexico it2: cda=0.613 cl=4.850 lap=75.57s vtop=349.3 (f1=+0.1) tier[v25>170] f2=-0.5  RAIL-VIOLATION
+[autofit] mexico it3: cda=0.614 cl=4.700 lap=75.88s vtop=349.1 (f1=-0.1) tier[v25>170] f2=-2.7  RAIL-VIOLATION
+[autofit] mexico it4: cda=0.614 cl=4.550 lap=76.20s vtop=349.1 (f1=-0.1) tier[v25>170] f2=-4.8  RAIL-VIOLATION
+[autofit] mexico: converged=False cda=0.750 cl=4.600 lap=76.67s  low-speed residual median=+2.5 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_mexico.json

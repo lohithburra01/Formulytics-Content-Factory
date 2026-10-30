@@ -1,0 +1,47 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.750 CL_CORNER=4.600 RHO=0.9824
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.51,5.57] l=[4.51,5.57]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=4.395 mean|a|=2.685 (24.25s)
+  iter 1: max|a|=2.460 mean|a|=1.475 (21.27s)
+  iter 2: max|a|=1.554 mean|a|=0.781 (22.42s)
+  iter 3: max|a|=0.916 mean|a|=0.414 (20.60s)
+  iter 4: max|a|=0.640 mean|a|=0.235 (19.54s)
+  iter 5: max|a|=0.513 mean|a|=0.147 (21.72s)
+  iter 6: max|a|=0.419 mean|a|=0.100 (20.94s)
+  iter 7: max|a|=0.371 mean|a|=0.075 (22.94s)
+  iter 8: max|a|=0.348 mean|a|=0.061 (19.68s)
+  iter 9: max|a|=0.337 mean|a|=0.053 (19.73s)
+  iter 10: max|a|=0.328 mean|a|=0.048 (19.87s)
+  iter 11: max|a|=0.320 mean|a|=0.044 (19.62s)
+  iter 12: max|a|=0.311 mean|a|=0.042 (19.98s)
+  iter 13: max|a|=0.301 mean|a|=0.040 (20.17s)
+  iter 14: max|a|=0.291 mean|a|=0.038 (22.54s)
+  iter 15: max|a|=0.282 mean|a|=0.037 (22.35s)
+  iter 16: max|a|=0.272 mean|a|=0.036 (22.20s)
+  iter 17: max|a|=0.262 mean|a|=0.034 (20.86s)
+  iter 18: max|a|=0.253 mean|a|=0.033 (21.96s)
+  iter 19: max|a|=0.244 mean|a|=0.032 (22.64s)
+  iter 20: max|a|=0.235 mean|a|=0.030 (23.79s)
+  iter 21: max|a|=0.227 mean|a|=0.029 (23.88s)
+  iter 22: max|a|=0.218 mean|a|=0.028 (24.50s)
+  iter 23: max|a|=0.210 mean|a|=0.027 (25.28s)
+  iter 24: max|a|=0.202 mean|a|=0.026 (19.50s)
+  iter 25: max|a|=0.194 mean|a|=0.024 (18.72s)
+  converged at iter 25
+[iqp] 2113 pts, 4228 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=4.79m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 470/800 straight stations
+[sim] refinement slack: max=2.14e-03 (582/800 stations relaxed)
+[sim] adaptive de-wobble: 481/2118 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0559 (IQP seed) → 0.0394 (refined)
+[sim] raceline: 2118 pts, 4236 m, |κ|max=0.0394
+[sim] S/F line at raceline idx 1859/2118 (frac 87.8%, |κ|=0.0009) — reference_2025_mexico_q.csv x-corr peak=1055
+[sim] wrote raceline -> cache/mexico/dir_rev.json
+  closure iter 0: v0=83.9 vN=83.8 d=0.08 T_lap=70.202s
+  closure iter 1: v0=83.9 vN=83.8 d=0.08 T_lap=69.298s
+  closure converged at iter 1
+[sim] lap: 69.298s (bang-bang) -> 69.779s (jerk-limited), +0.480s for realism
+[sim] wrote 2094 rows -> cache/mexico/dir_rev.csv
+[sanity] T_lap=69.78s  v=[89,347] km/h  superclip frames=147  gain_med=21.3  drop_med=29.1 km/h/s

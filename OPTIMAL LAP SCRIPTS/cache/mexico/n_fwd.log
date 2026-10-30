@@ -1,0 +1,42 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.705 CL_CORNER=4.600 RHO=0.9824
+[sim] MU_LONG override 2.100
+[sim] ICE derate 0.035: ICE 386 kW, superclip net 321 kW
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.53,5.60] l=[4.53,5.60]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=4.445 mean|a|=2.642 (23.78s)
+  iter 1: max|a|=3.116 mean|a|=1.423 (25.86s)
+  iter 2: max|a|=2.024 mean|a|=0.825 (26.09s)
+  iter 3: max|a|=1.140 mean|a|=0.429 (25.65s)
+  iter 4: max|a|=0.730 mean|a|=0.245 (22.41s)
+  iter 5: max|a|=0.365 mean|a|=0.142 (24.99s)
+  iter 6: max|a|=0.310 mean|a|=0.092 (23.85s)
+  iter 7: max|a|=0.292 mean|a|=0.066 (24.83s)
+  iter 8: max|a|=0.288 mean|a|=0.051 (22.68s)
+  iter 9: max|a|=0.283 mean|a|=0.042 (23.59s)
+  iter 10: max|a|=0.275 mean|a|=0.038 (22.21s)
+  iter 11: max|a|=0.265 mean|a|=0.034 (22.27s)
+  iter 12: max|a|=0.254 mean|a|=0.032 (24.52s)
+  iter 13: max|a|=0.243 mean|a|=0.030 (24.08s)
+  iter 14: max|a|=0.233 mean|a|=0.028 (21.70s)
+  iter 15: max|a|=0.222 mean|a|=0.027 (22.98s)
+  iter 16: max|a|=0.212 mean|a|=0.026 (22.62s)
+  iter 17: max|a|=0.202 mean|a|=0.024 (22.43s)
+  iter 18: max|a|=0.193 mean|a|=0.023 (20.77s)
+  converged at iter 18
+[iqp] 2125 pts, 4250 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=5.15m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 552/800 straight stations
+[sim] refinement slack: max=3.81e-03 (587/800 stations relaxed)
+[sim] adaptive de-wobble: 455/2129 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.1605 (IQP seed) → 0.0692 (refined)
+[sim] raceline: 2129 pts, 4258 m, |κ|max=0.0692
+[sim] S/F line at raceline idx 1878/2129 (frac 88.2%, |κ|=0.0005) — reference_2025_mexico_q.csv x-corr peak=1664
+[sim] wrote raceline -> cache/mexico/n_fwd.json
+  closure iter 0: v0=77.6 vN=77.5 d=0.15 T_lap=81.819s
+  closure iter 1: v0=77.6 vN=77.5 d=0.15 T_lap=80.702s
+  closure converged at iter 1
+[sim] lap: 80.702s (bang-bang) -> 81.420s (jerk-limited), +0.719s for realism
+[sim] wrote 2443 rows -> cache/mexico/n_fwd.csv
+[sanity] T_lap=81.42s  v=[67,307] km/h  superclip frames=497  gain_med=29.7  drop_med=38.4 km/h/s

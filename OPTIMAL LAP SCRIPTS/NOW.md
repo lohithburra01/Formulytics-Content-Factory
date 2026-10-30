@@ -1,3 +1,10 @@
+# >>> MEXICO CITY 2026 (2026-10-30, pre-FP1) <<<
+- Video: mexico_city_grand_prix_2026_optimal_lap.mp4 (make_mexico_2026_lap.bat), zoom 28, elevation z-only. Label 1:17.265 (user), sim 76.758.
+- Track: cache/mexico/Autódromo_Hermanos_Rodríguez_2015.svg (parse copy mexico_2015_parse.svg), 4304 m, 13 m wide, R>=9. Line user-approved.
+- Car: cda 0.75 cl 4.6 rho 0.9824 + env ICE_DERATE 0.035, SUPERCLIP_MEASURED=1, MU_LONG 2.1, GRIP_MAP (cache/mexico/grip_map_fit.json).
+- Review pics: cache/mexico/line_v2.svg, speed_v3.png, frame_preview.png. Tools: cache/mexico/_superclip_study.py, _brake_compare.py, _fit_grip_map.py, _review_plots.py.
+- Next (optional): FP1 tonight 18:30 UTC -> verify only (clip on main straight, lap gap); user hypothesis 1.5-2 s slower than 2025.
+
 # >>> AUSTIN LAP COMPARISON (2026-10-25) <<<
 - Recipe F1_Pipeline_Assets/tracks/united_states_grand_prix_lapcomp.json (+ _lapcomp_outline/_mirror_outline/_raceline.json); work in LAP COMPARISON/austin/.
 - User: old Austin lines had 2 'sharp forced pushes' to the apex (3.69 km, 4.20 km). ROOT CAUSE: optimiser offsets the line along the BASE

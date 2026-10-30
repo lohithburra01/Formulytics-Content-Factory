@@ -851,6 +851,12 @@ KEY_ACCEL_WINDOW_S    = 7.0
 #   — it no longer holds all the way to the brake zone. Canada is round 5, so
 #   the post-Miami rules apply. Source: FIA / motorsport.com, Apr 2026.
 SUPERCLIP_MAX_S       = 3.0
+# Opt-in measured superclip (env SUPERCLIP_MEASURED=1; unset = the 3 s rule above,
+# every shipped track unchanged). Fit: cache/mexico/superclip_study.csv.
+SUPERCLIP_MEASURED    = os.environ.get("SUPERCLIP_MEASURED", "") == "1"
+CLIP_S_PER_M          = 0.0096
+CLIP_S_OFFSET         = -4.05
+CLIP_DECEL_MS2        = 4.6 / 3.6      # median real fall rate 4.6 km/h/s
 
 # Initial battery and safety caps
 SOC_INIT              = 1.0
@@ -1148,6 +1154,22 @@ def _superclip_mask(v_profile, braking, ds, superclip_speed, max_s):
         while k < n and not braking[(start + k) % n]:
             zone.append((start + k) % n)
             k += 1
+        if SUPERCLIP_MEASURED:
+            # Measured 2026 shape (cache/mexico/_superclip_study.py, 19 real Q/FP1
+            # straights >= 600 m): the car peaks and then FALLS at full throttle for
+            # 0.0096*L - 4.05 s (r 0.88) before the brake point. No speed threshold.
+            # Real clipping starts at the straight's peak (study: clip_start_v =
+            # v_peak), so it may not reach back into the still-accelerating part.
+            zl = sum(ds[z] for z in zone)
+            dur = min(16.0, max(0.0, CLIP_S_PER_M * zl + CLIP_S_OFFSET))
+            v_top = max(v_profile[z] for z in zone)
+            acc = 0.0
+            for z in reversed(zone):
+                if acc >= dur or v_profile[z] < SUPERCLIP_SPEED_FRAC * v_top:
+                    break
+                mask[z] = True
+                acc += dt[z]
+            continue
         if max(v_profile[z] for z in zone) < superclip_speed:
             continue                       # short straight — no superclip here
         # Superclip begins once the car has CLIMBED to >= superclip_speed (i.e.
@@ -1324,6 +1346,8 @@ def forward_pass_energy_aware(v_grip, v_brake, kappa, arc, track_length_m,
         a_long_power = P_total / (MASS_KG * max(v[i], V_FLOOR_MS))
         a_drag = drag_force(v[i], mode_here) / MASS_KG
         a_long = min(a_long_grip, a_long_power, A_ACC_LONG_MAX) - a_drag
+        if SUPERCLIP_MEASURED and chosen == "SUPERCLIP":
+            a_long = -CLIP_DECEL_MS2       # measured real fall rate, not a power guess
 
         v_next = math.sqrt(max(V_FLOOR_MS ** 2,
                                v[i] * v[i] + 2.0 * a_long * ds[i]))
@@ -1374,6 +1398,18 @@ def simulate_lap(raceline, arc, kappa, track_length_m, max_iters=8, tol_v=1.0):
     kappa_smooth = median_filter(kappa_grip, size=5, mode="wrap")
     v_grip = np.array([v_grip_static(k, _bank_at(i))
                        for i, k in enumerate(kappa_smooth)])
+    # Per-corner grip map (env GRIP_MAP="s0:s1:f;..." metres from S/F; unset = no
+    # change). Scales the grip-limited speed in [s0, s1] by f with 15 m cosine
+    # ramps - the shape-fit method: corner minima follow the reference both ways.
+    if os.environ.get("GRIP_MAP"):
+        gm = np.ones(len(arc))
+        for item in os.environ["GRIP_MAP"].split(";"):
+            s0, s1, fz = (float(x) for x in item.split(":"))
+            w = np.clip(np.minimum(arc - s0 + 15.0, s1 + 15.0 - arc) / 15.0, 0.0, 1.0)
+            w = 0.5 - 0.5 * np.cos(np.pi * w)
+            gm *= 1.0 + (fz - 1.0) * w
+        v_grip = v_grip * gm
+        print(f"[sim] GRIP_MAP applied: {os.environ['GRIP_MAP']}")
 
     ds = np.diff(np.concatenate([arc, [track_length_m]]))
     v0 = 60.0   # initial guess, refined by closure
@@ -1649,6 +1685,22 @@ def _apply_car_overrides(args):
     g["CL_CORNER_M2"] = float(args.cl)
     g["RHO"] = float(args.rho)
     g["WARM_RHO"] = float(args.rho)
+    # Altitude ICE derate (env ICE_DERATE, fraction; unset = 0 = every other track
+    # unchanged). 2026 has no MGU-H to hold boost at altitude, so the exhaust-only
+    # turbo needs a higher pressure ratio and costs ICE power. The MGU-K is
+    # electrical and unaffected; the superclip harvest share stays the same.
+    # Braking grip override (env MU_LONG; unset = the shipped constant), fitted per
+    # track to the reference brake zones (cache/mexico/_brake_compare.py).
+    if os.environ.get("MU_LONG"):
+        g["MU_LONG"] = float(os.environ["MU_LONG"])
+        print(f"[sim] MU_LONG override {g['MU_LONG']:.3f}")
+    derate = float(os.environ.get("ICE_DERATE", "0") or 0.0)
+    if derate:
+        loss = g["P_ICE_MAX_W"] * derate
+        g["P_ICE_MAX_W"] -= loss
+        g["P_SUPERCLIP_NET_W"] -= loss
+        print(f"[sim] ICE derate {derate:.3f}: ICE {g['P_ICE_MAX_W']/1e3:.0f} kW, "
+              f"superclip net {g['P_SUPERCLIP_NET_W']/1e3:.0f} kW")
 
 
 def _arc_kappa_closed(raceline):

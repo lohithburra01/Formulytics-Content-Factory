@@ -1,0 +1,50 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.705 CL_CORNER=4.600 RHO=0.9824
+[sim] ICE derate 0.035: ICE 386 kW, superclip net 321 kW
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.43,5.56] l=[4.43,5.56]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=4.398 mean|a|=2.689 (8.42s)
+  iter 1: max|a|=2.490 mean|a|=1.459 (8.91s)
+  iter 2: max|a|=1.373 mean|a|=0.773 (8.47s)
+  iter 3: max|a|=0.938 mean|a|=0.418 (8.13s)
+  iter 4: max|a|=0.626 mean|a|=0.241 (8.39s)
+  iter 5: max|a|=0.464 mean|a|=0.150 (9.17s)
+  iter 6: max|a|=0.377 mean|a|=0.102 (8.10s)
+  iter 7: max|a|=0.342 mean|a|=0.078 (9.10s)
+  iter 8: max|a|=0.339 mean|a|=0.064 (9.24s)
+  iter 9: max|a|=0.343 mean|a|=0.056 (9.00s)
+  iter 10: max|a|=0.343 mean|a|=0.052 (8.26s)
+  iter 11: max|a|=0.340 mean|a|=0.048 (9.49s)
+  iter 12: max|a|=0.333 mean|a|=0.045 (9.54s)
+  iter 13: max|a|=0.325 mean|a|=0.043 (13.74s)
+  iter 14: max|a|=0.315 mean|a|=0.042 (13.79s)
+  iter 15: max|a|=0.305 mean|a|=0.040 (14.30s)
+  iter 16: max|a|=0.296 mean|a|=0.038 (14.89s)
+  iter 17: max|a|=0.286 mean|a|=0.037 (13.95s)
+  iter 18: max|a|=0.275 mean|a|=0.035 (14.63s)
+  iter 19: max|a|=0.265 mean|a|=0.034 (14.31s)
+  iter 20: max|a|=0.255 mean|a|=0.032 (14.53s)
+  iter 21: max|a|=0.246 mean|a|=0.031 (14.40s)
+  iter 22: max|a|=0.236 mean|a|=0.030 (14.11s)
+  iter 23: max|a|=0.227 mean|a|=0.028 (14.23s)
+  iter 24: max|a|=0.218 mean|a|=0.027 (13.89s)
+  iter 25: max|a|=0.209 mean|a|=0.026 (13.93s)
+  iter 26: max|a|=0.201 mean|a|=0.024 (14.26s)
+  iter 27: max|a|=0.192 mean|a|=0.023 (13.83s)
+  converged at iter 27
+[iqp] 2114 pts, 4229 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=4.80m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 463/800 straight stations
+[sim] refinement slack: max=2.30e-03 (566/800 stations relaxed)
+[sim] adaptive de-wobble: 475/2116 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0890 (IQP seed) → 0.0657 (refined)
+[sim] raceline: 2116 pts, 4234 m, |κ|max=0.0657
+[sim] S/F line at raceline idx 1855/2116 (frac 87.6%, |κ|=0.0007) — reference_2025_mexico_q.csv x-corr peak=1040
+[sim] wrote raceline -> cache/mexico/run1_rl.json
+  closure iter 0: v0=83.4 vN=83.3 d=0.09 T_lap=71.733s
+  closure iter 1: v0=83.4 vN=83.3 d=0.09 T_lap=70.607s
+  closure converged at iter 1
+[sim] lap: 70.607s (bang-bang) -> 71.106s (jerk-limited), +0.499s for realism
+[sim] wrote 2134 rows -> cache/mexico/run1.csv
+[sanity] T_lap=71.11s  v=[88,330] km/h  superclip frames=393  gain_med=22.5  drop_med=30.2 km/h/s

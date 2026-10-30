@@ -1,0 +1,7 @@
+[autofit] mexico it0: cda=0.750 cl=4.600 lap=69.50s vtop=343.6 (f1=-5.6) tier[v25>170] f2=-26.7
+[autofit] mexico it1: cda=0.714 cl=5.000 lap=68.38s vtop=347.5 (f1=-1.7) tier[v25>170] f2=-23.2
+[autofit] mexico it2: cda=0.698 cl=5.800 lap=66.50s vtop=349.8 (f1=+0.6) tier[v25>170] f2=-15.6
+[autofit] mexico it3: cda=0.702 cl=6.500 lap=65.10s vtop=350.0 (f1=+0.8) tier[v25>170] f2=-8.8
+[autofit] mexico it4: cda=0.689 cl=6.500 lap=65.02s vtop=351.5 (f1=+2.3) tier[v25>170] f2=-8.7
+[autofit] mexico: converged=False cda=0.702 cl=6.500 lap=65.10s  low-speed residual median=+23.6 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_mexico.json

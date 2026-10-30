@@ -1,0 +1,14 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.705 CL_CORNER=4.600 RHO=0.9824
+[sim] MU_LONG override 1.700
+[sim] ICE derate 0.035: ICE 386 kW, superclip net 321 kW
+[sim] outline loaded: outer=2000 inner=2000
+[sim] raceline supplied (cache/mexico/run1_rl.json); optimiser and S/F anchoring skipped - the file is already S/F-aligned
+[sim] raceline: 2116 pts, 4233 m, |κ|max=0.0657
+[sim] wrote raceline -> cache/mexico/mu1.7.json
+  closure iter 0: v0=83.3 vN=83.2 d=0.07 T_lap=71.285s
+  closure iter 1: v0=83.3 vN=83.2 d=0.07 T_lap=70.151s
+  closure converged at iter 1
+[sim] lap: 70.151s (bang-bang) -> 70.685s (jerk-limited), +0.534s for realism
+[sim] wrote 2121 rows -> cache/mexico/mu1.7.csv
+[sanity] T_lap=70.69s  v=[88,330] km/h  superclip frames=412  gain_med=22.6  drop_med=31.7 km/h/s

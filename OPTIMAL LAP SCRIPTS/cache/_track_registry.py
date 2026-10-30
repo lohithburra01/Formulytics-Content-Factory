@@ -150,6 +150,17 @@ TRACKS: dict[str, dict] = {
         # Street circuit (walls): inset 1.0 = the sim's wall-safe default (0 put the line 0.55 m over an edge).
         inset=1.0,
     ),
+    "mexico": dict(
+        # Autódromo_Hermanos_Rodríguez.svg (user, 2026-10-30): one stroked centreline, 49 Beziers
+        # (2.9 seg/turn, MARGINAL). Runs clockwise = engine direction, no mirror.
+        outline=_p("F1_Pipeline_Assets/tracks/mexico_city_grand_prix_outline.json"),
+        # 2025 Q, NOR 1:15.586 (the real pole), fetched 2026-10-30 (sandbox weekend.fetch_weekend).
+        csv25=_p("F1_Pipeline_Assets/exports/reference_2025_mexico_q.csv"),
+        csv26=None,
+        kind26=None, country="Mexico", circuit="Mexico City",
+        # ~2,240 m ASL: rho_isa ~0.98, the thinnest air of the season (less drag AND downforce).
+        altitude_m=2240.0, length_m=4304.0,
+    ),
 }
 
 

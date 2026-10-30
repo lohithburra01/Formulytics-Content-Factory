@@ -1,0 +1,18 @@
+[elev] 700 pts, 2226.6-2229.1 m ASL (span 2.5 m) — openf1 location.z only (altitude), 2025 Q pole lap NOR; distance from car data
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2304 samples, lap_time=76.758s, v=[66,335] km/h, soc=yes, mode=yes
+[kerbs] outer=698 corner zones, inner=813 corner zones
+[corridor.iqp] widths: right=[4.53,5.60]  left=[4.53,5.60]
+[raceline] loaded precomputed: 2120 pts, track_length=4242 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-787,666] Y[-575,471]
+[diag] visual   X[-794,674] Y[-586,477]
+[render] 390 frames at 30fps (76.76s)
+  frame 60/390
+  frame 120/390
+  frame 180/390
+  frame 240/390
+  frame 300/390
+  frame 360/390
+  frame 390/390
+[render] saved -> cache/mexico/preview_13s.mp4
