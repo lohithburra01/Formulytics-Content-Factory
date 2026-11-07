@@ -24,7 +24,9 @@ RUN_TIMEOUT_S = 15 * 60   # one optimiser run normally takes 2-5 min       # wor
 
 
 def slug(event_name):
-    return event_name.strip().lower().replace(" ", "_")
+    import unicodedata   # 'São Paulo Grand Prix' (F1InsightsHub spelling) -> sao_paulo_grand_prix
+    plain = unicodedata.normalize("NFKD", event_name).encode("ascii", "ignore").decode()
+    return plain.strip().lower().replace(" ", "_")
 
 
 def _abs(p):

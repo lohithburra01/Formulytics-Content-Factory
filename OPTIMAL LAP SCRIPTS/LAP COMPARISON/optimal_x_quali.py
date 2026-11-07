@@ -65,7 +65,7 @@ def clean_trace(session, driver):
     if f is None:
         raise SystemExit(f"No laps for {driver} in {session['event']} {session['session']}")
     car = pd.DataFrame(f['car'])
-    car['t'] = (pd.to_datetime(car['date']) - pd.to_datetime(car['date'].iloc[0])).dt.total_seconds()
+    car['t'] = (pd.to_datetime(car['date'], format='ISO8601') - pd.to_datetime(car['date'].iloc[0], format='ISO8601')).dt.total_seconds()
     car = car.dropna(subset=['distance', 'speed']).drop_duplicates(subset=['t'])
     dist = car['distance'].values.astype(float); dist -= dist[0]
     t = car['t'].values
