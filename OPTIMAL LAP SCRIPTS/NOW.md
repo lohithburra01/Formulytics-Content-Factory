@@ -1,3 +1,29 @@
+# >>> SAO PAULO 2018 vs 2026 DUAL (2026-11-05) <<<
+- RENDERED + COMMITTED 2026-11-07: sao_paulo_2018_vs_2026.mp4 (2184 frames, 72.8 s, final gap 3.49 s). Nothing pending; user has 'other ideas' next.
+- User pick: HAMILTON 2018 POLE 1:07.281 (fastest lap ever at Interlagos) vs 2026 optimal 1:10.772 (gap 3.49 s).
+- Folder LAP COMPARISON/sao_paulo_2018_vs_2026/, make_sao_paulo_2018_vs_2026.bat (CRLF!) -> sao_paulo_2018_vs_2026.mp4, zoom 20.
+- HAM trace = F1IH car_data "2018|Brazilian Grand Prix|Qualifying" drv 44 lap 16 (raw 67.281 exactly). Car era2017 model mass 734,
+  rho 1.1353, cda 1.645 cl 5.00 (corr 0.981 vs real). Own line h18 (centreline base s12 + apex-w 1.5, mirrored frame -> h18_real_rl.json):
+  Rmin 20.4, 0 off-track, gap to 2026 line mean 0.83 / max 4.76 m (check_lines.png). 2026 CSV stretched 0.05% to 70.772.
+
+# >>> SAO PAULO / INTERLAGOS 2026 (2026-11-05, pre-FP1, Mexico method) <<<
+- RENDERED 2026-11-05: sao_paulo_grand_prix_2026_optimal_lap.mp4 (70.77 s, zoom 20, tagline "ON A DRY TRACK"). Next: viral era dual - options HAM 2018 1:07.281 (all-time fastest), VER 2023 1:10.727 (storm pole, OpenF1 9304 lap 17), VER 2019 1:07.508, HAM 2016 1:10.736 (no telemetry).
+- Batch make_sao_paulo_2026_lap.bat (env LABEL overrides video label; default 70.772 = sim). User APPROVED line+speed 2026-11-05, zoom 20 (frame cache/brazil/frame_z20.png), label = sim 70.772. Mexico real 2026 Q = 76.514 (HAM) vs our sim 76.758 (+0.24 s). Review pics:
+  cache/brazil/line_v2.png + speed_v2.png (+ preview_6s.mp4 / frame_preview.png).
+- SVG = user's Autodromo_Jose_Carlos_Pace...svg (GOOD 4.5 seg/turn), copy cache/brazil/interlagos.svg, 4309 m, 13 m, R>=9.
+- ANTICLOCKWISE: sim on F1_Pipeline_Assets/tracks/sao_paulo_grand_prix_mirror_outline.json, un-mirror via cache/_singapore_prep.py
+  (probe cache/brazil/dir_*: mirrored corr 0.97-0.98 vs as-drawn 0.61). Registry key "brazil" (mirror outline).
+- 2025 Q pole NOR 69.511 (ref CSV reference_2025_brazil_q.csv). Predict band 70.36-73.69. Autofit cda 0.643 cl 4.458 rho 1.1353,
+  SUPERCLIP_MEASURED=1, MU_LONG 2.1 (decel 1.01x), GRIP_MAP fitted (cache/brazil/grip_map_fit.json, 0.90-1.27). Sim 70.772, corr 0.988.
+- Line frozen: cache/brazil/line_v2_rl.json (mirrored frame). 1 pt 8 cm over outer edge (kerb). Elevation z-only span 42.4 m.
+
+# >>> MEXICO 2018 vs 2026 DUAL (2026-10-30) <<<
+- Viral pick: RICCIARDO 2018 POLE 1:14.759 (all-time fastest lap at Mexico, his last F1 pole) vs 2026 OPTIMAL LAP at user label 1:17.265.
+- Folder LAP COMPARISON/mexico_2018_vs_2026/ ; run make_mexico_2018_vs_2026.bat -> mexico_2018_vs_2026_record.mp4 (label "RICCIARDO 2018 · LAP RECORD"; first render mexico_2018_vs_2026.mp4 kept) (zoom 28, dual_lap_video_v3).
+- RIC trace = F1IH backend car_data (2018|Mexican Grand Prix|Qualifying, driver 3, lap 14 = 74.759 exactly; F1 archive 401).
+  Car = era2017 model, mass 734, rho 0.9824, cda 1.763 cl 3.963 (corr 0.972 vs real). Own line k18_rl.json (apex-w 1.5, gaps <=0.27 m,
+  mean 0.24 m / max 2.0 m off 2026 line). 2026 CSV uniformly scaled 76.758 -> 77.265 (_scale_2026.py); shipped files untouched.
+
 # >>> MEXICO CITY 2026 (2026-10-30, pre-FP1) <<<
 - Video: mexico_city_grand_prix_2026_optimal_lap.mp4 (make_mexico_2026_lap.bat), zoom 28, elevation z-only. Label 1:17.265 (user), sim 76.758.
 - Track: cache/mexico/Autódromo_Hermanos_Rodríguez_2015.svg (parse copy mexico_2015_parse.svg), 4304 m, 13 m wide, R>=9. Line user-approved.

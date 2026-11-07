@@ -161,6 +161,17 @@ TRACKS: dict[str, dict] = {
         # ~2,240 m ASL: rho_isa ~0.98, the thinnest air of the season (less drag AND downforce).
         altitude_m=2240.0, length_m=4304.0,
     ),
+    "brazil": dict(
+        # Autódromo_José_Carlos_Pace_(AKA_Interlagos)_track_map.svg (user, 2026-11-05): one stroked
+        # centreline, 67 Beziers (4.5 seg/turn, GOOD). Anticlockwise track (see cache/brazil/).
+        outline=_p("F1_Pipeline_Assets/tracks/sao_paulo_grand_prix_mirror_outline.json"),  # MIRRORED (x -> -x)
+        # 2025 Q, NOR 1:09.511 (the real pole), fetched 2026-11-05 (sandbox weekend.fetch_weekend).
+        csv25=_p("F1_Pipeline_Assets/exports/reference_2025_brazil_q.csv"),
+        csv26=None,
+        kind26=None, country="Brazil", circuit="Interlagos",
+        # ~785 m ASL (Sao Paulo): rho_isa ~1.135.
+        altitude_m=785.0, length_m=4309.0,
+    ),
 }
 
 

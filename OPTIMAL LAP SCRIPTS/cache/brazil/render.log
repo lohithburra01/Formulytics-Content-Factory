@@ -1,0 +1,69 @@
+﻿=== Sim on the reviewed line (fixed raceline, mirrored frame) ===
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.643 CL_CORNER=4.458 RHO=1.1353
+[sim] MU_LONG override 2.100
+[sim] outline loaded: outer=2000 inner=2000
+[sim] raceline supplied (D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\brazil\line_v2_rl.json); optimiser and S/F anchoring skipped - the file is already S/F-aligned
+[sim] raceline: 2123 pts, 4247 m, |κ|max=0.0550
+[sim] wrote raceline -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\brazil\final_mirror_rl.json
+[sim] GRIP_MAP applied: 310:410:0.8963;414:514:1.2749;1344:1444:1.0554;2079:2179:0.9637;2274:2374:0.9743;2669:2769:1.0191;3153:3253:1.1377
+  closure iter 0: v0=95.2 vN=95.2 d=0.02 T_lap=70.917s
+  closure iter 1: v0=91.2 vN=91.2 d=0.03 T_lap=70.258s
+  closure converged at iter 1
+[sim] lap: 70.258s (bang-bang) -> 70.772s (jerk-limited), +0.514s for realism
+[sim] wrote 2124 rows -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\exports\sao_paulo_2026_synthetic.csv
+[sanity] T_lap=70.77s  v=[82,339] km/h  superclip frames=345  gain_med=22.2  drop_med=47.8 km/h/s
+=== Un-mirror raceline to the real (anticlockwise) track ===
+[sg] un-mirrored raceline -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\tracks\sao_paulo_grand_prix_raceline.json
+=== Elevation (OpenF1 z only) ===
+[elev] 272 z samples, alt 739.4..781.8 m, span 42.4 m, closure -0.6 m
+[elev] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets/tracks/sao_paulo_grand_prix_elevation.json
+=== Render (zoom 20, user 2026-11-05) ===
+[elev] 700 pts, 739.4-781.8 m ASL (span 42.4 m) — openf1 location.z only (altitude), 2025 Q pole lap NOR; distance from car data
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2124 samples, lap_time=70.739s, v=[82,339] km/h, soc=yes, mode=yes
+[kerbs] outer=864 corner zones, inner=999 corner zones
+[corridor.iqp] widths: right=[4.59,5.58]  left=[4.59,5.58]
+[raceline] loaded precomputed: 2123 pts, track_length=4247 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-464,583] Y[-248,407]
+[diag] visual   X[-472,593] Y[-260,414]
+[render] 2123 frames at 30fps (70.74s)
+  frame 60/2123
+  frame 120/2123
+  frame 180/2123
+  frame 240/2123
+  frame 300/2123
+  frame 360/2123
+  frame 420/2123
+  frame 480/2123
+  frame 540/2123
+  frame 600/2123
+  frame 660/2123
+  frame 720/2123
+  frame 780/2123
+  frame 840/2123
+  frame 900/2123
+  frame 960/2123
+  frame 1020/2123
+  frame 1080/2123
+  frame 1140/2123
+  frame 1200/2123
+  frame 1260/2123
+  frame 1320/2123
+  frame 1380/2123
+  frame 1440/2123
+  frame 1500/2123
+  frame 1560/2123
+  frame 1620/2123
+  frame 1680/2123
+  frame 1740/2123
+  frame 1800/2123
+  frame 1860/2123
+  frame 1920/2123
+  frame 1980/2123
+  frame 2040/2123
+  frame 2100/2123
+  frame 2123/2123
+[render] saved -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\sao_paulo_grand_prix_2026_optimal_lap.mp4
+Done. -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\sao_paulo_grand_prix_2026_optimal_lap.mp4

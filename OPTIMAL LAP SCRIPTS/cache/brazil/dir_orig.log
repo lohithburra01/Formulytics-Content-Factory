@@ -1,0 +1,28 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.800 CL_CORNER=4.200 RHO=1.1353
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.59,5.58] l=[4.59,5.58]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=4.393 mean|a|=3.170 (42.84s)
+  iter 1: max|a|=2.872 mean|a|=1.750 (44.02s)
+  iter 2: max|a|=1.735 mean|a|=0.877 (44.47s)
+  iter 3: max|a|=0.839 mean|a|=0.452 (41.07s)
+  iter 4: max|a|=0.426 mean|a|=0.225 (42.81s)
+  iter 5: max|a|=0.252 mean|a|=0.113 (43.08s)
+  iter 6: max|a|=0.131 mean|a|=0.056 (42.68s)
+  converged at iter 6
+[iqp] 2127 pts, 4255 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=4.80m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 486/800 straight stations
+[sim] refinement slack: max=3.04e-03 (510/800 stations relaxed)
+[sim] adaptive de-wobble: 515/2135 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.0651 (IQP seed) → 0.0526 (refined)
+[sim] raceline: 2135 pts, 4271 m, |κ|max=0.0526
+[sim] S/F line at raceline idx 146/2135 (frac 6.8%, |κ|=0.0026) — reference_2025_brazil_q.csv x-corr peak=1041
+[sim] wrote raceline -> cache/brazil/dir_orig.json
+  closure iter 0: v0=87.3 vN=87.3 d=0.04 T_lap=75.593s
+  closure iter 1: v0=87.3 vN=87.3 d=0.04 T_lap=75.086s
+  closure converged at iter 1
+[sim] lap: 75.086s (bang-bang) -> 75.543s (jerk-limited), +0.457s for realism
+[sim] wrote 2267 rows -> cache/brazil/dir_orig.csv
+[sanity] T_lap=75.54s  v=[84,321] km/h  superclip frames=182  gain_med=29.7  drop_med=38.3 km/h/s

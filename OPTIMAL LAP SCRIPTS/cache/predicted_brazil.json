@@ -1,0 +1,59 @@
+{
+ "track": "brazil",
+ "rho": 1.1353,
+ "t25_s": 69.799,
+ "lap_band_s": [
+  70.357,
+  73.69
+ ],
+ "vtop_target_kmh": 338.4,
+ "corners": [
+  {
+   "s_m": 366.6,
+   "s_frac": 0.08617,
+   "v25_kmh": 110.0,
+   "v26_target_kmh": 105.1
+  },
+  {
+   "s_m": 1397.7,
+   "s_frac": 0.32854,
+   "v25_kmh": 170.0,
+   "v26_target_kmh": 158.9
+  },
+  {
+   "s_m": 2107.8,
+   "s_frac": 0.49547,
+   "v25_kmh": 230.0,
+   "v26_target_kmh": 213.0
+  },
+  {
+   "s_m": 2317.2,
+   "s_frac": 0.54469,
+   "v25_kmh": 89.0,
+   "v26_target_kmh": 85.7
+  },
+  {
+   "s_m": 2425.9,
+   "s_frac": 0.57024,
+   "v25_kmh": 104.0,
+   "v26_target_kmh": 99.6
+  },
+  {
+   "s_m": 2719.1,
+   "s_frac": 0.63917,
+   "v25_kmh": 85.0,
+   "v26_target_kmh": 82.0
+  },
+  {
+   "s_m": 3195.0,
+   "s_frac": 0.75104,
+   "v25_kmh": 127.0,
+   "v26_target_kmh": 120.4
+  }
+ ],
+ "cda0": 0.75,
+ "cl0": 4.6,
+ "ref_used": "2025_q",
+ "transfer": "transfer_2026.json",
+ "warnings": []
+}

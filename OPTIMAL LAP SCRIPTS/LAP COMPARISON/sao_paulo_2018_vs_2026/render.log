@@ -1,0 +1,10 @@
+﻿[telemetry] 278 samples, lap_time=67.281s, v=[87,334] km/h, soc=no, mode=yes
+[telemetry] 2124 samples, lap_time=70.772s, v=[82,338] km/h, soc=yes, mode=yes
+  frame 300/2184
+  frame 600/2184
+  frame 900/2184
+  frame 1200/2184
+  frame 1500/2184
+  frame 1800/2184
+  frame 2100/2184
+[dual-v3] saved -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\sao_paulo_2018_vs_2026\sao_paulo_2018_vs_2026.mp4  (2184 frames)

@@ -1,0 +1,89 @@
+{
+ "track": "brazil",
+ "cda": 0.6431,
+ "cl": 4.4576,
+ "rho": 1.1353,
+ "iters": 3,
+ "converged": true,
+ "rail_ok": true,
+ "lap_rail_s": 70.599,
+ "top_err_kmh": 0.71,
+ "hs_median_err_kmh": -0.12,
+ "cl_tier": "v25>=130",
+ "ls_median_err_kmh": 2.3,
+ "lap_s": 72.554,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_brazil.json",
+ "csv": "cache/autofit_brazil_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.08617,
+   "v25": 110.0,
+   "v26_target": 105.1,
+   "sim_v": 117.2,
+   "err": 12.1
+  },
+  {
+   "s_frac": 0.32854,
+   "v25": 170.0,
+   "v26_target": 158.9,
+   "sim_v": 150.6,
+   "err": -8.3
+  },
+  {
+   "s_frac": 0.49547,
+   "v25": 230.0,
+   "v26_target": 213.0,
+   "sim_v": 221.0,
+   "err": 8.0
+  },
+  {
+   "s_frac": 0.54469,
+   "v25": 89.0,
+   "v26_target": 85.7,
+   "sim_v": 88.0,
+   "err": 2.3
+  },
+  {
+   "s_frac": 0.57024,
+   "v25": 104.0,
+   "v26_target": 99.6,
+   "sim_v": 112.1,
+   "err": 12.5
+  },
+  {
+   "s_frac": 0.63917,
+   "v25": 85.0,
+   "v26_target": 82.0,
+   "sim_v": 80.5,
+   "err": -1.5
+  },
+  {
+   "s_frac": 0.75104,
+   "v25": 127.0,
+   "v26_target": 120.4,
+   "sim_v": 105.8,
+   "err": -14.6
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": -9.69,
+   "f2": 2.9
+  },
+  {
+   "cda": 0.6874,
+   "cl": 4.2,
+   "f1": -4.02,
+   "f2": -5.25
+  },
+  {
+   "cda": 0.6431,
+   "cl": 4.4576,
+   "f1": 0.71,
+   "f2": -0.12
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+[autofit] brazil it0: cda=0.750 cl=4.600 lap=72.60s vtop=328.7 (f1=-9.7) tier[v25>=130] f2=+2.9
+[autofit] brazil it1: cda=0.687 cl=4.200 lap=73.43s vtop=334.4 (f1=-4.0) tier[v25>=130] f2=-5.3
+[autofit] brazil it2: cda=0.643 cl=4.458 lap=72.55s vtop=339.1 (f1=+0.7) tier[v25>=130] f2=-0.1
+[autofit] brazil: converged=True cda=0.643 cl=4.458 lap=72.55s  low-speed residual median=+2.3 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_brazil.json

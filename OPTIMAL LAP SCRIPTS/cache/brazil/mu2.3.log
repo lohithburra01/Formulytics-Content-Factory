@@ -1,0 +1,13 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.643 CL_CORNER=4.458 RHO=1.1353
+[sim] MU_LONG override 2.300
+[sim] outline loaded: outer=2000 inner=2000
+[sim] raceline supplied (cache/brazil/af_rl.json); optimiser and S/F anchoring skipped - the file is already S/F-aligned
+[sim] raceline: 2123 pts, 4247 m, |κ|max=0.0550
+[sim] wrote raceline -> cache/brazil/mu2.3.json
+  closure iter 0: v0=95.2 vN=95.2 d=0.02 T_lap=71.396s
+  closure iter 1: v0=91.2 vN=91.3 d=0.03 T_lap=70.725s
+  closure converged at iter 1
+[sim] lap: 70.725s (bang-bang) -> 71.279s (jerk-limited), +0.553s for realism
+[sim] wrote 2139 rows -> cache/brazil/mu2.3.csv
+[sanity] T_lap=71.28s  v=[80,339] km/h  superclip frames=347  gain_med=22.8  drop_med=48.0 km/h/s

@@ -1,0 +1,14 @@
+[elev] 700 pts, 739.4-781.8 m ASL (span 42.4 m) — openf1 location.z only (altitude), 2025 Q pole lap NOR; distance from car data
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2124 samples, lap_time=70.739s, v=[82,339] km/h, soc=yes, mode=yes
+[kerbs] outer=864 corner zones, inner=999 corner zones
+[corridor.iqp] widths: right=[4.59,5.58]  left=[4.59,5.58]
+[raceline] loaded precomputed: 2123 pts, track_length=4247 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-464,583] Y[-248,407]
+[diag] visual   X[-472,593] Y[-260,414]
+[render] 180 frames at 30fps (70.74s)
+  frame 60/180
+  frame 120/180
+  frame 180/180
+[render] saved -> cache/brazil/preview_z20.mp4
