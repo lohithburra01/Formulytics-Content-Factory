@@ -1,3 +1,13 @@
+# >>> SAO PAULO 2026 Q LAP COMPARISON NOR vs RUS (2026-11-07/08) <<<
+- make_lap_comparison.bat (optimal_x_quali.py): BRAZIL / 2026 / Q / TOP2 / zoom 24. Q3: NOR 1:27.470 (lap 23) vs RUS 1:27.674 (lap 21). NOT RENDERED yet.
+- PENDING USER CHOICE: no sao_paulo_grand_prix_lapcomp.json -> both cars share the shipped line. Option: build the recipe (per-car
+  optimiser lines, like Austin) first, or render as-is.
+- Fixes made (uncommitted): hifi_delta_v2.py = F1IH fallback for sessions/drivers/laps when OpenF1 401-locks (live-session
+  lockout); quali_segments() splits Q1/Q2/Q3 by lap-start gaps (>4 min; trailing <=10 drivers = Q3, <=16 = Q2), ranking +
+  lap pick = best lap of last segment reached (fixes Q2 lap 1:26.745 being picked for RUS); ISO8601 date parse (some samples
+  lack fractional secs; also optimal_x_quali.py:68); optimal_lines.slug strips accents ('São Paulo' -> sao_paulo).
+  F1IH fallback has NO race control -> deleted laps not excluded (warns). Backup: %TEMP%/hifi_delta_v2.py.bak.
+
 # >>> SAO PAULO 2018 vs 2026 DUAL (2026-11-05) <<<
 - RENDERED + COMMITTED 2026-11-07: sao_paulo_2018_vs_2026.mp4 (2184 frames, 72.8 s, final gap 3.49 s). Nothing pending; user has 'other ideas' next.
 - User pick: HAMILTON 2018 POLE 1:07.281 (fastest lap ever at Interlagos) vs 2026 optimal 1:10.772 (gap 3.49 s).
