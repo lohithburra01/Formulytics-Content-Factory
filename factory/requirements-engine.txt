@@ -8,4 +8,4 @@ matplotlib==3.10.8
 pillow==12.1.1
 shapely==2.0.7
 opencv-python-headless==4.11.0.86
-trajectory-planning-helpers==0.79
+# trajectory-planning-helpers==0.79 is installed with --no-deps (its quadprog pin conflicts; runs fine on 0.1.13)

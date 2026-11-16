@@ -6,6 +6,7 @@ COPY factory/requirements-engine.txt /tmp/req-engine.txt
 RUN python -m venv /opt/factory && /opt/factory/bin/pip install --no-cache-dir -r /tmp/req.txt
 # Engine venv: uv fetches a standalone CPython 3.10 so the image does not depend on distro packages.
 RUN pip install --no-cache-dir uv && uv venv --python 3.10 /opt/engine && \
-    VIRTUAL_ENV=/opt/engine uv pip install --no-cache -r /tmp/req-engine.txt
+    VIRTUAL_ENV=/opt/engine uv pip install --no-cache -r /tmp/req-engine.txt && \
+    VIRTUAL_ENV=/opt/engine uv pip install --no-cache --no-deps trajectory-planning-helpers==0.79
 WORKDIR /app/factory
 EXPOSE 8000
