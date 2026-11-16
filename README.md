@@ -1,417 +1,198 @@
-# Hot Lap – F1 Race Replay Studio
+<p align="center">
+  <img src="docs/media/logo_black_bg.png" width="120" alt="Formulytics logo">
+</p>
 
-Generate cinematic F1 race replays from real telemetry data. Import cars, tracks, and lap paths from FastF1; animate cars along paths; add helicopter cameras, trails, and minimap exports for After Effects or video editing.
+<h1 align="center">Formulytics Content Factory</h1>
 
----
+<p align="center"><b>An agentic content factory that turns low-quality public F1 data into engineering-accurate, viral content.</b><br>
+It powers <a href="https://www.instagram.com/formulytics/">Formulytics</a>: about 50K followers across Instagram and Facebook, typically about 1M views per video, top video 10M.</p>
 
-## Table of Contents
-
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Initial Setup](#initial-setup)
-- [How to Use](#how-to-use)
-- [Track Map (Minimap) Export](#track-map-minimap-export)
-- [Helicopter Camera](#helicopter-camera)
-- [Car Trails](#car-trails)
-- [Path Correction](#path-correction)
-- [Project Structure](#project-structure)
-- [Data & Assets](#data--assets)
-- [Troubleshooting](#troubleshooting)
+<p align="center">
+  <img src="docs/media/ghostcar_validation.gif" width="300" alt="Delta engine reconstruction vs F1's official ghost car"><br>
+  <sub>Accuracy check: our delta-engine reconstruction (top) vs F1's official ghost-car onboard (bottom). Full clip: <a href="docs/media/ghostcar_validation.mp4">ghostcar_validation.mp4</a></sub>
+</p>
 
 ---
 
-## Features
+## What it is
 
-- **Multi-car scene generation** — Add up to 4 laps to the queue; generate a full scene with track, cars, and paths
-- **FastF1 integration** — Uses official F1 timing data via FastF1 (races, qualifying, practice, pre-season testing)
-- **Path & speed animation** — Paths follow real GPS telemetry; speed keyframes drive car motion
-- **Helicopter camera** — Dynamic chase cam that follows cars, with marker-based overrides and smoothing
-- **Car trails** — Ribbons behind each car, animated via `bevel_factor_end`; bakeable for reliable renders
-- **Path correction** — Diagnose, auto-correct off-track points, flatten Z, snap to track, sculpt brush
-- **Minimap export** — Transparent PNG frames for After Effects, with average driver position and track outline
-- **Telemetry CSVs** — Exported for each driver (frame, time_s, distance, speed, throttle, brake, gear, rpm, etc.)
+The agent starts from a goal: *data can be fun, so make data content that goes viral*. It
+researched data sources, invented original formats, and built a **semi-deterministic
+toolkit per format**: physics, a delta engine and a render style. The toolkit gives the page a
+consistent structure and look. Every race weekend the factory fills that toolkit with live data and fresh research,
+connects the dots, and produces the content.
+
+Every output is judged on two axes:
+
+1. **Engineering accuracy.** The input is a map-matched, low-rate public timing feed. The numbers have to survive
+   comparison with what really happens on track.
+2. **Engagement.** A hook that stops the scroll.
+
+The human designed the harness and gave the early feedback. The agent turned that feedback into its own
+**gates** (automated checks), and the human now only steps in occasionally, at the level of taste.
+
+### Formats
+
+| Format | What it is | Engine |
+|---|---|---|
+| **Optimal lap** | The fastest physically realistic 2026 lap of each track, simulated **before the cars run** (pre-FP1) from a track SVG | `OPTIMAL LAP SCRIPTS/sim_2026_lap.py`: energy-limited power unit, measured "superclip", active aero, grip map, min-curvature line optimiser |
+| **Era comparison** | That lap vs a car from another era on the same track (2017 high-downforce, a legend's 2018 pole, 2025) | Era cars fitted to real telemetry, each on its own optimiser line; dual-video renderer |
+| **Driver lap comparison** | Where pole gained on P2, metre by metre | `LAP COMPARISON/hifi_delta_v2.py`: delta engine validated against F1's ghost car (GIF above) |
+| *Airflow / CFD (WIP)* | Ground-effect and wing airflow on track | Separate repo in progress (vortex-lattice, PteraSoftware) |
+
+## Does it work? Predictions vs reality
+
+Every shipped 2026 prediction, scored against what really happened. Real laps are pulled from OpenF1 by
+[`factory/evals/build_golden.py`](factory/evals/build_golden.py). A dry simulation is only compared with a dry lap.
+
+| Weekend | Data seen before shipping | Our lap | Real lap | Reference | Error |
+|---|---|---|---|---|---|
+| **São Paulo** | none (pre-FP1) | 1:10.772 | 1:10.763 | fastest dry lap of the weekend (FP2); qualifying was wet (pole 1:27.470) | **+0.009 s** |
+| **Mexico City** | none (pre-FP1) | 1:16.758 | 1:16.514 | qualifying pole | **+0.244 s** |
+| Silverstone | FP1 | 1:27.970 | 1:28.111 | qualifying pole | −0.141 s |
+| Monaco | FP1 | 1:11.770 | 1:12.051 | qualifying pole | −0.281 s |
+| Madring | FP1 + FP2 | 1:32.363 | 1:31.824 | qualifying pole | +0.539 s |
+| Singapore | none (pre-FP1) | 1:33.010 | 1:31.373 | qualifying pole | +1.637 s |
+| Spa | none (pre-FP1) | 1:41.910 | 1:44.361 | qualifying pole | −2.451 s |
+| Sepang | none, and no 2025 reference either | 1:31.838 | 1:35.130 | qualifying pole | −3.292 s |
+| Bahrain | none (pre-FP1) | 1:32.186 | — | race cancelled | — |
+
+The method improved over the season. The current pre-FP1 method (measured superclip shape, altitude
+power derate, fitted grip map; Mexico onward) lands within **0.25 s with zero 2026 running on the track**. The earlier
+pre-FP1 tracks missed by 1.6–3.3 s, and those misses are what drove the method changes.
 
 ---
 
-## Requirements
+## Architecture
 
-| Requirement | Details |
-|-------------|---------|
-| **Blender** | 4.2.0 or newer |
-| **Python (addon)** | fastf1, pandas, scipy, numpy, requests, timple, requests-cache |
-| **Project layout** | Blender `.blend` file must live in the same folder as `F1_Pipeline_Assets` |
+```mermaid
+flowchart LR
+  subgraph Harness["Agent harness (LangChain Deep Agents, factory/formulytics)"]
+    O["Orchestrator<br/>DeepSeek V4 Pro<br/>plans with todos, delegates"]
+    R["researcher<br/>V4 Flash"]
+    S["simulator<br/>V4 Flash"]
+    C["critic<br/>V4 Pro"]
+    P["packager<br/>V4 Flash"]
+    O -->|task| R & S & C & P
+  end
+  subgraph Toolkit["Deterministic toolkit (OPTIMAL LAP SCRIPTS, own Python)"]
+    SIM["2026 lap sim + optimiser"]
+    GATE["realism gate"]
+    DELTA["delta engine"]
+    REN["renderer"]
+  end
+  subgraph Memory
+    EP["episodic<br/>run log per weekend"]
+    SEM["semantic<br/>track knowledge graph"]
+    PROC["procedural<br/>feedback rules -> gates"]
+    RAG["RAG: pgvector<br/>research notes, cited"]
+  end
+  S -->|engine_bridge.py JSON| SIM & GATE
+  R --> SEM & EP & RAG
+  C --> PROC
+  P --> Q[("publish/ queue<br/>caption + manifest")]
+  PROC -. fail closed .-> Q
+  MCP["MCP server<br/>(scoped tools)"] --> Toolkit
+  API["FastAPI POST /runs"] --> O
+  O -. traces, cost, latency .-> LS["LangSmith"]
+```
+
+| Component | Where | What it actually does |
+|---|---|---|
+| **Multi-agent orchestration** | [`agents.py`](factory/formulytics/agents.py) | Deep Agents orchestrator (planning with todos, `task` delegation, context summarisation) + 4 least-privilege sub-agents; each sub-agent only gets the tools for its job |
+| **Skills** | [`factory/skills/`](factory/skills) | One `SKILL.md` per format (optimal lap, era comparison, driver comparison, CFD WIP), loaded on demand |
+| **Tools / tool calling** | [`tools.py`](factory/formulytics/tools.py), [`engine_bridge.py`](factory/engine_bridge.py) | Existing physics, delta and render scripts wrapped as typed tools; the engine runs in its own interpreter over a JSON bridge |
+| **MCP** | [`mcp_server.py`](factory/formulytics/mcp_server.py) | FastMCP server exposing the toolkit to any MCP client; scoped to read, simulate and check (no publishing) |
+| **Guardrails** | [`gates.py`](factory/formulytics/gates.py) | 8 gates from human feedback ([rules](factory/memory/procedural/feedback_rules.md)), fail closed; a claims gate blocks any caption number not in the run's verified facts; physical bounds on knobs; sandboxed filesystem (writes only to its own run folder) |
+| **Human in the loop** | `--approve` | Optional taste approval: Deep Agents `interrupt_on` pauses before publishing |
+| **Evals** | [`evals/`](factory/evals) | Golden dataset vs real results, deterministic engine regression (CI), memory-recall eval, retrieval hit@k + off-topic rejection, LLM-as-judge for captions, LangSmith experiment |
+| **RAG** | [`rag.py`](factory/formulytics/rag.py) | pgvector (Docker) + local bge-small embeddings over design docs and calibration logs; every passage carries its source file; weak matches are withheld (threshold calibrated on off-topic probes) |
+| **Memory** | [`memory.py`](factory/formulytics/memory.py) | Episodic (run log per weekend), semantic (track knowledge graph with multi-hop recall), procedural (feedback -> gates); in-run compaction via Deep Agents summarisation |
+| **Observability & cost** | [`llm.py`](factory/formulytics/llm.py), [`ledger.py`](factory/formulytics/ledger.py) | LangSmith traces; per-call tokens, cached tokens, billed USD and latency; per-run and total budget caps that stop the run; append-only JSONL audit ledger |
+| **Model routing** | [`config.py`](factory/formulytics/config.py) | Pro for planning and judging, Flash for workers, automatic fallback chain; any OpenRouter model is a one-line change |
+| **Production** | [`api.py`](factory/formulytics/api.py), [`docker-compose.yml`](factory/docker-compose.yml), [CI](.github/workflows/factory-ci.yml) | FastAPI service, Docker Compose (API + pgvector), GitHub Actions (pytest + engine regression), versioned manifest per output |
 
 ---
 
-## Installation
+## Demo: São Paulo 2026 replay
 
-### 1. Install the Addon
+A full replay of the São Paulo weekend as it stood **before FP1**. During the run the agents can't see any
+real result from that weekend; the score against reality is computed only after they finish.
 
-1. Download or clone this repository.
-2. In Blender: **Edit → Preferences → Extensions** (or Add-ons).
-3. Use **Install from Disk** and select the folder `launch_control_auto_car_rig`.
-4. Enable **"Hot Lap – F1 Race Replay Studio"**.
+```text
+python -m formulytics.run --weekend sao_paulo_2026
+```
 
-### 2. Install Python Dependencies
+| | Run 2 ([manifest](factory/runs/20261116-025039-bcad/manifest.json), [ledger](factory/runs/20261116-025039-bcad/ledger.jsonl)) |
+|---|---|
+| Agents | orchestrator -> researcher -> simulator -> critic (**APPROVE**) -> packager -> gates -> `publish/` |
+| Model calls | 30 (14 V4 Pro, 16 V4 Flash); most prompt tokens are cache hits |
+| Cost / time | **$0.047 billed**, 152 s wall |
+| Lap | **1:10.772**: 9/9 engine realism checks, speed-trace corr 0.98 vs the real 2025 pole trace, 11/12 apexes within 1.5 m of the kerb |
+| Gates | 8/8 pass |
+| Caption | *"0.973s slower than 2025 pole — and that's fast"* (claims gate forced rewrites until every number traced to a fact) |
+| Score vs reality (post-hoc) | +0.009 s vs the fastest dry lap of the weekend (qualifying was wet) |
 
-1. Open Blender and go to the **3D Viewport**.
-2. Press `N` to open the sidebar → **Hot Lap** tab.
-3. If dependencies are missing, the panel shows an error.
-4. Click **"Install Dependencies"** or **"Upgrade / Reinstall FastF1 (3.8.1+)"**.
-5. Wait for the install to finish (installs into `scripts/f1_studio_modules/`).
+**The eval loop caught a real failure.** Run 1 ([manifest](factory/runs/20261116-024353-cbb0/manifest.json))
+passed every gate but its caption said "this 7-corner circuit". The 7 is the number of
+*calibration* corners; Interlagos has 15 turns. The claims gate only checked numbers with two or more digits, so it missed
+it. The LLM judge scored that caption accuracy 1/5 and flagged exactly this. Fix: the gate now checks every number,
+the caption is a regression test, and the post is marked [retracted](factory/publish/20261116-024353-cbb0/RETRACTED.md),
+not deleted. A second leak was found the same way: episodic memory exposed run 1's real-world score to the
+critic in a replay. Agents no longer see post-hoc scores.
 
-Alternatively, install manually:
+### Eval results ([report](factory/evals/report.html), [raw](factory/evals/results.json))
+
+| Eval | Result |
+|---|---|
+| Predictions vs reality (8 scored weekends) | MAE 1.07 s overall, 1.53 s pre-FP1, **0.13 s with the current method** |
+| Engine regression (CI) | Shipped lap reproduced exactly (Δ 0.000 s), realism gate passes |
+| Memory recall | 6/6 facts recovered from the track graph |
+| Retrieval | hit@4 = 0.83 (miss: the apex rule query ranks a calibration log first); 3/3 off-topic queries withheld |
+| Caption judge (V4 Pro) | Run 2: hook 5, accuracy 5, clarity 4, compliance 5. Run 1: accuracy 1 (caught the false claim) |
+| Unit tests | 22 pass: every gate has a passing and a failing case, plus budget cap, ledger, API |
+| LangSmith | Traces per run (project `formulytics-factory`); golden set uploaded as dataset `formulytics-golden-2026` with an experiment scoring the shipped predictions |
+
+---
+
+## Run it
 
 ```bash
-pip install -r launch_control_auto_car_rig/launch_control_auto_car_rig/requirements-f1.txt --target <Blender scripts path>
+cd factory
+python -m venv .venv && .venv/Scripts/pip install -r requirements.txt   # harness, Python 3.11
+pip install -r requirements-engine.txt                                   # engine, Python 3.10 (set ENGINE_PYTHON)
+cp .env.example .env                                                     # OPENROUTER_API_KEY, LANGSMITH_API_KEY
+docker compose up -d pgvector && python -m formulytics.rag ingest
+
+python -m formulytics.run --weekend sao_paulo_2026            # full agent run
+python -m formulytics.run --weekend sao_paulo_2026 --approve  # with human approval before publish
+python evals/run_evals.py --langsmith                         # eval suite -> evals/report.html
+python -m formulytics.mcp_server                              # toolkit as an MCP server
+uvicorn formulytics.api:app                                   # POST /runs
+pytest -q
 ```
 
-**Dependencies:**
-
-- `fastf1>=3.8.1` (testing sessions, latest data)
-- `pandas`, `scipy`, `numpy`, `requests`, `timple`, `requests-cache`
-
----
-
-## Initial Setup
-
-### 1. Refresh the Database
-
-Run the refresh script to update calendars and driver data:
-
-```bash
-py scripts/refresh_database.py 2026
-```
-
-(Replace `2026` with your target year.)
-
-This updates:
-
-- `F1_Pipeline_Assets/database/calendar_cache.json`
-- `F1_Pipeline_Assets/database/drivers_by_race.json`
-- `F1_Pipeline_Assets/database/drivers_by_season.json`
-- `F1_Pipeline_Assets/database/testing_events.json`
-- `F1_Pipeline_Assets/database/event_session_map.json`
-
-### 2. Prepare Assets
-
-**Car assets:**
-
-Place car `.blend` files at:
-
-```
-F1_Pipeline_Assets/cars/{year}/{team}/{code}.blend
-```
-
-Example: `F1_Pipeline_Assets/cars/2026/Red Bull Racing/VER.blend`
-
-Each file should contain a `CarRig` collection with armature, driving path, and sim objects.
-
-**Track assets:**
-
-Place track `.blend` files at:
-
-```
-F1_Pipeline_Assets/tracks/{event_slug}.blend
-```
-
-Event names are normalized: `"Bahrain Grand Prix"` → `bahrain_grand_prix.blend`, `"Chinese Grand Prix"` → `chinese_grand_prix.blend`.
-
-The main track surface mesh should be named **"Track"**. Optional: a `track_cosmetic` collection for kerbs/runoff used in ground detection.
-
-**Track metadata:**
-
-`F1_Pipeline_Assets/database/tracks.json` stores track versions and alignment. Alignment (offset X/Y, rotation, scale) is saved/loaded via the UI.
-
-### 3. Project Layout
-
-Your project folder should look like:
-
-```
-your_project/
-├── my_scene.blend                    ← Your Blender file (open this)
-├── F1_Pipeline_Assets/
-│   ├── database/
-│   │   ├── calendar_cache.json
-│   │   ├── drivers_by_race.json
-│   │   ├── tracks.json
-│   │   └── ...
-│   ├── cars/
-│   │   └── 2026/
-│   │       └── Red Bull Racing/
-│   │           └── VER.blend
-│   ├── tracks/
-│   │   └── bahrain_grand_prix.blend
-│   ├── temp_data/                   (auto-created)
-│   └── exports/                     (auto-created)
-└── launch_control_auto_car_rig/     (addon folder)
-```
-
----
-
-## How to Use
-
-### Basic Workflow
-
-1. **Open Blender** with your `.blend` file in the project folder.
-2. Go to **3D Viewport → N → Hot Lap**.
-3. **Query Engine:**
-   - Select **Year** (e.g. 2026).
-   - Select **Race/Event** (e.g. Bahrain Grand Prix).
-   - Select **Session** (FP1, FP2, FP3, Q, R, or Day 1/2/3 for testing).
-   - Optionally enable **Fastest Lap (auto)**.
-   - Select **Driver**.
-   - Click **Add Lap to Queue**.
-4. Repeat step 3 for up to 4 drivers (different laps or same driver from different sessions).
-5. Enable **Render Track Map** if you want minimap frames exported.
-6. Click **GENERATE SCENE**.
-
-### What Happens During Generation
-
-1. **Track** — Loaded first if not already in the scene.
-2. **Telemetry** — FastF1 session is loaded; path splines and speed data are generated.
-3. **Per car:**
-   - Car is appended from `cars/{year}/{team}/{code}.blend`.
-   - Path JSON is applied to the driving path curve.
-   - Speed keyframes drive the car along the path.
-   - Trail is created and linked to the car.
-4. **Exports** — CSVs and (optionally) minimap frames are written to `exports/`.
-
-### Track Alignment
-
-If paths don’t line up with the track model:
-
-1. In **Track Alignment**, adjust **Offset X**, **Offset Y**, **Rotation**, **Scale**.
-2. Click **Save** to store alignment in `tracks.json`.
-3. Click **Load** to restore it for this track next time.
-
----
-
-## Track Map (Minimap) Export
-
-Transparent PNG frames for use in After Effects or similar tools.
-
-- **Location:** `F1_Pipeline_Assets/exports/minimap_frames/frame_XXXXX.png`
-- **Content:** Track outline (white line) and a single white dot at the **average position of all drivers** each frame.
-- **Format:** 500×300 px, transparent background.
-
-### Render Minimap Only
-
-To re-render the minimap without re-importing cars or tracks:
-
-1. Ensure telemetry CSVs exist in `F1_Pipeline_Assets/exports/` (e.g. `VER_telemetry.csv`).
-2. In the Hot Lap panel, click **Render Minimap Only**.
-3. The addon discovers drivers from existing CSVs, loads the FastF1 session for the track spline, and renders frames.
-
----
-
-## Helicopter Camera
-
-A dynamic camera that follows cars and keeps them framed.
-
-### Create / Remove
-
-- **Create Heli-Cam** — Adds the helicopter camera and target.
-- **Remove** — Deletes the heli-cam objects.
-
-### Live Adjustments
-
-While playing back or scrubbing:
-
-- **Height** — Camera height above the centroid.
-- **Angle** — Viewing angle around the cars.
-- **Distance** — Distance from the centroid.
-- **Focal** — Focal length (zoom).
-
-Sliders update the camera in real time.
-
-### Markers (Keyframe-style)
-
-1. Move to a frame where the camera looks good.
-2. Adjust sliders as desired.
-3. Click **Set Marker**.
-4. The camera will smoothly interpolate between markers during playback.
-5. Use **Prev / Next** to jump between markers; **Delete** to remove one; **Clear All** to remove all.
-
-### Smoothing
-
-A **Smoothing** slider controls how much temporal smoothing is applied. Higher values reduce jitter but add lag.
-
----
-
-## Car Trails
-
-Ribbon trails behind each car, animated by car position along the path.
-
-### Refresh Trails
-
-If trails stop animating (e.g. after reloading the file):
-
-- Click **Refresh Trails** in the Path Diagnostic section.
-- This re-registers the animation handler and re-syncs trail geometry from paths.
-
-### Bake Trails
-
-**Recommended before rendering.**
-
-Handler-based trails can lag or miss frames during render. Baking writes keyframes for `bevel_factor_end` on each trail curve.
-
-1. Click **Bake Trails**.
-2. Keyframes are created for the full frame range (frame start–end).
-3. Trails will render correctly and survive save/reload without the handler.
-
-### Trail Height
-
-**Trail Z Offset** in Path Diagnostic controls how high the trail sits above the track. Increase if trails clip into the surface.
-
----
-
-## Path Correction
-
-If paths drift off the track surface, use these tools in **Path Diagnostic**.
-
-### Track Surface
-
-Assign the **Track Surface** mesh (usually `Track`). The addon auto-assigns it when a track is loaded.
-
-### Diagnose
-
-- Click **Diagnose**.
-- Path vertices turn **green** (on-track) or **red** (off-track).
-- Use **Clear Diagnostic** to remove the overlay.
-
-### Correct (Single Pass)
-
-- Adjust **Correction Falloff**, **Correction Strength**, **Edge Inset**.
-- Click **Correct** to run one correction pass on all paths and trails.
-- **Edge Inset** — Positive: push points slightly inward from the track edge. Negative: push outward. The direction is derived from the correction vector (left/right of track).
-
-### Auto-Correct
-
-- Click **Auto-Correct (until on-track)**.
-- Iterates until all vertices are on-track or a max iteration count is reached.
-
-### Height Tools
-
-- **Flatten Z** — Set path Z to a fixed value.
-- **Snap Z to Track** — Ray-cast vertices onto the track surface for height.
-
-### Path Sculpt
-
-- Select a path in **Path**.
-- Adjust **Radius** and **Strength**.
-- Use **Sculpt Path** and paint in the viewport (M to toggle push/pull, scroll for radius, Shift+scroll for strength).
-
----
-
-## Project Structure
-
-```
-f1_hot_lap/
-├── launch_control_auto_car_rig/
-│   └── launch_control_auto_car_rig/
-│       ├── blender_manifest.toml
-│       ├── requirements-f1.txt
-│       └── launch_control/
-│           ├── data/
-│           │   └── f1_properties.py      # F1_Lap_Item, F1_Pipeline_Props, DB loading
-│           ├── operators/
-│           │   ├── f1_pipeline.py        # Scene gen, queue, path correction, alignment
-│           │   ├── F1_HiFi_Baker_Pro.py  # FastF1, path gen, CSV, minimap
-│           │   ├── heli_cam.py           # Helicopter camera
-│           │   ├── f1_trail.py           # Trails, bake, refresh
-│           │   ├── path_brush.py         # Path sculpt
-│           │   └── lap_from_json.py      # Apply path JSON to Launch Control
-│           └── ui/
-│               └── f1_studio_panel.py    # Hot Lap panel
-│
-├── F1_Pipeline_Assets/
-│   ├── database/
-│   ├── cars/
-│   ├── tracks/
-│   ├── temp_data/    # Telemetry JSONs
-│   └── exports/      # CSVs, minimap_frames/
-│
-└── scripts/
-    ├── refresh_database.py
-    ├── fetch_one_lap.py
-    └── ...
-```
-
----
-
-## Data & Assets
-
-### Database Files
-
-| File | Purpose |
-|------|---------|
-| `calendar_cache.json` | Race calendar (year → events) |
-| `drivers_by_race.json` | Drivers per event (code, team, etc.) |
-| `drivers_by_season.json` | Season-wide driver list |
-| `tracks.json` | Track versions, alignment |
-| `testing_events.json` | Pre-season test events |
-| `event_session_map.json` | Session display names |
-
-### Generated Outputs
-
-| Location | Contents |
-|----------|----------|
-| `temp_data/` | `{DRIVER}_hifi_path.json`, `{DRIVER}_{slot}_hifi_path.json` |
-| `exports/` | `{DRIVER}_telemetry.csv`, `delta_comparison.csv`, `minimap_frames/*.png` |
-
-### Telemetry CSV Columns
-
-- `frame`, `time_s`, `distance`, `speed`, `throttle`, `brake`, `gear`, `rpm`, `ers_deploy`, etc.
-
----
-
-## Troubleshooting
-
-### "Missing Dependencies"
-
-- Use **Install Dependencies** in the Hot Lap panel, or install manually (see [Installation](#installation)).
-
-### Paths Don’t Match Track
-
-- Use **Track Alignment** (Offset X/Y, Rotation, Scale) and **Save**.
-- Use **Path Correction** (Diagnose, Auto-Correct) if points are off-track.
-
-### Trails Not Animating in Render
-
-- Click **Bake Trails** before rendering. Baked keyframes are reliable in all render engines.
-
-### Trails Lost After Reload
-
-- Click **Refresh Trails** to re-register the handler.
-- Or **Bake Trails** for a permanent solution.
-
-### Minimap Frames Missing
-
-- Ensure **Render Track Map** is enabled before **GENERATE SCENE**.
-- Or run **Render Minimap Only** after CSVs are in `exports/`.
-
-### FastF1 "No data"
-
-- Data is only available after sessions finish (often 30–120 minutes).
-- Check event and session names (e.g. exact spelling).
-
-### Cars / Tracks Not Found
-
-- Verify paths: `F1_Pipeline_Assets/cars/{year}/{team}/{code}.blend` and `F1_Pipeline_Assets/tracks/{event_slug}.blend`.
-- Ensure the `.blend` file is in the project root next to `F1_Pipeline_Assets`.
-
----
-
-## License
-
-SPDX:GPL-3.0-or-later
-
----
-
-## Credits
-
-- **Maintainers:** Daniel Vesterbaek, Gabriela Rodriguez, Blastframe  
-- **Website:** [launch-control.org](https://launch-control.org)  
-- **Addon:** Launch Control Auto Car Rig (Hot Lap – F1 Race Replay Studio)
+Outputs land in the `publish/` queue with caption, tags and a manifest. Distribution runs outside this repo.
+
+## Repository map
+
+| Path | Contents |
+|---|---|
+| `factory/` | The agent harness, evals, memory, skills, API, MCP server |
+| `OPTIMAL LAP SCRIPTS/` | The deterministic toolkit: 2026 lap simulator, line optimisers, realism gate, renderers, per-track calibration logs |
+| `OPTIMAL LAP SCRIPTS/LAP COMPARISON/` | Delta engine and driver comparison |
+| `OPTIMAL LAP SCRIPTS/cache/era2017/` | Era cars fitted to real telemetry, dual-video renderer |
+| `launch_control_auto_car_rig/`, `F1_Pipeline_Assets/` | The Blender pipeline the early videos were made with ([its docs](docs/BLENDER_PIPELINE.md)) |
+| `docs/media/` | Logo, ghost-car validation |
+
+## Roadmap
+
+Not built yet:
+
+- **More weekends in the harness.** Only São Paulo is configured as a toolkit (`factory/weekends/`); the
+  other tracks still run through their `make_*_2026_lap.bat` scripts. Next: generate the toolkit specs from those scripts.
+- **Era and driver-comparison runs through the agents.** Their engines and skills exist; the tools are wired
+  for the optimal lap only.
+- **Rendering inside the run.** `engine_bridge.py render` exists, but the demo run doesn't render the video.
+- **Regulations and papers in the RAG corpus.** Today it covers the project's own design docs and calibration logs.
+- **Airflow / CFD format** (separate repo, work in progress).

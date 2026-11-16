@@ -1,0 +1,31 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: factory
+      POSTGRES_PASSWORD: factory
+      POSTGRES_DB: knowledge
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factory -d knowledge"]
+      interval: 5s
+      retries: 20
+
+  api:
+    build: {context: .., dockerfile: factory/Dockerfile}
+    depends_on:
+      pgvector: {condition: service_healthy}
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://factory:factory@pgvector:5432/knowledge
+      # The physics engine runs inside the same image on its own interpreter.
+      ENGINE_PYTHON: /opt/engine/bin/python
+      ENGINE_ROOT: /app/OPTIMAL LAP SCRIPTS
+    ports: ["8000:8000"]
+    volumes:
+      - ..:/app
+    command: ["/opt/factory/bin/uvicorn", "formulytics.api:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "/app/factory"]
+
+volumes:
+  pgdata:

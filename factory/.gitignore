@@ -1,0 +1,10 @@
+# secrets & local state
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+# runs: keep manifest.json + ledger.jsonl as evidence, drop bulky artifacts
+runs/**/sim_*/
+runs/_eval_tmp/
+runs/mcp_sim_*/
+runs/_spend*.json

@@ -1,0 +1,283 @@
+{
+ "generated": "2026-11-16 02:55",
+ "scoreboard": {
+  "rows": [
+   {
+    "id": "bahrain_2026",
+    "stage": "pre-FP1",
+    "sim_s": 92.186,
+    "ref_s": null,
+    "ref_kind": null,
+    "err_s": null,
+    "err_pct": null
+   },
+   {
+    "id": "spa_2026",
+    "stage": "pre-FP1",
+    "sim_s": 101.91,
+    "ref_s": 104.361,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": -2.451,
+    "err_pct": -2.35
+   },
+   {
+    "id": "silverstone_2026",
+    "stage": "post-FP1",
+    "sim_s": 87.97,
+    "ref_s": 88.111,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": -0.141,
+    "err_pct": -0.16
+   },
+   {
+    "id": "monaco_2026",
+    "stage": "post-FP1",
+    "sim_s": 71.77,
+    "ref_s": 72.051,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": -0.281,
+    "err_pct": -0.39
+   },
+   {
+    "id": "madring_2026",
+    "stage": "post-FP2",
+    "sim_s": 92.363,
+    "ref_s": 91.824,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": 0.539,
+    "err_pct": 0.59
+   },
+   {
+    "id": "singapore_2026",
+    "stage": "pre-FP1",
+    "sim_s": 93.01,
+    "ref_s": 91.373,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": 1.637,
+    "err_pct": 1.79
+   },
+   {
+    "id": "sepang_2026",
+    "stage": "pre-FP1 (no-reference method)",
+    "sim_s": 91.838,
+    "ref_s": 95.13,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": -3.292,
+    "err_pct": -3.46
+   },
+   {
+    "id": "mexico_2026",
+    "stage": "pre-FP1",
+    "sim_s": 76.758,
+    "ref_s": 76.514,
+    "ref_kind": "qualifying pole (dry)",
+    "err_s": 0.244,
+    "err_pct": 0.32
+   },
+   {
+    "id": "sao_paulo_2026",
+    "stage": "pre-FP1",
+    "sim_s": 70.772,
+    "ref_s": 70.763,
+    "ref_kind": "fastest dry lap of the weekend (Practice 2); qualifying was wet",
+    "err_s": 0.009,
+    "err_pct": 0.01
+   }
+  ],
+  "mae_s_all": 1.074,
+  "mae_s_pre_fp1": 1.527,
+  "mae_s_current_method": 0.127,
+  "n_scored": 8,
+  "n_unscorable": 1
+ },
+ "regression": {
+  "cases": [
+   {
+    "weekend": "sao_paulo_2026",
+    "shipped_s": 70.772,
+    "rerun_s": 70.772,
+    "delta_s": 0.0,
+    "gate_pass": true,
+    "pass": true
+   }
+  ],
+  "pass": true
+ },
+ "memory_recall": {
+  "cases": [
+   {
+    "query": "mexico",
+    "fact": "result:mexico_2026.err_s",
+    "want": 0.244,
+    "got": 0.244,
+    "pass": true
+   },
+   {
+    "query": "sao_paulo",
+    "fact": "result:sao_paulo_2026.q_wet",
+    "want": true,
+    "got": true,
+    "pass": true
+   },
+   {
+    "query": "sao_paulo",
+    "fact": "setup:sao_paulo_2026.cda",
+    "want": 0.643,
+    "got": 0.643,
+    "pass": true
+   },
+   {
+    "query": "spa",
+    "fact": "weekend:spa_2026.sim_s",
+    "want": 101.91,
+    "got": 101.91,
+    "pass": true
+   },
+   {
+    "query": "bahrain",
+    "fact": "note:bahrain_2026.text",
+    "want": "no real 2026 session in OpenF1 (event cancelled or not held)",
+    "got": "no real 2026 session in OpenF1 (event cancelled or not held)",
+    "pass": true
+   },
+   {
+    "query": "sepang",
+    "fact": "result:sepang_2026.ref_kind",
+    "want": "qualifying pole (dry)",
+    "got": "qualifying pole (dry)",
+    "pass": true
+   }
+  ],
+  "accuracy": 1.0
+ },
+ "retrieval": {
+  "cases": [
+   {
+    "query": "why are 2026 cars slower than 2025 and what knobs are calibrated per track",
+    "want": "prefp1-universal-calibration-design",
+    "hit": true,
+    "top": [
+     "OPTIMAL LAP SCRIPTS/docs/2026-07-15-prefp1-universal-calibration-design.md",
+     "factory/memory/procedural/feedback_rules.md"
+    ]
+   },
+   {
+    "query": "Singapore street grip factor measured on the 2025 car",
+    "want": "singapore_2026",
+    "hit": true,
+    "top": [
+     "OPTIMAL LAP SCRIPTS/cache/singapore_2026.md",
+     "OPTIMAL LAP SCRIPTS/cache/singapore_2026.md"
+    ]
+   },
+   {
+    "query": "Sepang has no 2025 reference lap, how was it predicted",
+    "want": "sepang_2026_noref",
+    "hit": true,
+    "top": [
+     "OPTIMAL LAP SCRIPTS/cache/sepang_2026_noref.md",
+     "OPTIMAL LAP SCRIPTS/cache/bahrain_2026.md"
+    ]
+   },
+   {
+    "query": "leave-one-out backtest results for canada catalunya austria silverstone",
+    "want": "backtest_report",
+    "hit": true,
+    "top": [
+     "OPTIMAL LAP SCRIPTS/cache/backtest_report.md",
+     "OPTIMAL LAP SCRIPTS/cache/backtest_report.md"
+    ]
+   },
+   {
+    "query": "Monaco physics engine design",
+    "want": "monaco-2026-physics-engine",
+    "hit": true,
+    "top": [
+     "OPTIMAL LAP SCRIPTS/docs/2026-06-04-monaco-2026-physics-engine-plan.md",
+     "OPTIMAL LAP SCRIPTS/docs/2026-06-04-monaco-2026-physics-engine-plan.md"
+    ]
+   },
+   {
+    "query": "the line must touch the apexes rule",
+    "want": "feedback_rules",
+    "hit": false,
+    "top": [
+     "OPTIMAL LAP SCRIPTS/cache/singapore_2026.md"
+    ]
+   }
+  ],
+  "hit_at_4": 0.833,
+  "off_topic": [
+   {
+    "query": "best pizza recipe",
+    "withheld": true
+   },
+   {
+    "query": "stock market forecast for next year",
+    "withheld": true
+   },
+   {
+    "query": "who won the 2010 world cup",
+    "withheld": true
+   }
+  ],
+  "off_topic_withheld_rate": 1.0
+ },
+ "runs": {
+  "runs": 2,
+  "published": 2,
+  "gate_pass_rate": 1.0,
+  "mean_usd": 0.1369,
+  "mean_wall_s": 255.1
+ },
+ "caption_judge": {
+  "cases": [
+   {
+    "run_id": "20261116-024353-cbb0",
+    "hook": "1:10.772 \u2014 0.973s off the pole at Interlagos.",
+    "scores": {
+     "hook": 5,
+     "accuracy": 1,
+     "clarity": 4,
+     "compliance": 5,
+     "why": "The hook is specific and concrete, but the claim of a '7-corner circuit' is factually incorrect (Interlagos has 15 corners), making accuracy 1."
+    },
+    "claims_gate": true
+   },
+   {
+    "run_id": "20261116-025039-bcad",
+    "hook": "0.973s slower than 2025 pole \u2014 and that's fast",
+    "scores": {
+     "hook": 5,
+     "accuracy": 5,
+     "clarity": 4,
+     "compliance": 5,
+     "why": "The hook is specific and surprising, all claims match the provided data, the message is clear, and numbers are properly formatted."
+    },
+    "claims_gate": true
+   }
+  ],
+  "mean": {
+   "hook": 5,
+   "accuracy": 3,
+   "clarity": 4,
+   "compliance": 5
+  },
+  "judge_model": "deepseek/deepseek-v4-pro",
+  "judge_cost": {
+   "usd": 0.00472,
+   "calls": 2,
+   "by_model": {
+    "deepseek/deepseek-v4-pro": {
+     "calls": 2,
+     "in": 804,
+     "out": 2461,
+     "cached_in": 330,
+     "usd": 0.004718,
+     "list_usd": 0.004415,
+     "latency_s": 29.91
+    }
+   }
+  }
+ }
+}

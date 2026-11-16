@@ -1,0 +1,14 @@
+deepagents
+langchain-openai
+langsmith
+fastmcp
+fastapi
+uvicorn
+httpx
+pytest
+python-dotenv
+psycopg[binary]
+pgvector
+fastembed
+numpy
+pandas

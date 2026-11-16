@@ -1,0 +1,328 @@
+{
+ "run_id": "20261116-024353-cbb0",
+ "weekend": "sao_paulo_2026",
+ "format": "optimal_lap",
+ "git_sha": "15fdb5d1",
+ "models": {
+  "orchestrator": [
+   "deepseek/deepseek-v4-pro",
+   "deepseek/deepseek-v4-flash"
+  ],
+  "critic": [
+   "deepseek/deepseek-v4-pro",
+   "deepseek/deepseek-v4-flash"
+  ],
+  "judge": [
+   "deepseek/deepseek-v4-pro",
+   "deepseek/deepseek-v4-flash"
+  ],
+  "worker": [
+   "deepseek/deepseek-v4-flash",
+   "deepseek/deepseek-v3.2"
+  ]
+ },
+ "wall_s": 358.0,
+ "cost": {
+  "usd": 0.22731,
+  "calls": 60,
+  "by_model": {
+   "deepseek/deepseek-v4-pro": {
+    "calls": 15,
+    "in": 159797,
+    "out": 8111,
+    "cached_in": 136514,
+    "usd": 0.15598499999999998,
+    "latency_s": 134.39
+   },
+   "deepseek/deepseek-v4-flash": {
+    "calls": 45,
+    "in": 762896,
+    "out": 14836,
+    "cached_in": 602880,
+    "usd": 0.071329,
+    "latency_s": 125.25999999999998
+   }
+  }
+ },
+ "error": null,
+ "inputs": {
+  "outline": {
+   "path": "F1_Pipeline_Assets/tracks/sao_paulo_grand_prix_mirror_outline.json",
+   "sha256_16": "6c40359e9beba93c"
+  },
+  "raceline_in": {
+   "path": "cache/brazil/line_v2_rl.json",
+   "sha256_16": "6b2296e47aeaa07b"
+  },
+  "reference_csv": {
+   "path": "F1_Pipeline_Assets/exports/reference_2025_brazil_q.csv",
+   "sha256_16": "ad5742f5d83e2e25"
+  },
+  "targets": {
+   "path": "cache/predicted_brazil.json",
+   "sha256_16": "57c91eef9d6e8474"
+  }
+ },
+ "car": {
+  "cda": 0.643,
+  "cl": 4.458,
+  "rho": 1.1353
+ },
+ "env_knobs": {
+  "SUPERCLIP_MEASURED": "1",
+  "MU_LONG": "2.1",
+  "GRIP_MAP": "310:410:0.8963;414:514:1.2749;1344:1444:1.0554;2079:2179:0.9637;2274:2374:0.9743;2669:2769:1.0191;3153:3253:1.1377"
+ },
+ "sim_runs": [
+  {
+   "lap_s": 70.772,
+   "car": {
+    "cda": 0.643,
+    "cl": 4.458,
+    "rho": 1.1353
+   }
+  },
+  {
+   "lap_s": 70.772,
+   "car": {
+    "cda": 0.643,
+    "cl": 4.458,
+    "rho": 1.1353
+   }
+  }
+ ],
+ "result": {
+  "lap_s": 70.772,
+  "lap": "1:10.772",
+  "vmax_kmh": 339,
+  "vmin_kmh": 82
+ },
+ "gates": {
+  "all_pass": true,
+  "blocking_failures": [],
+  "results": [
+   {
+    "gate": "realism",
+    "rule": "R1",
+    "passed": true,
+    "detail": "9/9 engine checks pass",
+    "blocking": true,
+    "evidence": {
+     "checks": [
+      {
+       "pass": true,
+       "check": "lap above 2025+rail hard floor: 70.74s = +0.94s vs 2025 (69.80s); rail +0.8s"
+      },
+      {
+       "pass": true,
+       "check": "lap inside PREDICTED band: 70.74s; predicted [70.36, 73.69]s"
+      },
+      {
+       "pass": true,
+       "check": "top speed near PREDICTED: 338.6 vs target 338.4 (+-6.0)"
+      },
+      {
+       "pass": true,
+       "check": "corner minima near PREDICTED: median err +0.0 km/h over 7 corners (+-6.0)"
+      },
+      {
+       "pass": true,
+       "check": "GAIN median in real band: 22.0 km/h/s; want 14.0-28.0"
+      },
+      {
+       "pass": true,
+       "check": "GAIN peak not excessive: 42.0 km/h/s; want <= 64.0"
+      },
+      {
+       "pass": true,
+       "check": "DROP median in real band: 47.2 km/h/s; want 32.0-52.0"
+      },
+      {
+       "pass": true,
+       "check": "DROP peak shows sharp bite: 158.4 km/h/s; want >= 85.0"
+      },
+      {
+       "pass": true,
+       "check": "SUPERCLIP sharp not trickle: frac=0.38 (want <= 0.45), peak=107.9 (want >= 35.0)"
+      }
+     ]
+    }
+   },
+   {
+    "gate": "no_api_xy",
+    "rule": "R2",
+    "passed": true,
+    "detail": "geometry from SVG outline",
+    "blocking": true,
+    "evidence": {}
+   },
+   {
+    "gate": "apex_touch",
+    "rule": "R3",
+    "passed": true,
+    "detail": "11/12 apexes within 1.5 m of the inside edge (want >= 80%)",
+    "blocking": true,
+    "evidence": {
+     "apexes": [
+      {
+       "idx": 178,
+       "apex_idx": 184,
+       "radius_m": 38.7,
+       "inside_gap_m": 2.86
+      },
+      {
+       "idx": 219,
+       "apex_idx": 222,
+       "radius_m": 30.7,
+       "inside_gap_m": 0.57
+      },
+      {
+       "idx": 274,
+       "apex_idx": 271,
+       "radius_m": 79.4,
+       "inside_gap_m": 1.36
+      },
+      {
+       "idx": 701,
+       "apex_idx": 698,
+       "radius_m": 44.1,
+       "inside_gap_m": 1.25
+      },
+      {
+       "idx": 1000,
+       "apex_idx": 999,
+       "radius_m": 83.3,
+       "inside_gap_m": 1.11
+      },
+      {
+       "idx": 1064,
+       "apex_idx": 1063,
+       "radius_m": 79.0,
+       "inside_gap_m": 1.28
+      },
+      {
+       "idx": 1161,
+       "apex_idx": 1158,
+       "radius_m": 24.6,
+       "inside_gap_m": 1.3
+      },
+      {
+       "idx": 1193,
+       "apex_idx": 1204,
+       "radius_m": 23.7,
+       "inside_gap_m": 0.97
+      },
+      {
+       "idx": 1223,
+       "apex_idx": 1226,
+       "radius_m": 38.0,
+       "inside_gap_m": 0.89
+      },
+      {
+       "idx": 1357,
+       "apex_idx": 1362,
+       "radius_m": 18.2,
+       "inside_gap_m": 0.73
+      },
+      {
+       "idx": 1434,
+       "apex_idx": 1435,
+       "radius_m": 57.6,
+       "inside_gap_m": 1.32
+      },
+      {
+       "idx": 1598,
+       "apex_idx": 1602,
+       "radius_m": 30.8,
+       "inside_gap_m": 1.22
+      }
+     ]
+    }
+   },
+   {
+    "gate": "real_trace",
+    "rule": "R4",
+    "passed": true,
+    "detail": "speed-trace corr 0.9815 vs real 2025 Q pole trace (want >= 0.94)",
+    "blocking": true,
+    "evidence": {
+     "speed_corr": 0.9815,
+     "top_speed_err_kmh": 2.6,
+     "mean_abs_err_kmh": 10.76,
+     "note": "distance-normalised, 1000 samples; real trace is map-matched public feed",
+     "reference": "real 2025 Q pole trace"
+    }
+   },
+   {
+    "gate": "zoom",
+    "rule": "R5",
+    "passed": true,
+    "detail": "zoom 20 (exception: user asked zoom 20 for Interlagos (default rule is 28))",
+    "blocking": true,
+    "evidence": {}
+   },
+   {
+    "gate": "no_inflation",
+    "rule": "R6",
+    "passed": true,
+    "detail": "label 70.772 vs sim 70.772",
+    "blocking": true,
+    "evidence": {}
+   },
+   {
+    "gate": "claims_supported",
+    "rule": "R7",
+    "passed": true,
+    "detail": "all numbers trace to run facts",
+    "blocking": true,
+    "evidence": {
+     "numbers": [
+      "2026",
+      "1:10.772",
+      "0.973",
+      "1:09.799",
+      "1:10.357",
+      "1:13.690",
+      "339",
+      "82",
+      "2026"
+     ]
+    }
+   },
+   {
+    "gate": "delta_engine",
+    "rule": "R8",
+    "passed": true,
+    "detail": "no driver comparison in this run",
+    "blocking": false,
+    "evidence": {}
+   }
+  ]
+ },
+ "caption": {
+  "hook": "1:10.772 \u2014 0.973s off the pole at Interlagos.",
+  "text": "On a dry track, the 2026 car laps Interlagos in 1:10.772 \u2014 0.973s slower than the 1:09.799 benchmark. The simulation lands inside the predicted band of 1:10.357\u20131:13.690.\n\nTop speed reaches 339 km/h, but minimum speed drops to 82 km/h on this anticlockwise 7-corner circuit. The car trades straight-line pace for cornering grip, which costs time relative to the reference lap.",
+  "tags": [
+   "#F1",
+   "#Formula1",
+   "#Interlagos",
+   "#SaoPauloGP",
+   "#2026",
+   "#LapTime",
+   "#Engineering",
+   "#Simulation"
+  ]
+ },
+ "queued_by_agent": true,
+ "published": true,
+ "agent_summary": "---\n\n## Summary \u2014 S\u00e3o Paulo 2026 Optimal Lap\n\n| Item | Value |\n|---|---|\n| **Lap time** | 70.772 s |\n| **Gates** | 8/8 PASS (realism, no_api_xy, apex_touch, real_trace, zoom, no_inflation, claims_supported, delta_engine) |\n| **Critic verdict** | Physical assessment all PASS; initial REJECT for missing caption/label \u2014 resolved by packager |\n| **Caption hook** | \"1:10.772 \u2014 0.973s off the pole at Interlagos\" |\n| **Queued** | \u2705 Yes |",
+ "post_hoc": {
+  "real_ref_s": 70.763,
+  "ref_kind": "fastest dry lap of the weekend (Practice 2); qualifying was wet",
+  "sim_s": 70.772,
+  "err_s": 0.009,
+  "err_pct": 0.01,
+  "q_pole_s": 87.47,
+  "q_wet": true
+ }
+}

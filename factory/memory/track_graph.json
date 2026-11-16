@@ -1,0 +1,359 @@
+{
+ "nodes": [
+  {
+   "id": "track:bahrain",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:bahrain_2026",
+   "kind": "weekend",
+   "stage": "pre-FP1",
+   "sim_s": 92.186
+  },
+  {
+   "id": "method:pre-FP1",
+   "kind": "method"
+  },
+  {
+   "id": "note:bahrain_2026",
+   "kind": "note",
+   "text": "no real 2026 session in OpenF1 (event cancelled or not held)"
+  },
+  {
+   "id": "track:spa",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:spa_2026",
+   "kind": "weekend",
+   "stage": "pre-FP1",
+   "sim_s": 101.91
+  },
+  {
+   "id": "result:spa_2026",
+   "kind": "result",
+   "real_ref_s": 104.361,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -2.451,
+   "err_pct": -2.35,
+   "q_wet": false
+  },
+  {
+   "id": "track:silverstone",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:silverstone_2026",
+   "kind": "weekend",
+   "stage": "post-FP1",
+   "sim_s": 87.97
+  },
+  {
+   "id": "method:post-FP1",
+   "kind": "method"
+  },
+  {
+   "id": "result:silverstone_2026",
+   "kind": "result",
+   "real_ref_s": 88.111,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -0.141,
+   "err_pct": -0.16,
+   "q_wet": false
+  },
+  {
+   "id": "track:monaco",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:monaco_2026",
+   "kind": "weekend",
+   "stage": "post-FP1",
+   "sim_s": 71.77
+  },
+  {
+   "id": "result:monaco_2026",
+   "kind": "result",
+   "real_ref_s": 72.051,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -0.281,
+   "err_pct": -0.39,
+   "q_wet": false
+  },
+  {
+   "id": "track:madring",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:madring_2026",
+   "kind": "weekend",
+   "stage": "post-FP2",
+   "sim_s": 92.363
+  },
+  {
+   "id": "method:post-FP2",
+   "kind": "method"
+  },
+  {
+   "id": "result:madring_2026",
+   "kind": "result",
+   "real_ref_s": 91.824,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": 0.539,
+   "err_pct": 0.59,
+   "q_wet": false
+  },
+  {
+   "id": "track:singapore",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:singapore_2026",
+   "kind": "weekend",
+   "stage": "pre-FP1",
+   "sim_s": 93.01
+  },
+  {
+   "id": "result:singapore_2026",
+   "kind": "result",
+   "real_ref_s": 91.373,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": 1.637,
+   "err_pct": 1.79,
+   "q_wet": false
+  },
+  {
+   "id": "track:sepang",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:sepang_2026",
+   "kind": "weekend",
+   "stage": "pre-FP1 (no-reference method)",
+   "sim_s": 91.838
+  },
+  {
+   "id": "method:pre-FP1 (no-reference method)",
+   "kind": "method"
+  },
+  {
+   "id": "result:sepang_2026",
+   "kind": "result",
+   "real_ref_s": 95.13,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -3.292,
+   "err_pct": -3.46,
+   "q_wet": false
+  },
+  {
+   "id": "track:mexico",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:mexico_2026",
+   "kind": "weekend",
+   "stage": "pre-FP1",
+   "sim_s": 76.758
+  },
+  {
+   "id": "result:mexico_2026",
+   "kind": "result",
+   "real_ref_s": 76.514,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": 0.244,
+   "err_pct": 0.32,
+   "q_wet": false
+  },
+  {
+   "id": "track:sao_paulo",
+   "kind": "track"
+  },
+  {
+   "id": "weekend:sao_paulo_2026",
+   "kind": "weekend",
+   "stage": "pre-FP1",
+   "sim_s": 70.772,
+   "direction": "anticlockwise",
+   "formats": [
+    "optimal_lap",
+    "era_comparison",
+    "driver_comparison"
+   ]
+  },
+  {
+   "id": "result:sao_paulo_2026",
+   "kind": "result",
+   "real_ref_s": 70.763,
+   "ref_kind": "fastest dry lap of the weekend (Practice 2); qualifying was wet",
+   "err_s": 0.009,
+   "err_pct": 0.01,
+   "q_wet": true
+  },
+  {
+   "id": "setup:sao_paulo_2026",
+   "kind": "setup",
+   "cda": 0.643,
+   "cl": 4.458,
+   "rho": 1.1353,
+   "env_knobs": [
+    "GRIP_MAP",
+    "MU_LONG",
+    "SUPERCLIP_MEASURED"
+   ]
+  },
+  {
+   "id": "render:sao_paulo_2026",
+   "kind": "render",
+   "zoom": 20,
+   "zoom_note": "user asked zoom 20 for Interlagos (default rule is 28)",
+   "tagline": "ON A DRY TRACK"
+  }
+ ],
+ "edges": [
+  {
+   "src": "track:bahrain",
+   "rel": "held",
+   "dst": "weekend:bahrain_2026"
+  },
+  {
+   "src": "weekend:bahrain_2026",
+   "rel": "predicted_with",
+   "dst": "method:pre-FP1"
+  },
+  {
+   "src": "weekend:bahrain_2026",
+   "rel": "note",
+   "dst": "note:bahrain_2026"
+  },
+  {
+   "src": "track:spa",
+   "rel": "held",
+   "dst": "weekend:spa_2026"
+  },
+  {
+   "src": "weekend:spa_2026",
+   "rel": "predicted_with",
+   "dst": "method:pre-FP1"
+  },
+  {
+   "src": "weekend:spa_2026",
+   "rel": "scored",
+   "dst": "result:spa_2026"
+  },
+  {
+   "src": "track:silverstone",
+   "rel": "held",
+   "dst": "weekend:silverstone_2026"
+  },
+  {
+   "src": "weekend:silverstone_2026",
+   "rel": "predicted_with",
+   "dst": "method:post-FP1"
+  },
+  {
+   "src": "weekend:silverstone_2026",
+   "rel": "scored",
+   "dst": "result:silverstone_2026"
+  },
+  {
+   "src": "track:monaco",
+   "rel": "held",
+   "dst": "weekend:monaco_2026"
+  },
+  {
+   "src": "weekend:monaco_2026",
+   "rel": "predicted_with",
+   "dst": "method:post-FP1"
+  },
+  {
+   "src": "weekend:monaco_2026",
+   "rel": "scored",
+   "dst": "result:monaco_2026"
+  },
+  {
+   "src": "track:madring",
+   "rel": "held",
+   "dst": "weekend:madring_2026"
+  },
+  {
+   "src": "weekend:madring_2026",
+   "rel": "predicted_with",
+   "dst": "method:post-FP2"
+  },
+  {
+   "src": "weekend:madring_2026",
+   "rel": "scored",
+   "dst": "result:madring_2026"
+  },
+  {
+   "src": "track:singapore",
+   "rel": "held",
+   "dst": "weekend:singapore_2026"
+  },
+  {
+   "src": "weekend:singapore_2026",
+   "rel": "predicted_with",
+   "dst": "method:pre-FP1"
+  },
+  {
+   "src": "weekend:singapore_2026",
+   "rel": "scored",
+   "dst": "result:singapore_2026"
+  },
+  {
+   "src": "track:sepang",
+   "rel": "held",
+   "dst": "weekend:sepang_2026"
+  },
+  {
+   "src": "weekend:sepang_2026",
+   "rel": "predicted_with",
+   "dst": "method:pre-FP1 (no-reference method)"
+  },
+  {
+   "src": "weekend:sepang_2026",
+   "rel": "scored",
+   "dst": "result:sepang_2026"
+  },
+  {
+   "src": "track:mexico",
+   "rel": "held",
+   "dst": "weekend:mexico_2026"
+  },
+  {
+   "src": "weekend:mexico_2026",
+   "rel": "predicted_with",
+   "dst": "method:pre-FP1"
+  },
+  {
+   "src": "weekend:mexico_2026",
+   "rel": "scored",
+   "dst": "result:mexico_2026"
+  },
+  {
+   "src": "track:sao_paulo",
+   "rel": "held",
+   "dst": "weekend:sao_paulo_2026"
+  },
+  {
+   "src": "weekend:sao_paulo_2026",
+   "rel": "predicted_with",
+   "dst": "method:pre-FP1"
+  },
+  {
+   "src": "weekend:sao_paulo_2026",
+   "rel": "scored",
+   "dst": "result:sao_paulo_2026"
+  },
+  {
+   "src": "weekend:sao_paulo_2026",
+   "rel": "car_setup",
+   "dst": "setup:sao_paulo_2026"
+  },
+  {
+   "src": "weekend:sao_paulo_2026",
+   "rel": "render_rule",
+   "dst": "render:sao_paulo_2026"
+  }
+ ]
+}

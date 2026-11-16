@@ -1,0 +1,19 @@
+{
+ "weekend": "sao_paulo_2026",
+ "caption": {
+  "hook": "0.973s slower than 2025 pole \u2014 and that's fast",
+  "text": "Our 2026 optimal lap (1:10.772) is just under a second off last year's pole (1:09.799), sitting near the fast end of the predicted band (1:10.357\u20131:13.690). ON A DRY TRACK, the simulation is locked in.",
+  "tags": [
+   "#F1",
+   "#Interlagos",
+   "#SaoPauloGP",
+   "#Simulation",
+   "#LapTime",
+   "#Engineering",
+   "#2026Season",
+   "#OptimalLap"
+  ]
+ },
+ "lap": "1:10.772",
+ "manifest": "runs/20261116-025039-bcad/manifest.json"
+}

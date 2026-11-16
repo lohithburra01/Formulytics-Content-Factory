@@ -1,0 +1,19 @@
+{
+ "weekend": "sao_paulo_2026",
+ "caption": {
+  "hook": "1:10.772 \u2014 0.973s off the pole at Interlagos.",
+  "text": "On a dry track, the 2026 car laps Interlagos in 1:10.772 \u2014 0.973s slower than the 1:09.799 benchmark. The simulation lands inside the predicted band of 1:10.357\u20131:13.690.\n\nTop speed reaches 339 km/h, but minimum speed drops to 82 km/h on this anticlockwise 7-corner circuit. The car trades straight-line pace for cornering grip, which costs time relative to the reference lap.",
+  "tags": [
+   "#F1",
+   "#Formula1",
+   "#Interlagos",
+   "#SaoPauloGP",
+   "#2026",
+   "#LapTime",
+   "#Engineering",
+   "#Simulation"
+  ]
+ },
+ "lap": "1:10.772",
+ "manifest": "runs/20261116-024353-cbb0/manifest.json"
+}

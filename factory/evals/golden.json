@@ -1,0 +1,363 @@
+{
+ "built": "2026-11-16",
+ "source": "OpenF1",
+ "rows": [
+  {
+   "id": "bahrain_2026",
+   "location": "Sakhir",
+   "sim_s": 92.186,
+   "stage": "pre-FP1",
+   "real": null,
+   "note": "no real 2026 session in OpenF1 (event cancelled or not held)"
+  },
+  {
+   "id": "spa_2026",
+   "location": "Spa",
+   "sim_s": 101.91,
+   "stage": "pre-FP1",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11327,
+      "best_lap_s": 107.07,
+      "best_driver_number": 3,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 2",
+      "session_key": 11328,
+      "best_lap_s": 105.944,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 3",
+      "session_key": 11329,
+      "best_lap_s": 105.99,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11330,
+      "best_lap_s": 104.361,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 12,
+     "lap_s": 104.361
+    },
+    "q_wet": false
+   },
+   "ref_s": 104.361,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -2.451,
+   "err_pct": -2.35
+  },
+  {
+   "id": "silverstone_2026",
+   "location": "Silverstone",
+   "sim_s": 87.97,
+   "stage": "post-FP1",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11316,
+      "best_lap_s": 89.26,
+      "best_driver_number": 44,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11322,
+      "best_lap_s": 88.111,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 12,
+     "lap_s": 88.111
+    },
+    "q_wet": false
+   },
+   "ref_s": 88.111,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -0.141,
+   "err_pct": -0.16
+  },
+  {
+   "id": "monaco_2026",
+   "location": "Monte Carlo",
+   "sim_s": 71.77,
+   "stage": "post-FP1",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11292,
+      "best_lap_s": 73.978,
+      "best_driver_number": 16,
+      "rain_frac": 0.04
+     },
+     {
+      "session": "Practice 2",
+      "session_key": 11293,
+      "best_lap_s": 73.026,
+      "best_driver_number": 44,
+      "rain_frac": 0.09
+     },
+     {
+      "session": "Practice 3",
+      "session_key": 11294,
+      "best_lap_s": 72.72,
+      "best_driver_number": 12,
+      "rain_frac": 0.01
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11295,
+      "best_lap_s": 72.051,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 12,
+     "lap_s": 72.051
+    },
+    "q_wet": false
+   },
+   "ref_s": 72.051,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -0.281,
+   "err_pct": -0.39
+  },
+  {
+   "id": "madring_2026",
+   "location": "Madrid",
+   "sim_s": 92.363,
+   "stage": "post-FP2",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11362,
+      "best_lap_s": 94.077,
+      "best_driver_number": 63,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 2",
+      "session_key": 11363,
+      "best_lap_s": 93.662,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 3",
+      "session_key": 11364,
+      "best_lap_s": 92.797,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11365,
+      "best_lap_s": 91.824,
+      "best_driver_number": 1,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 1,
+     "lap_s": 91.824
+    },
+    "q_wet": false
+   },
+   "ref_s": 91.824,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": 0.539,
+   "err_pct": 0.59
+  },
+  {
+   "id": "singapore_2026",
+   "location": "Marina Bay",
+   "sim_s": 93.01,
+   "stage": "pre-FP1",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11378,
+      "best_lap_s": 92.274,
+      "best_driver_number": 63,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11384,
+      "best_lap_s": 91.373,
+      "best_driver_number": 3,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 3,
+     "lap_s": 91.373
+    },
+    "q_wet": false
+   },
+   "ref_s": 91.373,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": 1.637,
+   "err_pct": 1.79
+  },
+  {
+   "id": "sepang_2026",
+   "location": "Kuala Lumpur",
+   "sim_s": 91.838,
+   "stage": "pre-FP1 (no-reference method)",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11727,
+      "best_lap_s": 97.52,
+      "best_driver_number": 3,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 2",
+      "session_key": 11728,
+      "best_lap_s": 97.528,
+      "best_driver_number": 16,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 3",
+      "session_key": 11729,
+      "best_lap_s": 96.302,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11730,
+      "best_lap_s": 95.13,
+      "best_driver_number": 3,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 3,
+     "lap_s": 95.13
+    },
+    "q_wet": false
+   },
+   "ref_s": 95.13,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": -3.292,
+   "err_pct": -3.46
+  },
+  {
+   "id": "mexico_2026",
+   "location": "Mexico City",
+   "sim_s": 76.758,
+   "stage": "pre-FP1",
+   "label_s": 77.265,
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11397,
+      "best_lap_s": 78.128,
+      "best_driver_number": 16,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 2",
+      "session_key": 11398,
+      "best_lap_s": 77.827,
+      "best_driver_number": 16,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 3",
+      "session_key": 11399,
+      "best_lap_s": 77.6,
+      "best_driver_number": 1,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11400,
+      "best_lap_s": 76.514,
+      "best_driver_number": 44,
+      "rain_frac": 0.0
+     }
+    ],
+    "q_pole": {
+     "driver_number": 44,
+     "lap_s": 76.514
+    },
+    "q_wet": false
+   },
+   "ref_s": 76.514,
+   "ref_kind": "qualifying pole (dry)",
+   "err_s": 0.244,
+   "err_pct": 0.32
+  },
+  {
+   "id": "sao_paulo_2026",
+   "location": "Paulo",
+   "sim_s": 70.772,
+   "stage": "pre-FP1",
+   "real": {
+    "sessions": [
+     {
+      "session": "Practice 1",
+      "session_key": 11405,
+      "best_lap_s": 71.717,
+      "best_driver_number": 1,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 2",
+      "session_key": 11406,
+      "best_lap_s": 70.763,
+      "best_driver_number": 12,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Practice 3",
+      "session_key": 11407,
+      "best_lap_s": 71.622,
+      "best_driver_number": 3,
+      "rain_frac": 0.0
+     },
+     {
+      "session": "Qualifying",
+      "session_key": 11408,
+      "best_lap_s": 86.745,
+      "best_driver_number": 63,
+      "rain_frac": 0.66
+     }
+    ],
+    "q_pole": {
+     "driver_number": 1,
+     "lap_s": 87.47
+    },
+    "q_wet": true
+   },
+   "ref_s": 70.763,
+   "ref_kind": "fastest dry lap of the weekend (Practice 2); qualifying was wet",
+   "err_s": 0.009,
+   "err_pct": 0.01
+  }
+ ]
+}
