@@ -189,6 +189,8 @@ Outputs land in the `publish/` queue with caption, tags and a manifest. Distribu
 | `OPTIMAL LAP SCRIPTS/` | The deterministic toolkit: 2026 lap simulator, line optimisers, realism gate, renderers, per-track calibration logs |
 | `OPTIMAL LAP SCRIPTS/LAP COMPARISON/` | Delta engine and driver comparison |
 | `OPTIMAL LAP SCRIPTS/cache/era2017/` | Era cars fitted to real telemetry, dual-video renderer |
+| `airflow_sim_on_track/` | WIP airflow / CFD format: vortex-lattice wings and ground effect around a hairpin (history kept) |
+| `optimal_lap_sandbox/` | Agentic-upgrade sandbox where the Austin 2025 vs 2026 work was built (history kept, FastF1 caches stripped) |
 | `launch_control_auto_car_rig/`, `F1_Pipeline_Assets/` | The Blender pipeline the early videos were made with ([its docs](docs/BLENDER_PIPELINE.md)) |
 | `docs/media/` | Logo, ghost-car validation |
 
