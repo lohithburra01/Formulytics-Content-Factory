@@ -133,6 +133,13 @@ python -m formulytics.run --weekend sao_paulo_2026
 | Caption | *"0.973s slower than 2025 pole — and that's fast"* (claims gate forced rewrites until every number traced to a fact) |
 | Score vs reality (post-hoc) | +0.009 s vs the fastest dry lap of the weekend (qualifying was wet) |
 
+<p align="center">
+  <img src="docs/media/langsmith_trace.png" width="640" alt="LangSmith trajectory of the São Paulo run"><br>
+  <sub>The run in LangSmith (trajectory view): the orchestrator reads the optimal-lap skill, writes its todo plan, then delegates to the
+  researcher, simulator, critic and packager sub-agents and finishes with <code>run_all_gates</code> and <code>queue_for_publish</code>.
+  2 min 32 s, 521 traced runs.</sub>
+</p>
+
 **The eval loop caught a real failure.** Run 1 ([manifest](factory/runs/20261116-024353-cbb0/manifest.json))
 passed every gate but its caption said "this 7-corner circuit". The 7 is the number of
 *calibration* corners; Interlagos has 15 turns. The claims gate only checked numbers with two or more digits, so it missed
