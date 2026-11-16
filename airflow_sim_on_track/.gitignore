@@ -1,0 +1,21 @@
+# Python caches
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+
+# Heavy / regenerated outputs
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.webm
+runs/
+out/
+
+# Local Claude settings
+.claude/settings.local.json
+*.bin
+.venv*/
+spikes/hairpin/out/f_*.png
+spikes/hairpin/out_v*/f_*.png
