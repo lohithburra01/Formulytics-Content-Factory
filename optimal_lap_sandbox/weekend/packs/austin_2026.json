@@ -1,0 +1,1813 @@
+{
+ "weekend": {
+  "track": "austin",
+  "year": 2026
+ },
+ "values": {
+  "ACCEL_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "A_ACC_LONG_MAX": {
+   "value": 16.1865,
+   "unit": "m/s^2",
+   "origin": "COMPUTED",
+   "source": "1.65 g, matches real 2026 peak corner-exit gain ~55-58 km/h/s (sim comment)",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "BANK_DENOM_FLOOR": {
+   "value": 0.001,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "numerics",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "BRAKE_DECEL_THRESH": {
+   "value": 4.0,
+   "unit": "m/s^2",
+   "origin": "USER_DECISION",
+   "reason": "kept: measured effect <= 0.001 s at x0.5 and x1.5 (2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "BRAKE_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "CDA_CORNER_M2": {
+   "value": 1.79,
+   "unit": "m^2",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held: sim 200-250 km/h acceleration is 30-60% above FP1 at any plausible drag (likely un-modelled deployment management); conflict 2026-10-20",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "CDA_STRAIGHT_M2": {
+   "value": 0.8,
+   "unit": "m^2",
+   "origin": "COMPUTED",
+   "source": "re-pinned to Silverstone 2026 FP1 top speed 317 km/h (memory silverstone-2026-calibration)",
+   "file": false,
+   "pending_review": false,
+   "note": "car default; the weekend fit overrides",
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "CLIP_ZONES": {
+   "value": "[[0.0805, 0.0871, -18.18], [0.2153, 0.2255, -9.72], [0.4223, 0.4382, -11.61], [0.5922, 0.64, -3.47]]",
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "weekend.features.clip_zones on the 2026 FP1 speed trace (full throttle, speed falling): [lap fraction start, end, km/h per s] per zone (spec D28)",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "CL_CORNER_M2": {
+   "value": 4.2,
+   "unit": "m^2",
+   "origin": "COMPUTED",
+   "source": "re-pinned to Silverstone 2026 FP1 (memory silverstone-2026-calibration)",
+   "file": false,
+   "pending_review": false,
+   "note": "car default; the weekend fit overrides",
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "CL_STRAIGHT_M2": {
+   "value": 1.4,
+   "unit": "m^2",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held: no Singapore corner is taken in straight mode, so no feature controls it (2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "CORR_SMOOTH_S": {
+   "value": 30.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "DECEL_WINDOW_S": {
+   "value": 0.4,
+   "unit": "s",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "calibration-extraction window, not on the main path",
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "E_BATTERY_CAP_J": {
+   "value": 4000000,
+   "unit": "J",
+   "origin": "KNOWLEDGE",
+   "source": "2026 PU rules: max 4 MJ difference between max and min ES state of charge (SAE 2026-01-0188 abstract; f1technical.net 2026 ES thread). FIA Art. 5 text not yet checked",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "E_DEPLOY_BUDGET_J": {
+   "value": 9000000,
+   "unit": "J",
+   "origin": "KNOWLEDGE",
+   "source": "FIA 2026 PU regulations, 9 MJ/lap",
+   "file": false,
+   "pending_review": false,
+   "note": "defined but never used by the sim",
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "FB_TOL": {
+   "value": 0.0001,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "numerics",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "G": {
+   "value": 9.81,
+   "unit": "m/s^2",
+   "origin": "KNOWLEDGE",
+   "source": "standard gravity",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "GRIP_MAP": {
+   "value": "",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "J_MAX_LAT_JERK": {
+   "value": 12.0,
+   "unit": "m/s^3",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "addon defaults, validated 2026-05-10 (no data)",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "KAPPA_CORNER_THRESH": {
+   "value": 0.005,
+   "unit": "1/m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held at the shipped value: overlaps the corner/straight downforce split (2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "KAPPA_FLOOR": {
+   "value": 0.005,
+   "unit": "1/m",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "KEY_ACCEL_WINDOW_S": {
+   "value": 7.0,
+   "unit": "s",
+   "origin": "KNOWLEDGE",
+   "source": "post-Miami 2026 regs key-acceleration definition (sim comment)",
+   "file": false,
+   "pending_review": false,
+   "note": "the 7 s number itself is an estimate",
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "LAMBDA_SLACK": {
+   "value": 1000.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "MASS_KG": {
+   "value": 768.0,
+   "unit": "kg",
+   "origin": "KNOWLEDGE",
+   "source": "FIA 2026 technical regulations, minimum car mass (sim comment)",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "MGU_FRAC_AT_MID": {
+   "value": 0.2857142857142857,
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "100 kW / P_MGU_DEPLOY_MAX_W",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "MU_DRIVE": {
+   "value": 1.0,
+   "unit": "",
+   "origin": "FITTED",
+   "source": "weekend/tune.py fixed tuning vs the 2026 FP1 speed graph (grill D5, D21); value = start",
+   "fit_target": "acceleration in the 100-150 km/h band",
+   "fit_range": [
+    0.6,
+    1.6
+   ],
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "MU_LAT": {
+   "value": 1.95,
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "Canada 2025 hairpin apex 19.19 m/s (vehicle_calibration.json)",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "MU_LONG": {
+   "value": 1.35,
+   "unit": "",
+   "origin": "FITTED",
+   "source": "weekend/tune.py fixed tuning vs the 2026 FP1 speed graph (grill D5, D21); value = start",
+   "fit_target": "braking rate in the 200-300 km/h bands",
+   "fit_range": [
+    0.9,
+    2.2
+   ],
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "N_CORRIDOR_POINTS": {
+   "value": 800,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "fast solve",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "P_ICE_MAX_W": {
+   "value": 400000,
+   "unit": "W",
+   "origin": "KNOWLEDGE",
+   "source": "FIA 2026 PU regulations, ~400 kW combustion (spec doc section 3)",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "P_MGU_DEPLOY_MAX_W": {
+   "value": 350000,
+   "unit": "W",
+   "origin": "KNOWLEDGE",
+   "source": "FIA 2026 PU regulations, MGU-K 350 kW",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "P_MGU_NORMAL_CAP_W": {
+   "value": 250000,
+   "unit": "W",
+   "origin": "KNOWLEDGE",
+   "source": "2026 regs, MGU-K cap outside key-accel zones",
+   "file": false,
+   "pending_review": false,
+   "note": "sim comments disagree pre/post-Miami (inventory #140)",
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "P_MGU_REGEN_MAX_W": {
+   "value": 350000,
+   "unit": "W",
+   "origin": "KNOWLEDGE",
+   "source": "FIA 2026 PU regulations, regen ceiling",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "P_SUPERCLIP_NET_W": {
+   "value": 335000,
+   "unit": "W",
+   "origin": "COMPUTED",
+   "source": "tuned to China 2026 Q superclip decline 5-7 km/h/s",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "RHO": {
+   "value": 1.205,
+   "unit": "kg/m^3",
+   "origin": "COMPUTED",
+   "source": "ISA at altitude 171 m (airdensityonline.com track page: 561 ft): 1.225*(1-2.25577e-5 h)^4.2561",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "SAFETY_MARGIN_REFINE": {
+   "value": 0.3,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "SOC_INIT": {
+   "value": 1.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "SOC_SUPERCLIP_THRESH": {
+   "value": 0.3,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "defined but never used",
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "STRAIGHT_STIFF": {
+   "value": 5.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "SUPERCLIP_MAX_S": {
+   "value": 3.0,
+   "unit": "s",
+   "origin": "KNOWLEDGE",
+   "source": "FIA / motorsport.com, Apr 2026",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "SUPERCLIP_SPEED_FRAC": {
+   "value": 0.96,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held at the shipped value: superclip signature inside the gate band (2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "TRAIL_EXP": {
+   "value": 1.6,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held at the shipped value: tuning against 150-250 km/h braking pinned it at its range end (conflict, 2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "TRAIL_FRAC_MIN": {
+   "value": 0.4,
+   "unit": "",
+   "origin": "FITTED",
+   "source": "weekend/tune.py fixed tuning vs the 2026 FP1 speed graph (grill D5, D21); value = start",
+   "fit_target": "braking rate in the 100-150 km/h band",
+   "fit_range": [
+    0.15,
+    1.0
+   ],
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "TRAIL_V_FULL_KMH": {
+   "value": 235.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held at the shipped value: its effect overlaps the other brake numbers; 4 Hz FP1 data cannot separate it (2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "UNWIND_RATIO": {
+   "value": 3.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "V_DEPLOY_FULL_KMH": {
+   "value": 200.0,
+   "unit": "km/h",
+   "origin": "KNOWLEDGE",
+   "source": "2026 MGU-K speed taper, hard regulatory power cap (memory fp1-calibration-playbook)",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "V_DEPLOY_MID_KMH": {
+   "value": 270.0,
+   "unit": "km/h",
+   "origin": "KNOWLEDGE",
+   "source": "2026 MGU-K speed taper, 100 kW at this speed",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "V_DEPLOY_ZERO_KMH": {
+   "value": 300.0,
+   "unit": "km/h",
+   "origin": "KNOWLEDGE",
+   "source": "2026 MGU-K speed taper, cut at/above this speed",
+   "file": false,
+   "pending_review": false,
+   "layer": "regulations",
+   "note_id": "regulations/fia_2026_power_unit"
+  },
+  "V_FLOOR_MS": {
+   "value": 5.0,
+   "unit": "m/s",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "numerics",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "WARM_A_ACC_MAX": {
+   "value": 39.24,
+   "unit": "m/s^2",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "4 g warm-start ceiling",
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "WARM_A_BRK_MAX": {
+   "value": 47.35287,
+   "unit": "m/s^2",
+   "origin": "COMPUTED",
+   "source": "vehicle_calibration.json mu_long_obs 4.827 x 9.81 (Canada 2025)",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "WARM_A_LAT_MAX": {
+   "value": 24.55040666666667,
+   "unit": "m/s^2",
+   "origin": "COMPUTED",
+   "source": "vehicle_calibration.json v_apex_hairpin_obs 19.19^2 / 15 m (Canada 2025)",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "WARM_CDA": {
+   "value": 0.55,
+   "unit": "m^2",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "not updated by --cda",
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "WARM_MASS_KG": {
+   "value": 768.0,
+   "unit": "kg",
+   "origin": "KNOWLEDGE",
+   "source": "same as MASS_KG (FIA 2026 minimum)",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "WARM_P_MAX_W": {
+   "value": 797414.3999999999,
+   "unit": "W",
+   "origin": "COMPUTED",
+   "source": "vehicle_calibration.json P_over_m_obs 1038.3 x 768 (Canada 2025)",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "WARM_RHO": {
+   "value": 1.205,
+   "unit": "kg/m^3",
+   "origin": "COMPUTED",
+   "source": "the sim forces WARM_RHO = RHO",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "WARM_V_CAP": {
+   "value": 110.0,
+   "unit": "m/s",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "car",
+   "note_id": "car/f1_2026_car"
+  },
+  "check.accel_bands_kmh": {
+   "value": [
+    100.0,
+    150.0,
+    200.0,
+    250.0,
+    300.0
+   ],
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: 50 km/h speed bands",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.brake_bands_kmh": {
+   "value": [
+    100.0,
+    150.0,
+    200.0,
+    250.0,
+    300.0
+   ],
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: 50 km/h speed bands for braking/acceleration rates",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.clip_match_m": {
+   "value": 60.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "spec D28: a sim clip zone matches a real one when it ends within 60 m and covers half of it (number proposed by Claude)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.corner_prominence_kmh": {
+   "value": 8.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing corner detection (_track_registry.corner_minima)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.corner_sep_m": {
+   "value": 80.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing corner detection (_track_registry.corner_minima)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.exit_gain_kmh": {
+   "value": 60.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: exit acceleration over the first 60 km/h",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.flag_kmh": {
+   "value": 10.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing corner-compare flag (+-10 km/h, cache/_corner_compare.py)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.onset_drop_kmh": {
+   "value": 5.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: braking onset = 5 km/h below the straight peak",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.segment_prominence_kmh": {
+   "value": 15.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23: separate the corners and match each shape; segments cut at the reference straight peaks that stand 15 km/h above their surroundings (number proposed by Claude)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.segment_rmse_kmh": {
+   "value": 8.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23: visual shape match per corner, not the 96% correlation; a segment passes at RMSE <= 8 km/h vs FP1 (number proposed by Claude, tighten if pictures still look wrong)",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "check.window_frac": {
+   "value": 0.015,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate/autofit corner window (MATCH_TOL_FRAC)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "env.KGRIP_STENCIL": {
+   "value": 4,
+   "unit": "stations",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); held at the shipped value: grip-curvature smoothing (~8 m); 3 = +0.5 s, 6 = -1.0 s; no feature isolates it (2026-10-20)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "env.LINE_WOBBLE_ADAPTIVE": {
+   "value": 1,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "was env; unused when a raceline is supplied",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "env.LINE_WOBBLE_SIG": {
+   "value": 2.5,
+   "unit": "stations",
+   "origin": "USER_DECISION",
+   "reason": "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "note": "was env; unused when a raceline is supplied",
+   "layer": "run",
+   "note_id": "run/sim_numerics"
+  },
+  "fit.max_eval": {
+   "value": 8,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: tuning budget per number",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.max_sweeps": {
+   "value": 6,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: tuning budget",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.range.CDA_STRAIGHT_M2": {
+   "value": [
+    0.45,
+    1.3
+   ],
+   "unit": "m^2",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing autofit range CDA_LIM",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.range.CL_CORNER_M2": {
+   "value": [
+    3.0,
+    6.5
+   ],
+   "unit": "m^2",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing autofit range CL_LIM",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.range.MU_DRIVE": {
+   "value": [
+    0.6,
+    1.6
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: plausible traction friction",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.range.MU_LONG": {
+   "value": [
+    0.9,
+    2.2
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: plausible braking friction",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.range.TRAIL_FRAC_MIN": {
+   "value": [
+    0.15,
+    1.0
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: fraction of braking grip used near the apex",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.range.track.street_grip_k": {
+   "value": [
+    0.3,
+    1.0
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "existing range of cache/singapore/_fit_street_grip.py",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.tol_kmh": {
+   "value": 3.0,
+   "unit": "km/h",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing autofit tolerance TOL_HS",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "fit.tol_pct": {
+   "value": 5.0,
+   "unit": "%",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: rate-band tolerance",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "gate.drop_med_kmh_s": {
+   "value": [
+    32.0,
+    52.0
+   ],
+   "unit": "km/h/s",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate band (real 36.5/44.2)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "gate.drop_peak_min_kmh_s": {
+   "value": 85.0,
+   "unit": "km/h/s",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate band (real 104/154)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "gate.gain_med_kmh_s": {
+   "value": [
+    14.0,
+    28.0
+   ],
+   "unit": "km/h/s",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate band (real 2026 medians 16.6/24.2)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "gate.gain_peak_max_kmh_s": {
+   "value": 64.0,
+   "unit": "km/h/s",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate band (real peaks 55/61)",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "gate.superclip_frac_max": {
+   "value": 0.45,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate band",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "gate.superclip_peak_min_kmh_s": {
+   "value": 35.0,
+   "unit": "km/h/s",
+   "origin": "USER_DECISION",
+   "reason": "grill D7: existing gate band",
+   "decided": "2026-10-19",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "knob.candidates": {
+   "value": "MU_LAT,P_ICE_MAX_W,CL_CORNER_M2,CDA_STRAIGHT_M2",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: grip, power, downforce, drag; the test picks the one that moves the line least",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "knob.iters": {
+   "value": 14,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: bisection steps (~0.01% resolution)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "knob.max_pattern_drop": {
+   "value": 0.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "grill D24: the time knob may not make the speed pattern vs the real lap any worse",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "knob.reopt_steps": {
+   "value": [
+    0.5,
+    0.25
+   ],
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: short line re-optimisation per candidate",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "knob.reopt_sweeps": {
+   "value": 4,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "knob.span": {
+   "value": 0.3,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: search +-30% of the start value",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.accept_s": {
+   "value": 0.0001,
+   "unit": "s",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b: minimum improvement",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.apex_tol_m": {
+   "value": 0.15,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b: a line within 0.15 m of the bound counts as touching",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.apex_w": {
+   "value": 1.5,
+   "unit": "s/m^2",
+   "origin": "USER_DECISION",
+   "reason": "user nudge 2026-10-08 'not touching all the apexes' -> apex-touch penalty (v4b weight)",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.apex_win": {
+   "value": 20,
+   "unit": "stations",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b: apex search +-20 stations",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.base_inset_m": {
+   "value": 0.0,
+   "unit": "m",
+   "origin": "COMPUTED",
+   "source": "raceline_video.build_centerline_and_widths: 1.0 wall-safe for street circuits, 0.0 for run-off circuits (permanent circuit)",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "line.every": {
+   "value": 12,
+   "unit": "stations",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b: a knot every ~24 m",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.fixed_point_tol_m": {
+   "value": 0.5,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: line counts as settled when it moves < 0.5 m",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.margin_m": {
+   "value": 0.3,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from the shipped v4b line (car centre to road edge)",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.max_rounds": {
+   "value": 3,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: tune<->line rounds (v4b used 3)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.max_sweeps": {
+   "value": 30,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.rule.t12_exit_wide": {
+   "value": "T12 exit runs wide (in-OUT-in-out-in)|3800|at|outside",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-23/24: from 1:02 (T12-T15, 3500-4250 m) the real car goes inside-outside-inside-outside-inside, the sim hugs the inside; v1 rules contradicted each other (exit wide of one corner and entry wide of the next shared a window), replaced by points",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_line_rules"
+  },
+  "line.rule.t13_apex": {
+   "value": "T13 apex inside (in-out-IN-out-in)|3900|at|inside",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: real car double-apexes T13/T14 (the base line merged them into one corner at 3963 m)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_line_rules"
+  },
+  "line.rule.t13_t14_wide": {
+   "value": "between T13 and T14 the car drifts out (in-out-in-OUT-in)|3965|at|outside|0.6",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: real car is wide between the T13 and T14 apexes, the sim hugs the inside 3875-4050 m; 0.6 across (not the full edge: a full-edge swing in 130 m made a kink that broke the FP1 speed pattern, 2026-10-24)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_line_rules"
+  },
+  "line.rule.t14_apex": {
+   "value": "T14 apex inside|4030|at|inside",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: second apex of the T13/T14 double apex",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_line_rules"
+  },
+  "line.rule.t14_exit_wide": {
+   "value": "T14 exit wide before T15|4090|at|outside",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: real car runs out of T14 to the edge, then into T15 (in-out-in-out-IN)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_line_rules"
+  },
+  "line.rule.t1_apex_off": {
+   "value": "T1 real car does not touch the apex (FP1 video 9 s)|646|apex|outside",
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user review of Austin run 1 video: at 9 s the sim touches the T1 apex, the real car does not; direction only, the optimiser decides the amount",
+   "decided": "2026-10-23",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_line_rules"
+  },
+  "line.rule_local_m": {
+   "value": 150.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: line step got too slow; a rule retry only moves knots within 150 m of the unmet rule window (the rest of the lap is already optimised)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.rule_retries": {
+   "value": 4,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: get the line right; Austin run 2 left two exit-wide rules 1-2 cm short of the 0.15 m tolerance after 2 retries (was 2, approved under D22)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.rule_seed_frac": {
+   "value": 0.8,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b wide seed (the optimiser alone stayed trapped inside)",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.rule_w": {
+   "value": 1.5,
+   "unit": "s/m^2",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b touch weight",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.rule_window_frac": {
+   "value": [
+    0.33,
+    0.67
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); proposed 2026-10-20: entry = middle third between the previous apex and this one (v4b window 2060-2120 m = 0.33-0.64)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.smooth_w": {
+   "value": 0.006,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b optimiser default",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.steps_first": {
+   "value": [
+    2.0,
+    1.0,
+    0.5,
+    0.25
+   ],
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b round 1",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.steps_next": {
+   "value": [
+    1.0,
+    0.5,
+    0.25
+   ],
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from v4b rounds 2-3",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "line.workers": {
+   "value": 12,
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "parallel workers; results are independent of the count (ProcessPool map keeps order, pure cost)",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "ref.fp1_csv_file": {
+   "value": "F1_Pipeline_Assets/exports/reference_2026_austin_fp1.csv",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "OpenF1 car_data, 2026 austin FP1 fastest lap, driver 3 (weekend/fetch_weekend.py, fetched 2026-10-23)",
+   "file": true,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026",
+   "sha256": "e28d9989f49fbc188137dcf97a7768ad63c487f03ee542a0d979acb27b686dbd"
+  },
+  "ref.fp1_lap_s": {
+   "value": 95.86,
+   "unit": "s",
+   "origin": "MEASURED",
+   "source": "OpenF1 lap_duration, 2026 austin FP1 fastest lap (session 11389, lap 14)",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "ref.fp1_sectors_s": {
+   "value": [
+    25.634,
+    38.237,
+    31.989
+   ],
+   "unit": "s",
+   "origin": "MEASURED",
+   "source": "OpenF1 laps, 2026 austin FP1 (session 11389) sector times",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "ref.q2025_csv_file": {
+   "value": "F1_Pipeline_Assets/exports/reference_2025_austin_q.csv",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "OpenF1 2025 austin Q fastest lap, driver 1 (weekend/fetch_weekend.py, fetched 2026-10-23)",
+   "file": true,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout",
+   "sha256": "eccfef67d63fa3ee25eae9985458afb96c59896a8d95480a0aa9ae69835ff1a9"
+  },
+  "ref.q2025_lap_s": {
+   "value": 92.51,
+   "unit": "s",
+   "origin": "MEASURED",
+   "source": "OpenF1 lap_duration, 2025 austin Q pole lap (session 9884, lap 11)",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "ref.target_fp1_minus_s": {
+   "value": [
+    1.5,
+    2.0
+   ],
+   "unit": "s",
+   "origin": "USER_DECISION",
+   "reason": "grill D3 interim rule: target = FP1 fastest minus 1.5..2.0 s when FP1 exists (wins)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/lap_target_rule_2026"
+  },
+  "ref.target_q2025_plus_s": {
+   "value": [
+    1.5,
+    3.0
+   ],
+   "unit": "s",
+   "origin": "USER_DECISION",
+   "reason": "grill D3 interim rule: no FP1 -> 2025 Q pole plus 1.5..3.0 s",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/lap_target_rule_2026"
+  },
+  "shape.accel_range": {
+   "value": [
+    0.0,
+    3.5
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "limits raised 2026-10-24 (user: C2, C8 and the corner before C2 dropped far too much on the SVG line; all three were at the old limits); user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.bin_m": {
+   "value": 20.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.brake_range": {
+   "value": [
+    0.5,
+    6.0
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "limits raised 2026-10-24 (user: C2, C8 and the corner before C2 dropped far too much on the SVG line; all three were at the old limits); user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.curved_r_m": {
+   "value": 1000.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.enabled": {
+   "value": true,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: with FP1, fit the speed pattern section by section (shape_fit stage)",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "weekend",
+   "note_id": "weekend/austin_2026"
+  },
+  "shape.grip_range": {
+   "value": [
+    0.6,
+    2.2
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "limits raised 2026-10-24 (user: C2, C8 and the corner before C2 dropped far too much on the SVG line; all three were at the old limits); user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.k_iters": {
+   "value": 3,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.lap_tol_s": {
+   "value": 0.25,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.mu_long": {
+   "value": [
+    1.6,
+    1.8
+   ],
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "shape.passes": {
+   "value": 200,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit",
+   "decided": "2026-10-24",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "sim.brake_preserve": {
+   "value": false,
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "test 2026-10-20 vs 2026 Singapore FP1 braking bands: on -> high-speed braking 43-59% stronger than FP1; off -> 6-31% weaker; off is closer (spec: wired, recorded off)",
+   "file": false,
+   "pending_review": false,
+   "layer": "run",
+   "note_id": "run/pipeline_settings"
+  },
+  "sim.gain_cap_kmh_s": {
+   "value": 32.0,
+   "unit": "km/h/s",
+   "origin": "COMPUTED",
+   "source": "max(sim guard 32.0, real 2025 Q gain median 17.4 x 1.52) (weekend.features.signature)",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "track.asbuilt_width_m": {
+   "value": 12.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4: midline of 12 m edges = as-built centreline",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.length_m": {
+   "value": 5513.0,
+   "unit": "m",
+   "origin": "KNOWLEDGE",
+   "source": "FIA circuit length, Circuit of the Americas",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "track.min_radius_m": {
+   "value": 10.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4 (2026-10-08): removes map-matching kinks tighter than any real corner",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.mirror_x": {
+   "value": true,
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "anticlockwise (COTA runs anticlockwise (turn 1 uphill left)); the engine drives clockwise, so an anticlockwise track runs on the x-mirror (physics is left/right symmetric)",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "track.path_align_samples": {
+   "value": 1000,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4: alignment resolution (frame only)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.path_dedup_m": {
+   "value": 0.05,
+   "unit": "m",
+   "origin": "COMPUTED",
+   "source": "drops exact duplicate samples only (OpenF1 resolution 0.1 m)",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.path_ref_driver": {
+   "value": 1,
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "driver of the fastest 2025 Q lap (92.51 s); his lap start = the official timing line",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "track.path_samples_file": {
+   "value": "cache/austin/path_samples.json",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "OpenF1 location, 2025 austin Q (session 9884), fastest valid lap of the top-10 drivers (weekend/fetch_weekend.py, fetched 2026-10-23)",
+   "file": true,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout",
+   "sha256": "10e2dfa89978c73265ad678745d3b5b0e78edefc6be1cc2c58d70f1a18065d4a"
+  },
+  "track.path_sf_shift_max": {
+   "value": 30,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4: alignment search range (frame only)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.path_sigma": {
+   "value": 1.5,
+   "unit": "samples",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4 (2026-10-08): light smoothing; geometry reproduces the shipped track exactly",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.path_step_m": {
+   "value": 2.0,
+   "unit": "m",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4 (2026-10-08): resample spacing; geometry reproduces the shipped track exactly",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.stations": {
+   "value": 2000,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "kept from v4: centreline resolution (~2.5 m)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "season",
+   "note_id": "season/track_build_defaults_2026"
+  },
+  "track.street_grip_k": {
+   "value": 1.0,
+   "unit": "",
+   "origin": "COMPUTED",
+   "source": "start value 1.0 = the sim's own grip; the tune stage fits it against the slow corners",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "track.width_m": {
+   "value": 12.0,
+   "unit": "m",
+   "origin": "COMPUTED",
+   "source": "no width fit for this track yet: the as-built width (season track.asbuilt_width_m)",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "video.font_bold_file": {
+   "value": "../fonts/Formula1-Bold_web_0.ttf.ttf",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "the font raceline_video.py loads first (D:/f1_hot_lap/fonts, outside the repo)",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.font_bold_sha256": {
+   "value": "1e205a75c9d035833c7204fd84fe2ad780ebedcee98a0432b15a2791b3ae50f6",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "sha256 of the bold font, 2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.font_regular_file": {
+   "value": "../fonts/Formula1-Regular_web_0.ttf.ttf",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "regular font raceline_video.py loads",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.font_regular_sha256": {
+   "value": "bebdcf9fb6193de1921733556e7f57ce1b98a1f77d3d3e2aab0a628557769275",
+   "unit": "",
+   "origin": "MEASURED",
+   "source": "sha256 of the regular font, 2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.fps": {
+   "value": 30,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from the renderer default (every shipped video)",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.max_seconds": {
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "full lap (a number = short preview)",
+   "decided": "2026-10-20",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.track_name": {
+   "value": "United States Grand Prix",
+   "unit": "",
+   "origin": "KNOWLEDGE",
+   "source": "event name",
+   "file": false,
+   "pending_review": false,
+   "layer": "track",
+   "note_id": "track/austin_2026_layout"
+  },
+  "video.trail_frames": {
+   "value": 180,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "approved under D22 (user, 2026-10-20); carried from the renderer default (every shipped video)",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  },
+  "video.zoom": {
+   "value": 28.0,
+   "unit": "",
+   "origin": "USER_DECISION",
+   "reason": "user 2026-10-08: zoom 28 (was 18, then 25)",
+   "decided": "2026-10-08",
+   "file": false,
+   "pending_review": false,
+   "layer": "output",
+   "note_id": "output/video_style"
+  }
+ }
+}

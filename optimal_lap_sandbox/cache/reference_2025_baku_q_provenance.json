@@ -1,0 +1,12 @@
+{
+  "source": "F1 official timing archive via FastF1",
+  "api_path": "/static/2025/2025-09-21_Azerbaijan_Grand_Prix/2025-09-20_Qualifying/",
+  "session": "Qualifying",
+  "driver": "VER",
+  "lap_number": 22,
+  "lap_duration_s": 101.117,
+  "distance_m": 5937.095,
+  "samples": 778,
+  "fetched_utc": "2026-09-24T17:03:48.506854+00:00",
+  "fastf1_version": "3.9.0.dev2"
+}

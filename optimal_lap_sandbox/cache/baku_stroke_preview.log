@@ -1,0 +1,14 @@
+[elev] 2000 pts, -24.6-1.9 m ASL (span 26.6 m) � F1 official timing archive via FastF1, 2025 Azerbaijan Q VER lap 22 position.z
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 3087 samples, lap_time=102.851s, v=[75,340] km/h, soc=yes, mode=yes
+[kerbs] outer=0 corner zones, inner=0 corner zones
+[corridor.iqp] widths: right=[2.18,5.57]  left=[2.18,5.57]
+[raceline] loaded precomputed: 2974 pts, track_length=5949 m
+[align] synthetic CSV detected � alignment skipped
+[diag] raceline X[-963,1094] Y[-782,716]
+[diag] visual   X[-972,1102] Y[-792,725]
+[render] 103 frames at 1fps (102.85s)
+[elev] span 26.5 m -> vertical exaggeration 4.1 (35 px of wall)
+  frame 60/103
+  frame 103/103
+[render] saved -> cache/baku_stroke_preview.mp4

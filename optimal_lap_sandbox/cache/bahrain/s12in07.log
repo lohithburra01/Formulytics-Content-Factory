@@ -1,0 +1,40 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.614 CL_CORNER=4.970 RHO=1.2242
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[5.49,6.93] l=[5.49,6.93]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=5.775 mean|a|=3.196 (20.78s)
+  iter 1: max|a|=3.805 mean|a|=2.038 (20.19s)
+  iter 2: max|a|=2.646 mean|a|=1.291 (21.07s)
+  iter 3: max|a|=1.668 mean|a|=0.739 (23.62s)
+  iter 4: max|a|=1.333 mean|a|=0.438 (20.69s)
+  iter 5: max|a|=1.078 mean|a|=0.263 (20.69s)
+  iter 6: max|a|=0.848 mean|a|=0.167 (22.52s)
+  iter 7: max|a|=0.659 mean|a|=0.114 (21.05s)
+  iter 8: max|a|=0.507 mean|a|=0.082 (20.68s)
+  iter 9: max|a|=0.389 mean|a|=0.063 (20.92s)
+  iter 10: max|a|=0.297 mean|a|=0.051 (19.97s)
+  iter 11: max|a|=0.259 mean|a|=0.043 (19.39s)
+  iter 12: max|a|=0.251 mean|a|=0.037 (20.29s)
+  iter 13: max|a|=0.242 mean|a|=0.033 (10.42s)
+  iter 14: max|a|=0.233 mean|a|=0.029 (10.03s)
+  iter 15: max|a|=0.223 mean|a|=0.027 (10.19s)
+  iter 16: max|a|=0.214 mean|a|=0.025 (9.85s)
+  iter 17: max|a|=0.205 mean|a|=0.023 (10.51s)
+  iter 18: max|a|=0.196 mean|a|=0.021 (10.41s)
+  converged at iter 18
+[iqp] 2672 pts, 5346 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=6.13m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 556/800 straight stations
+[sim] refinement slack: max=2.98e-03 (486/800 stations relaxed)
+[sim] adaptive de-wobble: 505/2676 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.1148 (IQP seed) → 0.0893 (refined)
+[sim] raceline: 2676 pts, 5353 m, |κ|max=0.0893
+[sim] S/F line at raceline idx 2612/2676 (frac 97.6%, |κ|=0.0000) — reference_2025_bahrain_q.csv x-corr peak=1694
+[sim] wrote raceline -> cache/bahrain/s12in07_rl.json
+  closure iter 0: v0=86.5 vN=86.4 d=0.06 T_lap=90.256s
+  closure iter 1: v0=86.5 vN=86.4 d=0.06 T_lap=89.412s
+  closure converged at iter 1
+[sim] lap: 89.412s (bang-bang) -> 89.993s (jerk-limited), +0.580s for realism
+[sim] wrote 2700 rows -> cache/bahrain/s12in07.csv
+[sanity] T_lap=89.99s  v=[78,334] km/h  superclip frames=141  gain_med=28.9  drop_med=54.3 km/h/s

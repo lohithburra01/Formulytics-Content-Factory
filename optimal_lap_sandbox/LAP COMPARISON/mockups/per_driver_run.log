@@ -1,0 +1,12 @@
+Loading 2026 Singapore Grand Prix SQ ...
+Top 2: VER, RUS
+   VER: 91.156s
+   RUS: 91.276s
+[lines] RUS vs VER: top x0.9950, corner min x1.0104 -> cornering car = RUS
+[lines] VER: CdA 0.5506, CL 4.2757, margin 0.270
+[lines] VER: optimiser run, 4 workers -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\lines\singapore_grand_prix\per_driver\VER_21e27fb0d5.log
+[lines] RUS: CdA 0.5674, CL 4.4503, margin 0.330
+[lines] RUS: optimiser run, 4 workers -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\lines\singapore_grand_prix\per_driver\RUS_05f1281d69.log
+VER line vs shipped: mean 0.02 m, max 0.57 m
+VER vs RUS: gap mean 0.07 m, p95 0.35 m, max 1.14 m
+mockup -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\LAP COMPARISON\mockups\per_driver_lines_VER_vs_RUS.png

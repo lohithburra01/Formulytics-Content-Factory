@@ -1,0 +1,57 @@
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 2792 samples, lap_time=93.008s, v=[66,321] km/h, soc=yes, mode=yes
+[kerbs] outer=806 corner zones, inner=799 corner zones
+[corridor.iqp] widths: right=[3.93,4.09]  left=[3.93,4.09]
+[raceline] loaded precomputed: 2451 pts, track_length=4882 m
+[align] synthetic CSV detected — alignment skipped
+[diag] raceline X[-749,704] Y[-493,430]
+[diag] visual   X[-757,709] Y[-502,439]
+[render] 2791 frames at 30fps (93.01s)
+  frame 60/2791
+  frame 120/2791
+  frame 180/2791
+  frame 240/2791
+  frame 300/2791
+  frame 360/2791
+  frame 420/2791
+  frame 480/2791
+  frame 540/2791
+  frame 600/2791
+  frame 660/2791
+  frame 720/2791
+  frame 780/2791
+  frame 840/2791
+  frame 900/2791
+  frame 960/2791
+  frame 1020/2791
+  frame 1080/2791
+  frame 1140/2791
+  frame 1200/2791
+  frame 1260/2791
+  frame 1320/2791
+  frame 1380/2791
+  frame 1440/2791
+  frame 1500/2791
+  frame 1560/2791
+  frame 1620/2791
+  frame 1680/2791
+  frame 1740/2791
+  frame 1800/2791
+  frame 1860/2791
+  frame 1920/2791
+  frame 1980/2791
+  frame 2040/2791
+  frame 2100/2791
+  frame 2160/2791
+  frame 2220/2791
+  frame 2280/2791
+  frame 2340/2791
+  frame 2400/2791
+  frame 2460/2791
+  frame 2520/2791
+  frame 2580/2791
+  frame 2640/2791
+  frame 2700/2791
+  frame 2760/2791
+  frame 2791/2791
+[render] saved -> singapore_grand_prix_2026_optimal_lap.mp4

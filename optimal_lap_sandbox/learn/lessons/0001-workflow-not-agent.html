@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1: Workflow, not agent</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<h1>Lesson 1: Your race weekend is a workflow, not an agent</h1>
+<p class="meta">About 5 minutes · Mission: a reliable Austin weekend you understand and can explain in an interview</p>
+
+<h2>The problem</h2>
+<p>Every weekend so far was one long chat. The AI decided what to do next, so it did it differently each time. That cost about 53 corrections over 13 sessions.</p>
+
+<h2>The idea</h2>
+<p>Anthropic, the company that makes Claude, separates two kinds of AI systems:</p>
+<blockquote>"Workflows are systems where LLMs and tools are orchestrated through predefined code paths." <br>
+"Agents ... are systems where LLMs dynamically direct their own processes and tool usage."<br>
+— <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a></blockquote>
+<p>Your weekends were run like an <b>agent</b>: the AI chose the path. They should run as a <b>workflow</b>: the path is fixed in code, and the AI is only <i>one step</i> inside it.</p>
+
+<h2>Gates</h2>
+<p>Between steps you put checks that stop bad work:</p>
+<blockquote>"You can add programmatic checks (see "gate" ...) on any intermediate steps" — same article</blockquote>
+<p>A gate doesn't depend on anyone remembering a rule. It runs every time.</p>
+
+<h2>Austin as a workflow</h2>
+<pre>
+1 Resume          code    reads the map: "Austin, step 5"
+2 Get data        code
+3 Track shape     code  + YOU approve
+4 Racing line     code    GATE: on track? every apex?
+5 Car setup       AI    + YOU approve
+                          GATE: every number has a source?
+6 Simulate        code    GATE: matches practice? engine unchanged?
+7 Preview         code  + YOU approve
+8 Render          code    GATE: zoom 28? no deletes?
+9 Save            code
+</pre>
+<p>The AI appears <b>once</b> (step 5). You appear <b>three times</b>. Gates catch the rest.</p>
+
+<h2>Practice</h2>
+<p>Answer from memory, without scrolling up.</p>
+
+<div class="q" data-answer="2" data-why="Downloading data is the same every time, so code does it.">
+  <p>1. Downloading Austin practice laps. Who does it?</p>
+  <button>The AI decides it</button>
+  <button>You approve it</button>
+  <button>Code runs it</button>
+</div>
+
+<div class="q" data-answer="0" data-why="It's the only judgment step, so it's the only place the AI works.">
+  <p>2. Choosing drag and downforce numbers. Who does it?</p>
+  <button>The AI decides it</button>
+  <button>Code runs it</button>
+  <button>You approve it</button>
+</div>
+
+<div class="q" data-answer="1" data-why="A gate stops the run. You never see the bad line.">
+  <p>3. The racing line misses an apex. What happens now?</p>
+  <button>You notice it later</button>
+  <button>A gate stops the run</button>
+  <button>AI silently fixes it</button>
+</div>
+
+<div class="q" data-answer="2" data-why="Predefined code paths, with the AI as one step.">
+  <p>4. In Anthropic's words, your weekend should be a...</p>
+  <button>free agent with tools</button>
+  <button>long chat with memory</button>
+  <button>fixed workflow with gates</button>
+</div>
+
+<h2>Next lesson</h2>
+<p>Lesson 2 builds your first real gate, on step 5: a car-setup number with no source gets rejected. The tool is Pydantic.</p>
+
+<footer>
+Primary source: read <a href="https://www.anthropic.com/engineering/building-effective-agents">Building effective agents</a> (Anthropic, 2024), the "Workflow: Prompt chaining" section first.<br>
+Anything unclear? Ask your teacher (Claude) in the terminal.
+</footer>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>

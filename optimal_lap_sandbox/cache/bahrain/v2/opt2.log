@@ -1,0 +1,17 @@
+[opt26] 2682 stations, 224 knots, corridor median 14.0 m
+[opt26] base 91.216s
+[opt26] step 1.0 sweep 0: 91.214s (-0.002) acc 1 t 22s
+[opt26] step 1.0 sweep 1: 91.213s (-0.003) acc 1 t 33s
+[opt26] step 1.0 sweep 2: 91.207s (-0.009) acc 1 t 44s
+[opt26] step 0.5 sweep 0: 91.189s (-0.027) acc 1 t 65s
+[opt26] step 0.25 sweep 0: 91.171s (-0.045) acc 6 t 86s
+[opt26] step 0.25 sweep 1: 91.149s (-0.067) acc 4 t 96s
+[opt26] step 0.25 sweep 2: 91.140s (-0.076) acc 2 t 107s
+[opt26] step 0.25 sweep 3: 91.138s (-0.078) acc 1 t 117s
+[opt26] step 0.25 sweep 4: 91.133s (-0.082) acc 1 t 127s
+[opt26] step 0.25 sweep 5: 91.123s (-0.092) acc 1 t 138s
+[opt26] step 0.25 sweep 6: 91.119s (-0.096) acc 2 t 148s
+[opt26] step 0.25 sweep 7: 91.102s (-0.114) acc 2 t 158s
+[opt26] step 0.25 sweep 8: 91.100s (-0.115) acc 1 t 169s
+[opt26] step 0.25 sweep 9: 91.086s (-0.129) acc 1 t 179s
+[opt26] done: 91.086s (base 91.216), viol 0.000 m

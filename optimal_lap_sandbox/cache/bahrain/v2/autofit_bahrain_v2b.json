@@ -1,0 +1,96 @@
+{
+ "track": "bahrain",
+ "cda": 0.7875,
+ "cl": 3.6387,
+ "rho": 1.2242,
+ "iters": 3,
+ "converged": true,
+ "rail_ok": true,
+ "lap_rail_s": 90.919,
+ "top_err_kmh": -0.41,
+ "hs_median_err_kmh": -0.17,
+ "cl_tier": "v25>=130",
+ "ls_median_err_kmh": 5.19,
+ "lap_s": 92.197,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_bahrain.json",
+ "csv": "cache/autofit_bahrain_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.13226,
+   "v25": 67.0,
+   "v26_target": 64.8,
+   "sim_v": 70.0,
+   "err": 5.2
+  },
+  {
+   "s_frac": 0.2797,
+   "v25": 123.0,
+   "v26_target": 116.8,
+   "sim_v": 107.5,
+   "err": -9.3
+  },
+  {
+   "s_frac": 0.34551,
+   "v25": 209.0,
+   "v26_target": 193.6,
+   "sim_v": 196.5,
+   "err": 2.9
+  },
+  {
+   "s_frac": 0.41217,
+   "v25": 79.0,
+   "v26_target": 76.4,
+   "sim_v": 77.3,
+   "err": 0.9
+  },
+  {
+   "s_frac": 0.49857,
+   "v25": 76.0,
+   "v26_target": 73.5,
+   "sim_v": 82.5,
+   "err": 9.0
+  },
+  {
+   "s_frac": 0.63477,
+   "v25": 161.0,
+   "v26_target": 150.9,
+   "sim_v": 147.6,
+   "err": -3.3
+  },
+  {
+   "s_frac": 0.7547,
+   "v25": 141.0,
+   "v26_target": 132.9,
+   "sim_v": 149.6,
+   "err": 16.7
+  },
+  {
+   "s_frac": 0.9039,
+   "v25": 126.0,
+   "v26_target": 119.5,
+   "sim_v": 133.5,
+   "err": 14.0
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": 3.71,
+   "f2": 17.98
+  },
+  {
+   "cda": 0.7766,
+   "cl": 4.2,
+   "f1": 1.07,
+   "f2": 10.5
+  },
+  {
+   "cda": 0.7875,
+   "cl": 3.6387,
+   "f1": -0.41,
+   "f2": -0.17
+  }
+ ]
+}

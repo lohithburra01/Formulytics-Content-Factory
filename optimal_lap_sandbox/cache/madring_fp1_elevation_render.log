@@ -1,0 +1,59 @@
+[elev] 2000 pts, 0.0-23.98 m ASL (span 23.98 m) — F1 official archive, 2026 Madring FP1, Russell lap 20 (94.077 s); Z/10, periodic Gaussian sigma=2
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 704 samples, lap_time=94.077s, v=[78,315] km/h, soc=no, mode=no
+[kerbs] outer=1049 corner zones, inner=1041 corner zones
+[corridor.iqp] widths: right=[4.08,5.08]  left=[4.08,5.08]
+[raceline] loaded precomputed: 2665 pts, track_length=5331 m
+[diag] raceline X[-1036,781] Y[-821,310]
+[diag] visual   X[-1042,791] Y[-827,313]
+[render] 2823 frames at 30fps (94.08s)
+[elev] span 23.8 m -> vertical exaggeration 4.6 (35 px of wall)
+  frame 60/2823
+  frame 120/2823
+  frame 180/2823
+  frame 240/2823
+  frame 300/2823
+  frame 360/2823
+  frame 420/2823
+  frame 480/2823
+  frame 540/2823
+  frame 600/2823
+  frame 660/2823
+  frame 720/2823
+  frame 780/2823
+  frame 840/2823
+  frame 900/2823
+  frame 960/2823
+  frame 1020/2823
+  frame 1080/2823
+  frame 1140/2823
+  frame 1200/2823
+  frame 1260/2823
+  frame 1320/2823
+  frame 1380/2823
+  frame 1440/2823
+  frame 1500/2823
+  frame 1560/2823
+  frame 1620/2823
+  frame 1680/2823
+  frame 1740/2823
+  frame 1800/2823
+  frame 1860/2823
+  frame 1920/2823
+  frame 1980/2823
+  frame 2040/2823
+  frame 2100/2823
+  frame 2160/2823
+  frame 2220/2823
+  frame 2280/2823
+  frame 2340/2823
+  frame 2400/2823
+  frame 2460/2823
+  frame 2520/2823
+  frame 2580/2823
+  frame 2640/2823
+  frame 2700/2823
+  frame 2760/2823
+  frame 2820/2823
+  frame 2823/2823
+[render] saved -> D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\madring_2026_FP1_ELEVATION_PREVIEW.mp4

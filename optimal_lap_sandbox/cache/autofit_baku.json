@@ -1,0 +1,117 @@
+{
+ "track": "baku",
+ "cda": 0.6991,
+ "cl": 3.4,
+ "rho": 1.2274,
+ "iters": 3,
+ "converged": true,
+ "rail_ok": true,
+ "lap_rail_s": 101.917,
+ "top_err_kmh": -0.65,
+ "hs_median_err_kmh": 2.47,
+ "cl_tier": "all",
+ "ls_median_err_kmh": 4.35,
+ "lap_s": 105.889,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_baku.json",
+ "csv": "cache/autofit_baku_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.05046,
+   "v25": 123.0,
+   "v26_target": 116.8,
+   "sim_v": 102.0,
+   "err": -14.8
+  },
+  {
+   "s_frac": 0.10792,
+   "v25": 103.0,
+   "v26_target": 98.7,
+   "sim_v": 105.6,
+   "err": 6.9
+  },
+  {
+   "s_frac": 0.25173,
+   "v25": 108.0,
+   "v26_target": 103.2,
+   "sim_v": 103.5,
+   "err": 0.3
+  },
+  {
+   "s_frac": 0.29012,
+   "v25": 87.0,
+   "v26_target": 83.9,
+   "sim_v": 97.4,
+   "err": 13.5
+  },
+  {
+   "s_frac": 0.35469,
+   "v25": 87.0,
+   "v26_target": 83.9,
+   "sim_v": 84.5,
+   "err": 0.6
+  },
+  {
+   "s_frac": 0.42049,
+   "v25": 72.0,
+   "v26_target": 69.6,
+   "sim_v": 73.9,
+   "err": 4.3
+  },
+  {
+   "s_frac": 0.45577,
+   "v25": 124.0,
+   "v26_target": 117.7,
+   "sim_v": 99.8,
+   "err": -17.9
+  },
+  {
+   "s_frac": 0.47096,
+   "v25": 95.0,
+   "v26_target": 91.3,
+   "sim_v": 96.8,
+   "err": 5.5
+  },
+  {
+   "s_frac": 0.48146,
+   "v25": 112.0,
+   "v26_target": 106.9,
+   "sim_v": 96.8,
+   "err": -10.1
+  },
+  {
+   "s_frac": 0.62347,
+   "v25": 89.0,
+   "v26_target": 85.7,
+   "sim_v": 112.7,
+   "err": 27.0
+  },
+  {
+   "s_frac": 0.68259,
+   "v25": 112.0,
+   "v26_target": 106.9,
+   "sim_v": 119.8,
+   "err": 12.9
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": -5.09,
+   "f2": 5.39
+  },
+  {
+   "cda": 0.7169,
+   "cl": 4.2,
+   "f1": -1.79,
+   "f2": 4.34
+  },
+  {
+   "cda": 0.6991,
+   "cl": 3.4,
+   "f1": -0.65,
+   "f2": 2.47
+  }
+ ]
+}

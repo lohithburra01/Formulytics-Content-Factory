@@ -1,0 +1,138 @@
+<title>Race Weekend Flow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one vertical lane down the page, like a lap from lights-out to the flag. Each stop = who acts + what happens + what guards it. */
+:root{
+  --bg:#f3f4f6; --card:#ffffff; --fg:#14171c; --muted:#5b6370; --line:#cfd4dc;
+  --you:#c2410c; --you-bg:#fff1e8;
+  --code:#1d4ed8; --code-bg:#e9efff;
+  --ai:#7c3aed; --ai-bg:#f2ecff;
+  --guard:#b91c1c; --guard-bg:#fdecec;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115; --card:#181b21; --fg:#eceef2; --muted:#9aa3b1; --line:#2c313a;
+  --you:#fb923c; --you-bg:#2a1a10; --code:#7aa2ff; --code-bg:#141d33;
+  --ai:#b794ff; --ai-bg:#211a33; --guard:#f87171; --guard-bg:#2c1416; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --card:#181b21; --fg:#eceef2; --muted:#9aa3b1; --line:#2c313a;
+  --you:#fb923c; --you-bg:#2a1a10; --code:#7aa2ff; --code-bg:#141d33;
+  --ai:#b794ff; --ai-bg:#211a33; --guard:#f87171; --guard-bg:#2c1416; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-family:var(--display);font-size:2.4rem;line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.you{color:var(--you);background:var(--you-bg)} .code{color:var(--code);background:var(--code-bg)}
+.ai{color:var(--ai);background:var(--ai-bg)} .guard{color:var(--guard);background:var(--guard-bg)}
+ol{list-style:none;margin:0;padding:0;position:relative}
+ol::before{content:"";position:absolute;left:19px;top:20px;bottom:20px;width:3px;background:var(--line);border-radius:2px}
+li{position:relative;display:grid;grid-template-columns:42px 1fr;gap:14px;padding-block:8px}
+.dot{width:42px;height:42px;border-radius:50%;background:var(--card);border:3px solid var(--line);display:grid;place-items:center;
+  font-family:var(--display);font-weight:700;font-size:1.25rem;position:relative;z-index:1;font-variant-numeric:tabular-nums}
+li.stop-you .dot{border-color:var(--you)} li.stop-ai .dot{border-color:var(--ai)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.card h2{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.02em;text-transform:uppercase}
+.card p{margin:0}
+.who{display:flex;flex-wrap:wrap;gap:6px}
+.guardline{font-size:.9rem;color:var(--guard);display:flex;gap:8px;align-items:baseline}
+.guardline b{white-space:nowrap}
+.tool{font-size:.82rem;color:var(--muted)}
+.tool b{color:var(--fg);font-weight:600}
+.end .dot{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.sum{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.sum div{display:flex;flex-direction:column;gap:4px}
+.sum .n{font-family:var(--display);font-size:2rem;line-height:1}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Austin GP: from "open Claude" to the video</h1>
+    <p class="sub">The same 9 stops every race weekend. Follow the line down.</p>
+  </header>
+
+  <div class="legend" aria-label="Legend">
+    <span class="chip code">Code runs it</span>
+    <span class="chip ai">AI thinks</span>
+    <span class="chip you">You decide</span>
+    <span class="chip guard">Auto-check blocks bad work</span>
+  </div>
+
+  <ol>
+    <li><span class="dot">1</span><div class="card">
+      <h2>Resume</h2>
+      <div class="who"><span class="chip code">Code</span></div>
+      <p>You open Claude. It reads one small map and tells you: <em>"Austin, we're at step 5, last decision was X."</em> No re-reading old chats.</p>
+    </div></li>
+
+    <li><span class="dot">2</span><div class="card">
+      <h2>Get the data</h2>
+      <div class="who"><span class="chip code">Code</span></div>
+      <p>Downloads last year's qualifying lap and this weekend's practice laps.</p>
+    </div></li>
+
+    <li class="stop-you"><span class="dot">3</span><div class="card">
+      <h2>Build the track</h2>
+      <div class="who"><span class="chip code">Code</span><span class="chip you">You</span></div>
+      <p>Turns the circuit drawing into a road with edges. You look at one picture and say <em>"shape is right."</em></p>
+    </div></li>
+
+    <li><span class="dot">4</span><div class="card">
+      <h2>Racing line</h2>
+      <div class="who"><span class="chip code">Code</span></div>
+      <p>The optimiser draws the fastest line and saves it as one file, a "plug" that any optimiser can produce.</p>
+      <div class="guardline"><b>Blocks if:</b> the line leaves the road or misses an apex.</div>
+    </div></li>
+
+    <li class="stop-ai"><span class="dot">5</span><div class="card">
+      <h2>Car setup</h2>
+      <div class="who"><span class="chip ai">AI</span><span class="chip you">You</span></div>
+      <p>The only creative step. The AI suggests drag, downforce and grip numbers, and each number must say where it came from (telemetry, FIA, or a paper). You approve them.</p>
+      <div class="guardline"><b>Blocks if:</b> a number has no source or is outside a sane range.</div>
+      <div class="tool">Tool: <b>Pydantic</b> checks the numbers.</div>
+    </div></li>
+
+    <li><span class="dot">6</span><div class="card">
+      <h2>Simulate the lap</h2>
+      <div class="who"><span class="chip code">Code</span></div>
+      <p>Drives the car around the line and gives the lap time and speed trace.</p>
+      <div class="guardline"><b>Blocks if:</b> the speeds don't match practice, or someone broke the engine.</div>
+      <div class="tool">Tool: <b>pytest + pre-commit</b> run the checks automatically.</div>
+    </div></li>
+
+    <li class="stop-you"><span class="dot">7</span><div class="card">
+      <h2>Quick preview</h2>
+      <div class="who"><span class="chip code">Code</span><span class="chip you">You</span></div>
+      <p>A short, low-quality clip in seconds. You say <em>"looks right"</em> before wasting time on the full render.</p>
+    </div></li>
+
+    <li><span class="dot">8</span><div class="card">
+      <h2>Render the video</h2>
+      <div class="who"><span class="chip code">Code</span></div>
+      <p>Full-quality optimal-lap video.</p>
+      <div class="guardline"><b>Blocks if:</b> zoom isn't 28, or anything tries to delete a file.</div>
+      <div class="tool">Tool: <b>Claude Code hooks</b> enforce the rules.</div>
+    </div></li>
+
+    <li><span class="dot">9</span><div class="card">
+      <h2>Save what happened</h2>
+      <div class="who"><span class="chip code">Code</span></div>
+      <p>The numbers and decisions get saved to the map and git, so next weekend starts at step 1 with everything known.</p>
+    </div></li>
+
+    <li class="end"><span class="dot">🏁</span><div class="card">
+      <h2>Austin video done</h2>
+      <p class="tool">The whole path is run by <b>LangGraph</b>: it walks steps 1 to 9 and pauses at the three orange stops for you.</p>
+    </div></li>
+  </ol>
+
+  <section class="sum" aria-label="Summary">
+    <div><span class="n" style="color:var(--you)">3</span><span>times you're asked anything (steps 3, 5, 7)</span></div>
+    <div><span class="n" style="color:var(--ai)">1</span><span>place the AI is allowed to be creative (step 5)</span></div>
+    <div><span class="n" style="color:var(--guard)">4</span><span>auto-checks that stop bad work before you see it</span></div>
+  </section>
+</div>

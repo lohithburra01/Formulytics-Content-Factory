@@ -1,0 +1,14 @@
+id: weekend/singapore_2026
+layer: weekend
+scope: {track: singapore, year: 2026}
+links: [track/singapore_2026_layout, car/f1_2026_car]
+values:
+  CDA_STRAIGHT_M2: {value: 0.5581, unit: m^2, origin: FITTED, source: "cache/singapore/_autofit_rl_in_sg.py on the k3w line (autofit_singapore.json)", fit_target: "straight peak speed vs predicted 2026 target", fit_range: [0.45, 1.30]}
+  CL_CORNER_M2: {value: 4.3233, unit: m^2, origin: FITTED, source: "cache/singapore/_autofit_rl_in_sg.py on the k3w line (autofit_singapore.json)", fit_target: "high-speed corner minimums (v25 >= 130) vs predicted 2026 targets", fit_range: [3.0, 6.5]}
+  RHO: {value: 1.2232, unit: kg/m^3, origin: COMPUTED, source: "ISA at registry altitude 15 m: 1.225*(1-2.25577e-5 h)^4.2561"}
+  WARM_RHO: {value: 1.2232, unit: kg/m^3, origin: COMPUTED, source: "the sim forces WARM_RHO = RHO"}
+  line.fixed_raceline_file: {value: cache/singapore/k3w_rl.json, file: true, origin: COMPUTED, source: "apex-touch optimiser (_opt_line_2026_sg.py, margin 0.3, apex-w 1.5) from the wide seed, with the T8->T9 wide-entry touch constraint 2060,2120,1980 (make_singapore_2026_lap.bat v4b)"}
+  ref.fp1_csv_file: {value: F1_Pipeline_Assets/exports/reference_2026_singapore_fp1.csv, file: true, origin: MEASURED, source: "OpenF1 car_data, 2026 Singapore FP1 fastest lap (RUS), fetch_openf1_lap.py, fetched 2026-10-09"}
+  ref.fp1_lap_s: {value: 92.274, unit: s, origin: MEASURED, source: "OpenF1 lap_duration, 2026 Singapore FP1 fastest lap, RUS 1:32.274"}
+  ref.fp1_sectors_s: {value: [27.237, 39.035, 26.002], unit: s, origin: MEASURED, source: "OpenF1 laps, 2026 Singapore FP1 (session 11378), RUS lap 23 sector times"}
+

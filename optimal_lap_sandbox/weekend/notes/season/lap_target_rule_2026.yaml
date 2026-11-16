@@ -1,0 +1,6 @@
+id: season/lap_target_rule_2026
+layer: season
+scope: {year: 2026}
+values:
+  ref.target_fp1_minus_s: {value: [1.5, 2.0], unit: s, origin: USER_DECISION, decided: 2026-10-20, reason: "grill D3 interim rule: target = FP1 fastest minus 1.5..2.0 s when FP1 exists (wins)"}
+  ref.target_q2025_plus_s: {value: [1.5, 3.0], unit: s, origin: USER_DECISION, decided: 2026-10-20, reason: "grill D3 interim rule: no FP1 -> 2025 Q pole plus 1.5..3.0 s"}

@@ -1,0 +1,5 @@
+[autofit] singapore it0: cda=0.750 cl=4.600 lap=88.51s vtop=309.2 (f1=-9.2) tier[v25>=130] f2=+16.8  RAIL-VIOLATION
+[autofit] singapore it1: cda=0.687 cl=4.200 lap=89.75s vtop=312.9 (f1=-5.5) tier[v25>=130] f2=+13.0  RAIL-VIOLATION
+[autofit] singapore it2: cda=0.592 cl=3.400 lap=92.42s vtop=317.6 (f1=-0.8) tier[v25>=130] f2=-2.1
+[autofit] singapore: converged=True cda=0.592 cl=3.400 lap=92.42s  low-speed residual median=+7.4 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_singapore.json

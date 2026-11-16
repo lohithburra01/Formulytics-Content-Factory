@@ -1,0 +1,30 @@
+[opt26] apex penalty on 14 corners at [704, 824, 1498, 1700, 1840, 1980, 2222, 2680, 3405, 3531, 3723, 3859, 4067, 4871]
+[opt26] 2682 stations, 224 knots, corridor median 14.4 m
+[opt26] base 114.055s
+[opt26] step 1.0 sweep 0: 107.128s (-6.927) acc 5 t 21s
+[opt26] step 1.0 sweep 1: 102.483s (-11.572) acc 4 t 34s
+[opt26] step 1.0 sweep 2: 99.371s (-14.684) acc 3 t 47s
+[opt26] step 1.0 sweep 3: 96.445s (-17.610) acc 5 t 60s
+[opt26] step 1.0 sweep 4: 95.312s (-18.743) acc 4 t 72s
+[opt26] step 1.0 sweep 5: 94.822s (-19.233) acc 2 t 85s
+[opt26] step 1.0 sweep 6: 94.758s (-19.297) acc 1 t 97s
+[opt26] step 1.0 sweep 7: 94.490s (-19.565) acc 1 t 110s
+[opt26] step 1.0 sweep 8: 94.486s (-19.569) acc 1 t 123s
+[opt26] step 1.0 sweep 9: 94.442s (-19.613) acc 1 t 135s
+[opt26] step 1.0 sweep 10: 94.391s (-19.664) acc 1 t 148s
+[opt26] step 1.0 sweep 11: 94.371s (-19.684) acc 1 t 160s
+[opt26] step 1.0 sweep 12: 94.342s (-19.713) acc 2 t 173s
+[opt26] step 0.5 sweep 0: 93.971s (-20.084) acc 7 t 198s
+[opt26] step 0.5 sweep 1: 93.853s (-20.202) acc 4 t 210s
+[opt26] step 0.5 sweep 2: 93.842s (-20.213) acc 2 t 223s
+[opt26] step 0.5 sweep 3: 93.833s (-20.222) acc 2 t 237s
+[opt26] step 0.25 sweep 0: 93.651s (-20.404) acc 8 t 261s
+[opt26] step 0.25 sweep 1: 93.507s (-20.548) acc 6 t 274s
+[opt26] step 0.25 sweep 2: 93.463s (-20.592) acc 3 t 287s
+[opt26] step 0.25 sweep 3: 93.455s (-20.600) acc 3 t 299s
+[opt26] step 0.25 sweep 4: 93.401s (-20.654) acc 1 t 312s
+[opt26] step 0.25 sweep 5: 93.401s (-20.654) acc 1 t 324s
+[opt26] step 0.25 sweep 6: 93.399s (-20.656) acc 1 t 337s
+[opt26] step 0.25 sweep 7: 93.399s (-20.656) acc 1 t 349s
+[opt26] apex gaps 704:0.10 824:0.08 1498:0.17 1701:0.36 1841:0.04 1981:0.21 2223:0.13 2681:0.05 3405:0.15 3531:0.24 3723:0.17 3859:0.10 4067:0.18 4872:0.20 pure lap 92.596s
+[opt26] done: 93.399s (base 114.055), viol 0.000 m

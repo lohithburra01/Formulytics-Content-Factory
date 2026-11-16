@@ -1,0 +1,63 @@
+{
+  "reference_distance_m": 5345.143,
+  "registration": {
+    "rotation": {
+      "lag": 1990,
+      "shift_frac": 0.9716796875,
+      "shift_m": 5180.705718658441,
+      "rms_m": 9.18395259545925,
+      "median_m": 6.776540042194551,
+      "p95_m": 18.53992504119253,
+      "max_m": 27.003086566457863,
+      "scale": 1.00364996710258,
+      "rotation": [
+        [
+          -0.0021323954310779893,
+          -0.999997726442279
+        ],
+        [
+          0.9999977264422786,
+          -0.0021323954310786433
+        ]
+      ],
+      "translation": [
+        -763.0910501138874,
+        -98.31930191449527
+      ]
+    },
+    "reflection": {
+      "lag": 967,
+      "shift_frac": 0.47216796875,
+      "shift_m": 2517.4585075089008,
+      "rms_m": 402.57409160938823,
+      "median_m": 396.1943860644292,
+      "p95_m": 520.617214400249,
+      "max_m": 562.2534134092241,
+      "scale": 0.7925060098851769,
+      "rotation": [
+        [
+          0.8453587197997042,
+          -0.5341990592079014
+        ],
+        [
+          -0.5341990592079009,
+          -0.8453587197997042
+        ]
+      ],
+      "translation": [
+        26.666306165180572,
+        271.469282402128
+      ]
+    }
+  },
+  "raw_xy_length_m": 5339.259723394928,
+  "raw_height_min_m": 724.1,
+  "raw_height_max_m": 748.7,
+  "closure_m": 0.0,
+  "smoothed_span_m": 23.97995219057873,
+  "low_frac": 0.10546875,
+  "high_frac": 0.3525390625
+}
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] S/F line at raceline idx 2583/2665 (frac 96.9%, |κ|=0.0004) — reference_2026_madring_fp1.csv x-corr peak=1322
+Curvature-derived origin: 2583 at 5167.28 m

@@ -1,0 +1,39 @@
+﻿[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+laps: timed 593, usable 593, push 73 (fp1 36, fp2 37)
+{'it': 0, 'max_shift_m': 3.1027, 'rms_offset_m': 0.842, 'outliers': 0, 'length_m': 5330.27}
+{'it': 1, 'max_shift_m': 0.2391, 'rms_offset_m': 0.067, 'outliers': 0, 'length_m': 5342.88}
+{'it': 2, 'max_shift_m': 0.0456, 'rms_offset_m': 0.051, 'outliers': 0, 'length_m': 5343.53}
+{'it': 3, 'max_shift_m': 0.0203, 'rms_offset_m': 0.05, 'outliers': 0, 'length_m': 5343.61}
+{'it': 4, 'max_shift_m': 0.0143, 'rms_offset_m': 0.05, 'outliers': 0, 'length_m': 5343.63}
+timing line at s = 5336.1 {'start_mad_m': 2.740988577961616, 'end_mad_m': 3.6302005762872795, 'start_vs_end_m': 0.8343698400640278}
+python.exe : C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\_core\fromnumeric.py:3860: 
+RuntimeWarning: Mean of empty slice.
+At line:1 char:302
++ ... tch {} } }; & 'C:\Users\91910\AppData\Local\Programs\Python\Python310 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\91910\...of empty slice.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  return _methods._mean(a, axis=axis, dtype=dtype,
+C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\_core\_methods.py:145: RuntimeWarning: invalid 
+value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+Traceback (most recent call last):
+  File "D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\_madring_gps_line.py", line 213, in <module>
+    p90 = np.percentile(traces, 90, axis=0)
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\lib\_function_base_impl.py", line 4273, in 
+percentile
+    return _quantile_unchecked(
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\lib\_function_base_impl.py", line 4550, in 
+_quantile_unchecked
+    return _ureduce(a,
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\lib\_function_base_impl.py", line 3894, in 
+_ureduce
+    r = func(a, **kwargs)
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\lib\_function_base_impl.py", line 4727, in 
+_quantile_ureduce_func
+    result = _quantile(arr,
+  File "C:\Users\91910\AppData\Roaming\Python\Python310\site-packages\numpy\lib\_function_base_impl.py", line 4849, in 
+_quantile
+    slices_having_nans = np.isnan(arr[-1, ...])
+IndexError: index -1 is out of bounds for axis 0 with size 0

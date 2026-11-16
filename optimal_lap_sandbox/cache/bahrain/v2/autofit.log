@@ -1,0 +1,4 @@
+[autofit] bahrain it0: cda=0.750 cl=4.600 lap=89.99s vtop=321.2 (f1=+3.8) tier[v25>=130] f2=+5.8  RAIL-VIOLATION
+[autofit] bahrain it1: cda=0.777 cl=4.200 lap=91.41s vtop=318.5 (f1=+1.1) tier[v25>=130] f2=-0.5
+[autofit] bahrain: converged=True cda=0.777 cl=4.200 lap=91.41s  low-speed residual median=+7.2 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_bahrain.json

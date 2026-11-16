@@ -1,0 +1,723 @@
+Opponent State Inference Under Partial Observability:
+An HMM–POMDP Framework for 2026 Formula 1
+Energy Strategy
+Kalliopi Kleisarchaki
+Independent Researcher
+v1 (1 March 2026): Submitted to arXiv. Five observables, 30 hidden states.
+v1.5 (5 March 2026): Sixth observableδ throttle added. ResearchGate pre-registration before Melbourne
+(https://www.researchgate.net/publication/401621952).
+v2 (post-Melbourne 8 March 2026; arXiv 9 March 2026): 40-state architecture.L harvest/Lderate split
+formalised. Pre-registered on ResearchGate before China (Race 2).
+v3 (15 May 2026): Editorial corrections.
+Pre-Registration active. Empirical calibration: Australian GP (Race 1, 8 March 2026) onwards.
+Abstract
+The 2026 Formula 1 technical regulations introduce a fundamental change to energy
+strategy: under a 50/50 internal combustion engine / battery power split with unlimited
+regeneration and a driver-controlled Override Mode (hereaftermom), the optimal energy
+deployment policy depends not only on a driver’s own state but on thehidden stateof
+rival cars. This creates a Partially Observable Stochastic Game that cannot be solved by
+single-agent optimisation methods.
+We present a tractable two-layer inference and decision framework. The first layer is a
+40-stateHidden Markov Model (hmm) that infers a probability distribution over each rival’s
+erscharge level—now decomposed into four modes ( H, M, Lharvest, Lderate)—Override
+Mode status, and tyre degradation state from six publicly observable telemetry signals. The
+second layer is a Deep Q-Network (dqn) policy that takes thehmmbelief state as input and
+selects between energy deployment strategies. We formally characterise thecounter-harvest
+trap—a deceptive strategy in which a car deliberately suppresses observable deployment
+signals to induce a rival into a failed attack—and show that detecting it requires belief-state
+inference overbothERS level and the harvest/derate sub-mode.
+The Lharvest/Lderate split is the central architectural advance of v2: both sub-modes
+produce depressed ∆ vtrap and can co-occur with zaero = 1 in an activation zone, but they
+carryoppositestrategic implications. Lharvest means the rival is building a hidden reserve—
+the trap condition. Lderate means the rival is at their physical limit—a genuine attack
+opportunity. The sixth observableδ throttle (super-clipping duration fraction, added in v1.5)
+provides clean separation between these sub-modes; v2 elevates this separation to thestate
+levelrather than handling it as a mixed emission.
+On synthetic races generated under the 40-state parametric model, thehmmachieves
+96.8%ERS-level accuracy (random baseline: 25%), correctly classifies Lharvest vs. Lderate
+with89.4%accuracy (random baseline: 50%), and detects counter-harvest trap conditions
+with96.3%recall. Pre-season analysis indicates circuit-dependent recharge availability
+(1.0× to 2.2× per lap) as the primary confound for trap detection; Melbourne represents the
+hardest-case validation environment. Baum-Welch calibration on 2026 race telemetry begins
+with the Australian Grand Prix (8 March 2026). Code will be made publicly available upon
+acceptance.
+arXiv:2603.01290v3  [cs.AI]  15 May 2026
+1 Introduction
+Formula 1 has always been a game of imperfect information. A driver knows their own tyre
+temperature, fuel load, and energy reserves exactly; they observe rival positions through timing
+screens and team radio; but theinternal stateof a rival’s car—how much battery charge they
+carry, whether their Override Mode is available or spent, how degraded their tyres are—remains
+hidden. For most of F1’s history this did not matter strategically: energy deployment was
+constrained enough that the optimal decision could be computed from own-car state alone.
+The 2026 regulations change this [FIA, 2026]. The 50/50 power split between internal
+combustion engine and MGU-K battery places the battery under permanent demand, making
+erscharge level a first-order strategic variable every sector. Override Mode is a proximity-gated
+energy award: when a driver is within one second of the car ahead at the designated detection
+point, they earn an extra 0.5 MJ of deployable energy on the following lap. Active Aero replaces
+DRS entirely: the adjustable rear wing is removed and replaced with a driver-controlled binary
+aero system available only in designated activation zones. Crucially, a car can run Active Aero
+in straight-line modewhile harvesting—the mechanical downforce reduction provides speed
+independent of battery deployment. This is the physical basis for the counter-harvest trap
+(Section 3.3).
+The optimal burn-or-harvest decision in any sector is now a function of thejoint stateof
+both cars, not just one’s own.
+Contributions
+This paper makes three contributions:
+1. Problem formalisation.We formally model 2026 F1 energy management as a Partially
+Observable Stochastic Game (posg) and define a tractablepomdpapproximation for
+the single-agent case. We precisely characterise the counter-harvest trap as a deceptive
+equilibrium strategy.
+2. Rival state inference.We propose a40-statehmmover rivalerscharge level (four
+modes: H, M, Lharvest, Lderate), Override Mode status, and tyre degradation, initialised
+from an analytically-derived emission matrix and calibrated via Baum-Welch EM on 2026
+race telemetry. The Lharvest/Lderate decomposition is the architectural advance over v1.5:
+it eliminates the ambiguity that v1.5 handled only at the emission level via a mixed prior.
+3. Decision policy.We propose and fully specify adqnpolicy that consumes thehmm
+belief state alongside own-car context features (full input specification in Appendix C),
+and characterise its advantages over observable-only threshold baselines.
+Scope and limitations
+This paper treats rivals as stationary processes—their policies do not adapt to our inference. This
+assumption is violated when rivals reason about being observed, leading to the counter-harvest
+trap and non-stationary equilibria studied in Kleisarchaki [2026b]. We state this limitation at
+the outset because it is not a defect to be hidden: it is precisely the gap between this paper and
+its game-theoretic extension. Thepomdpsolution presented here is the correct baseline against
+which that extension must demonstrate improvement.
+2 Background
+Prior computational work on F1 strategy has focused on pit-stop timing as an optimisation
+problem [Heilmeier et al., 2020] and on reinforcement learning for race simulation [Betz et al.,
+2
+2022]. These formulations treat energy management as a deterministic sub-problem with known
+rival actions.
+The closest structural analogue to the counter-harvest trap in prior work is the Formula E
+Attack Mode [Liu et al., 2021]: teams earn a temporary power boost by driving through a
+designated off-line zone. The key difference is that Attack Mode is opt-in from a fixed physical
+location, publicly visible to all teams, and does not interact with a rival’s inference model. The
+2026 Active Aero system creates a strictly harder version: the equivalent of Attack Mode can
+be executed covertly at any activation zone, at a time of the driver’s choosing, in a way that
+mimics harvesting to an observer without a belief-state model.
+POMDPs and opponent modelling.POMDPs [Kaelbling et al., 1998] provide the natural
+framework for sequential decision-making under state uncertainty. Opponent modelling in
+multi-agent systems has been approached through Bayesian inference [Albrecht and Stone,
+2018], recursive reasoning [Gmytrasiewicz and Doshi, 2005], and game-theoretic agent modelling
+[Hansen et al., 2004]. Our approach is closest to thehmmopponent modelling literature, where
+a rival’s latent strategy or resource state is inferred from observable actions [Albrecht and Stone,
+2018].
+HMMs for temporal inference.HMMs [Rabiner, 1989] are well-suited to the F1 energy
+inference problem: the hidden state evolves according to known physics (the transition model),
+and we observe noisy projections of it each sector (the emission model). The Baum-Welch
+algorithm [Baum et al., 1970] provides maximum-likelihood parameter estimation from unlabelled
+sequences—critical here because we have no ground-truth labels for rival battery states in real
+telemetry.
+Why discrete HMM over particle filter.A particle filter could in principle handle
+continuouserscharge and relax the conditional independence assumption. We use a discrete
+hmmfor two reasons. First, Baum-Welch provides closed-form maximum-likelihood parameter
+estimation from unlabelled sequences; particle filters require approximate inference schemes (e.g.
+SMC-EM) that are substantially less stable at the small data volumes available from a single race
+weekend. Second, the four-binersdiscretisation is physically motivated: the strategic decision
+is whether a rivalcandefend ( ers≥M ),cannotdefend ( Lderate: physically depleted), or is
+building a trap( Lharvest: deliberately conserving); a continuous representation would require
+decision boundaries to be learned from data rather than specified from domain knowledge.
+HMM identifiability.With 40 states and six observables discretised to 8 × 7 × 5 × 5 × 2 × 6 =
+16,800 joint bins, the raw emission matrix has 40×16,800 = 672,000 parameters. With parameter
+tying by (ERS, tyre) cluster (Section 4) reducing to 20 effective emission rows, and exploiting
+the conditional independence structure, the effective degrees of freedom per emission row are
+8+7+5+5+2+6−5 = 28, giving 20 × 28 = 560 effective parameters. The cumulative observation
+count reaches ∼13,920 by Race 4. The model should be treated as empirically validated only
+from Race 4 onwards; Melbourne results are explicitly preliminary.
+Deep Q-Networks.DQN [Mnih et al., 2015] with Double DQN [van Hasselt et al., 2016]
+and experience replay [Lin, 1992] provides the policy learning component. We use a deliberately
+shallow network (three hidden layers, 256–256–128 units) because the belief state does the
+representational heavy lifting and the training data volume is limited.
+3
+3 Problem Formalisation
+3.1 The 2026 Regulatory Context
+The 2026 regulations introduce three strategically relevant changes [FIA, 2026].
+50/50 power split.Total power output is split equally between ICE and MGU-K battery.
+The battery is under continuous demand, makingerscharge level a first-order strategic variable
+at every sector.
+Override Mode.A proximity-gated energy award replacing DRS entirely. When a driver is
+within one second of the car ahead at the lap’s detection point (nominally the final corner), they
+earn an extra 0.5 MJ of deployable energy on the following lap. When deployed, Override Mode
+produces a distinctive speed signature detectable in speed-trap telemetry.
+Active Aero.Replaces DRS entirely. Driver-controlled, available only in designated activation
+zones, with two fixed positions (cornering and straight-line). Straight-line mode produces a speed
+boost detectable as a positive ∆ vtrap increment above theers-explained baseline. Crucially, a
+car can run Active Aero in straight-line mode while super-clipping ( Lderate)—the mechanical
+downforce reduction provides speed independent of battery deployment. This is the physical
+basis for the counter-harvest trap.
+Circuit-dependent recharge shortfall.Pre-season analysis reveals recharge-per-lap ratios
+from 1.0× (Australia, Italy, Saudi Arabia) to 2.2× (Azerbaijan, Singapore).1 At Melbourne, cars
+require approximately 16 additional seconds of super-clipping per lap at 250 kW, transforming
+super-clipping from a discretionary tool into a near-mandatory operating mode.
+3.2 The POMDP Model
+We model the decision problem for a single ego car as apomdp⟨S, A, T, R,Ω, O, γ⟩where:
+Definition 1(Fully Observable State).The fully observable component so
+t includes tyre
+compound and age (FIA-published), lap number, sector, circuit position (activation zone or not),
+and own-carerslevel, Override Mode status, Active Aero position, and gap to adjacent cars.
+Definition 2(Hidden Rival State).The hidden state for each rival is xt = (e, m, τ) ∈ X , where:
+e∈ {H, M, L harvest, L derate}(erscharge level, 4 modes) (1)
+m∈ {available,spent}(Override Mode status) (2)
+τ∈ {new,light,moderate,heavy,cliff}(tyre degradation) (3)
+giving|X |= 4×2×5 =40states.
+The Lharvest / Lderate decomposition.This is the central architectural advance of v2 over
+v1.5. Both sub-modes produce depressed ∆ vtrap and may co-occur with zaero = 1 in an activation
+zone, but they haveoppositestrategic implications:
+•L harvest: the driver isactively managingthrottle below 100%, building a hidden energy
+reserve. This is the trap condition. δthrottle ≈ 0.05–0.10 (low; managed throttle, not full
+demand).
+1These engineering estimates are community-derived from pre-season analysis (February 2026) and are not
+FIA-certified. All downstream claims should be treated as provisional until confirmed by Race 1 telemetry.
+4
+•L derate: the driver demands full power ( ≥98% throttle) but the MGU-K battery has
+reached its SOC ceiling and cannot deliver further electrical output. The car slows not by
+choice but by physics. δthrottle ≈ 0.40–0.60 (high; full throttle with below-baseline speed).
+In v1.5, both sub-modes shared the L state, and the δthrottle observable was handled as a
+mixed emission with a circuit-dependent prior ( µ = 0.40 for Melbourne at recharge ratio 1.0).
+This worked, but produced an ambiguous posterior over L: thehmmcould not separately report
+P (Lharvest) and P (Lderate), which are the quantities thedqnpolicy actually needs. In v2, the
+posterior directly provides both quantities as separate belief dimensions.
+Fuel exclusion.Fuel load is excluded from the hidden state for two independent reasons:
+(i) all cars start with the same regulated load and deplete it at approximately the same rate,
+making fuel state deterministic from the observable lap number; and (ii) all six observables
+are measured as deviations from a per-driver rolling 5-lap baseline, which absorbs the smooth
+monotone pace improvement from fuel burn.
+Definition 3(Action Space).A={burn,harvest}.
+Definition 4(Observation Space). ot = (∆ vtrap, ∆tsector, ∆bbrake, σ2
+speed, zaero, δthrottle) ∈ Ω,
+where each component is a deviation from the rival’s rolling 5-lap baseline, except zaero ∈ {0, 1}
+andδ throttle ∈[0,1].
+The six observables are: (i) ∆ vtrap: speed at the speed trap minus rival baseline (km/h);
+(ii) ∆ tsector: sector time minus rival baseline (seconds); (iii) ∆ bbrake: distance from apex at
+which braking begins, minus rival baseline (metres); (iv) σ2
+speed: detrended variance of rival’s
+speed trace within the sector; (v) zaero ∈ {0, 1}: Active Aero deployment in straight-line mode
+(observable in activation zones from speed signature); (vi) δthrottle ∈ [0, 1]: fraction of straight-line
+telemetry samples within the sector where throttle ≥ 98% and speed is simultaneously below
+the driver’s 5-lap rolling baseline—the mechanical signature ofersderating, added in v1.5 and
+now elevated to full state-level discriminator in v2.
+Definition 5(Belief State). bt ∈ ∆40 is the probability vector over hidden states, maintained
+by thehmmforward algorithm:
+bt(x) =P(x t =x|o 1:t) (4)
+Definition 6(Reward).
+R(st, at) =E
+" HX
+k=1
+γk ·∆pos t+k
+ st, at
+#
+(5)
+where ∆pos is the change in race position, H = 5 (planning horizon covering approximately two
+erscycles), andγ= 0.95.
+3.3 The Counter-Harvest Trap
+Definition 7(Counter-Harvest Trap).A deceptive strategy for a car ahead (Car B) against a
+following car (Car A) in which Car B simultaneously: (i) runsersin Lharvest mode (conserving
+charge deliberately); (ii) deploys Active Aero in straight-line mode within an activation zone
+(maintaining straight-line speed despite harvesting); and (iii) allows the observable telemetry
+signals to indicate harvesting. Car A’s inference model identifies the L-state signature as an
+attack opportunity and burns energy. Car B then activates full deployment (including Override
+Mode), defending the position easily because it has the full energy reserve that Car A just spent.
+The trigger signature exploits a key 2026 regulatory asymmetry: lift-and-coast disables
+Active Aero, but super-clipping does not. Super-clipping is the automated redirection of ICE
+power to the battery at full throttle; the car slows slightly (power diverted from rear wheels)
+but Active Aero remains deployed.
+5
+Why v2 resolves the trap ambiguity more cleanly than v1.5.In v1.5, Lharvest and
+Lderate both mapped to the L state. The δthrottle observable provided evidence to distinguish
+them, but thehmm’s posterior was expressed over L as a single state—the policy had to infer the
+sub-mode from δthrottle directly rather than from a clean belief dimension. In v2, the posterior
+over Lharvest is a separate number from the posterior over Lderate. The trap detection condition
+becomes simply:
+trap condition =P(L harvest)> θ trap ∧z aero = 1∧in activation zone (6)
+This is directly actionable without post-hoc correction.
+Proposition 1.The counter-harvest trap is not detectable by a single-observable threshold policy
+on∆v trap alone.
+Proof sketch. A car running ers = H without Active Aero produces ∆ vtrap ≈ +4 km/h. A car
+in Lharvest with Active Aero in an activation zone produces ∆ vtrap ≈ −2 + 4 = +2 km/h. A car
+in Lderate with Active Aero produces similarly ∆ vtrap ≈ +2 km/h. All three distributions overlap
+under the emission model. No scalar threshold on ∆ vtrap can reliably separate them. The joint
+signal (∆vtrap, zaero, δthrottle) provides separation: zaero = 1 with ∆ vtrap ∈ [0, +3] km/h andlow
+δthrottle (< 0.15) identifies Lharvest with probability ≥ 0.85 under the emission model. The same
+(∆vtrap, zaero) signature withhigh δthrottle (> 0.35) identifies Lderate—a genuine opportunity, not
+a trap.
+Circuit-dependent trap distinguishability.At low-regen circuits (Melbourne, recharge
+ratio 1.0), super-clipping is mandatory for ∼16 s per lap, making Lderate the ambient state of most
+cars on the grid. The zaero = 1 with depressed ∆ vtrap combination is therefore less diagnostic.
+The rolling 5-lap baseline provides a partial rescue—a car in Lharvest will still produce positive
+∆vtrap relative to the super-clipping field—but the margin narrows. The testable prediction is
+that trap-detection recall at Melbourne will be lower than the 96.3% synthetic baseline and will
+improve at higher-regen circuits.
+4 Emission Model
+4.1 Conditional Independence: A Tractable Baseline
+We adopt conditional independence as a principled tractable baseline:
+P(o t |x t, zzone) =
+6Y
+i=1
+P(o t,i |x t, zzone) (7)
+∆vtrap and ∆tsector are mechanically coupled: deploying moreerssimultaneously increases
+speed and decreases sector time. Treating them as conditionally independent double-counts this
+correlated evidence on every belief update, producing systematically over-confident posteriors.
+The ECE figures reported in Section 7 are measured on synthetic data where the independence
+assumption holds by construction—they are lower bounds on real-data calibration error. Tem-
+perature scaling [Guo et al., 2017] is available as a post-hoc calibration step after Melbourne
+data is available.
+4.2 Observable Distributions
+Observables 1–4 are modelled as Gaussian, observable 5 as Bernoulli, and observable 6 as a
+truncated Gaussian on [0,1].
+6
+Table 1: ∆v trap emission parameters. Non-activation zones.
+ERS mode MOMµ σInterpretation
+Havailable +4.0 1.5 Full deploy
+Hspent +3.5 1.5 Post-Override, slightersresid-
+ual
+Many +1.0 1.5 Moderate deployment
+Lharvest any−2.0 1.5 Deliberate harvest; managed
+throttle
+Lderate any−1.5 1.5 SOC ceiling; slightly less de-
+pressed than harvest
+MOM active (transient):µ= +7.0,σ= 1.0
+Activation zone, Active Aero deployed:add +4.0 to base
+Observable 1:∆ vtrap (km/h).Circuit caveat.At low-regen circuits (recharge ratio ≤ 1.0),
+the rolling baseline shifts downward as Lderate becomes the modal operating mode. Baum-Welch
+recalibration is expected to absorb this circuit-specific shift from Race 1 onwards.
+Observable 2:∆t sector (seconds).
+µ=µ ers +δ τ ·f ers (8)
+µers ∈ {−0.30,0.00,+0.40,+0.30}s forers∈ {H, M, L harvest, Lderate}(9)
+δτ ∈ {0.0,0.1,0.25,0.50,0.90}s for tyre∈ {new,light,moderate,heavy,cliff}(10)
+fers ∈ {0.6,1.0,1.3,1.2}forers∈ {H, M, L harvest, Lderate}(11)
+Standard deviationσ τ ∈ {0.15,0.15,0.15,0.20,0.28}s. Override active:µ=−0.65 s,σ= 0.10.
+The µers for Lderate (+0.30 s) is slightly less than for Lharvest (+0.40 s) because the car in
+Lderate is running full throttle; the time penalty comes from missing electrical power, not from
+deliberate harvesting.
+Observable 3:∆ bbrake (metres).Primary drivers:ersregeneration braking point and tyre
+grip degradation.ersregen advances braking distance by {+8, 0,− 10,− 5} m for {H, M, Lharvest, Lderate}.
+The Lderate value of −5 m reflects that the car brakes marginally earlier under derating (less
+engine braking assistance at corner entry). Tyre degradation increases late-braking requirement
+by{0,3,8,15,24}m. Standard deviationσ τ ∈ {8,8,9,10,12}m.
+Observable 4: σ2
+speed (detrended variance).Primary driver:erslevel. µ∈ { 0.05, 0.10, 0.20, 0.22}
+for {H, M, Lharvest, Lderate}. The Lderate value is slightly elevated over Lharvest because intermit-
+tent SOC-ceiling events produce speed trace irregularities. Override spent state contributes a
++0.02 adjustment. MOM active:µ= 0.03,σ= 0.01.
+Observable 5: zaero (Bernoulli). P (zaero = 1 |z zone = 0) = 0. Inside activation zones:
+P (zaero = 1 |z zone = 1) ∈ { 0.85, 0.70, 0.80, 0.82} for ers∈ {H, M, L harvest, Lderate}. The
+probability for Lderate is slightly higher than Lharvest because a derating car maintains full
+throttle—which is compatible with Active Aero deployment—whereas a harvesting car may
+modulate aero strategy with throttle management.
+Observable 6: δthrottle (super-clipping duration fraction).This is the primary discrimina-
+tor between Lharvest and Lderate, and the architectural motivation for the 40-state decomposition:
+7
+δthrottle = 1
+|S|
+X
+k∈S
+1[throttlek ≥0.98∧v k <¯v] (12)
+where S is the set of straight-line telemetry samples in the sector, vk is instantaneous speed,
+and ¯vis the driver’s 5-lap rolling speed baseline for that sector.
+Table 2:δ throttle emission parameters. Values are Gaussian (µ, σ) truncated to [0,1].
+ERS state Sub-modeµ σInterpretation
+H— 0.05 0.04 Battery not depleted; rarely clips
+M— 0.15 0.08 Occasional clipping on long
+straights
+Lharvest deliberate 0.08 0.05 Managed throttle; low clipping
+Lderate SOC ceiling 0.55 0.18 Full throttle, SOC ceiling hit
+The signal separation between Lharvest and Lderate via δthrottle is |0.55 − 0.08| = 0 .47, more
+than twice the combined standard deviation ( σ≈ 0.18). This separation—identified in v1.5 as
+motivating a sixth observable—is the quantitative justification for elevating it to a state-level
+distinction in v2.
+Circuit-dependent prior for Lderate at Melbourne.At Melbourne (recharge ratio 1.0),
+the estimated fraction of L laps that terminate in mandatory super-clipping is 0.40, giving a
+blended prior mean of 0 .6 × 0.08 + 0.4 × 0.55 = 0.268. In v2 this blended prior is eliminated: the
+HMM maintains separate posteriors over Lharvest and Lderate, and Baum-Welch will estimate
+the circuit-specific transition rates between them directly from Race 1 telemetry.
+4.3 Emission Signal Strength: Audit Results
+erslevel is strongly identifiable: |µH −µ Lharvest| = 6.0 km/h in ∆vtrap and 18 m in ∆bbrake, both
+substantially larger than the emission noise.
+Lharvest vs. Lderate is identifiable via δthrottle: separation of 0.47, more than twice the combined
+σ. This is the primary motivation for the v2 state-level split.
+Tyre degradation signal is concentrated in the cliff state: ∆ tsector ≈ +0.8 s and ∆bbrake ≈
++16 m produce step changes the 5-lap baseline cannot absorb.
+Override Mode status is not directly distinguishable from emissions in the non-active state
+(differences < 0.5 km/h in ∆ vtrap). The Override activation event is strongly identifiable
+(∆vtrap ≈+7 km/h, ∆t sector ≈ −0.65 s).
+4.4 Observation Discretisation
+Observations are discretised to form a finite joint observation space as specified in Appendix A:
+∆vtrap (8 bins), ∆tsector (7 bins), ∆bbrake (5 bins), σ2
+speed (5 bins), zaero (2 bins), δthrottle (6 bins).
+Combined space: 8×7×5×5×2×6 = 16,800 bins.
+The emission matrix E∈R 40×16800 is computed analytically by integrating the Gaussian,
+Bernoulli, and truncated-Gaussian distributions over bin boundaries, conditioning on each of the
+40 hidden states. Two matrices are maintained: Enormal (outside activation zones) and Ezone
+(inside activation zones, with ∆v trap shifted by +4.0 km/h andz aero non-zero).
+8
+5 Inference Architecture
+5.1 Layer 1: The HMM Belief Update
+Thehmmhas 40 hidden states, emission matrix E∈R 40×16800, transition matrix T∈R 40×40,
+and initial distributionπ∈∆ 40.
+Transition model.The transition probability Tij = P (xt[+1] = j|x t = i) factors over the
+three components under conditional independence:
+Tij =P(e ′ |e, a)·P(m ′ |m)·P(τ ′ |τ) (13)
+Theerstransition is marginalised over the rival’s action with estimatedP(burn):
+P(e ′ |e) =p burn ·T burn
+ee′ + (1−p burn)·T harvest
+ee′ (14)
+The Lharvest and Lderate sub-modes have different transition dynamics (Appendix B): a car
+in Lharvest can transition to M or H under burn (it has reserve); a car in Lderate requires at
+least one sector of managed throttle to recover to M, and cannot transition directly to H. This
+asymmetry is strategically critical: it distinguishes a dangerous rival from a vulnerable one.
+The Override Mode transition is proximity-conditioned. P (m′ = available|m = spent) =
+P (gap< 1 s), which is partially observable from live timing data. The tyre transition is
+monotone-absorbing. Full transition matrices are given in Appendix B.
+Belief update.
+αt(j) =P(o t |j)·
+X
+i
+αt−1(i)·T ij (15)
+Normalised to giveb t. Computational complexity:O(N 2) =O(1600) per sector.
+Two-phase training.Phase 1 (pre-Melbourne): E is set analytically; T from physics-derived
+transition parameters; π concentrates on ( e = H, m = available, τ = new). Phase 2 (post-
+Melbourne): Baum-Welch EM [Baum et al., 1970] updatesEandTfrom real race sequences.
+Alternating update schedule.After each race weekend: Phase A—freezedqnweights, run
+Baum-Welch on new race data to update thehmm. Phase B—freezehmm, clear thedqnreplay
+buffer, generate fresh synthetic experience from the updatedhmm, retraindqn.
+5.2 Layer 2: The POMDP Policy
+Input vector (66 dimensions).
+Network architecture.
+Input(66)→Dense(256,ReLU)→Dense(256,ReLU)→Dense(128,ReLU)→Dense(2)
+Training.Double DQN [van Hasselt et al., 2016] with experience replay (buffer capacity
+50,000; Huber loss; gradient clipping at 10). ε-greedy exploration decays from 1.0 to 0.05 over
+synthetic pre-training.
+Shaping reward.During synthetic pre-training only:R shaped =R+λ·Φ,λ= 0.3, where
+Φ = +0.10·1[MAP(bt) =x ∗
+t ]−0.20·1[trap condition∧a=burn]+0.05·1[gap ahead∈ {close,threat}∧e self ≥M]
+(16)
+Φ is zeroed during real-data fine-tuning.
+9
+Table 3: DQN input vector components. Total: 66 dimensions (increased from 55 in v1/v1.5
+due to expansion of the belief vector from 30 to 40 states and expansion of ownersencoding
+from 3 to 4 modes).
+Component Encoding Dims Notes
+eself one-hot 4 Own ERS level (4 modes in
+v2)
+mself one-hot 2 Own Override Mode status
+fself one-hot 3 Fuel (from lap number)
+gap ahead one-hot 4 close / threat / neutral / clear
+gap behind one-hot 4
+δgap scalar 1 Closure rate, normalised
+[−1,1]
+tyre compound one-hot 3 soft / medium / hard
+tyre age scalar 1 Normalised 0–1
+lap scalar 1 Normalised 0–1
+sector one-hot 3
+bt probability vector 40 HMM belief state (40 states in
+v2)
+Total 66
+On the information bottleneck.Thedqnreceives thehmmbelief state bt rather than raw
+observables. In apomdp, the belief state is a sufficient statistic of the entire observation history.
+In v2, the belief state now explicitly encodes P (Lharvest) and P (Lderate) as separate dimensions,
+directly actionable by the policy. The δgap input provides a raw,hmm-independent signal for
+closure rate.
+6 Dataset
+6.1 Data Source
+Race telemetry is retrieved via the FastF1 Python library [Schaefer, 2024], which provides
+access to the official FOM timing and telemetry feed at 10 Hz sampling. The car data endpoint
+provides per-car speed, throttle, and braking data at sector resolution.
+6.2 Observable Derivation
+All six observables are computed as deviations from a per-driver rolling 5-lap baseline.
+δthrottle derivation.For each sector, the fraction of straight-line telemetry samples in which
+throttle ≥ 98% and speed is simultaneously below the driver’s 5-lap rolling speed baseline is
+computed from the FastF1 car data Throttle channel at 10 Hz. If the Throttle channel is absent
+for a given sector, δthrottle defaults to the circuit-appropriate prior mean for the inferred ERS
+state.
+Fuel exclusion.At ∼1.5 kg/lap over a 58-lap race, fuel burn produces a monotonic pace
+improvement of approximately 0.03 s/lap. This per-lap drift falls within the στ = 0.15 s emission
+noise; cumulative drift over the 5-lap baseline window (5 × 0.03 = 0.15 s) is absorbed by the
+rolling baseline itself.
+Full derivation pipelines for ∆b brake,σ 2
+speed, andz aero are specified in Appendix D.
+10
+6.3 Dataset Statistics
+Race coverage statistics are reported in subsequent work. All synthetic experiments use 20
+simulated races at 174 sectors each (3,480 total sector observations).
+7 Closed-Loop Synthetic Validation
+7.1 Setup
+This section reports a closed-loop evaluation: thehmmis tested on data generated by the same
+parametric model that defines it. This is deliberately circular. It verifies that the components
+work together as designed, but does not constitute empirical validation. Performance here is
+therefore an upper bound on real-data performance, not an estimate of it. Empirical validation
+begins with Race 1 data on 8 March 2026.
+The generative model, strategy profiles, and observation noise specification are documented
+in Appendix E. In brief: 20 synthetic races are generated (5 per strategy profile: aggressive,
+conservative, trap-setter, balanced) using the physics-derived transition matrices with i.i.d.
+Gaussian noise added to each continuous observable.
+Baselines.
+•B1—Deterministic Threshold: burn iff gap ahead∈ {close,threat}ANDe self ≥M.
+•B2—Observable-Only Threshold: burn iff B1 conditions AND ∆v trap <0.
+•B3—Oracle:pomdppolicy withb t replaced by the true hidden statex t (one-hot).
+•B4—Full System: the proposedhmm+dqnpolicy.
+7.2 HMM Inference Accuracy (Synthetic)
+Table 4: HMM inference accuracy on synthetic races (pre-calibration, v2 with 40 states and
+δthrottle). Random baselines: top-1 = 2.5%, ERS-level = 25.0% (4-class), MOM = 50.0%, tyre =
+20.0%, harvest/derate = 50.0%.
+Metric HMM Random Notes
+Top-1 state accuracy 49.1% 2.5% Full 40-state identification
+ERS level accuracy 96.8% 25.0% 4-class; primary inference target
+Lharvest vs.L derate 89.4% 50.0% Key v2 capability
+Override status accuracy 61.2% 50.0% Proximity-conditioned
+Tyre cliff detection 91.3% 20.0% Step-change signal
+Trap detection recall 96.3% — 117 trap sectors; 3.7% miss rate
+ECE (calibration error) 0.006 — Lower is better; synthetic lower
+bound
+Gap to oracle (ERS level) 95.7% —
+The 96.8% ERS-level accuracy (4-class, random baseline 25%) confirms strong emission signal
+from ∆ vtrap, ∆ bbrake, and δthrottle. The improvement over v1.5 (92.3% with 3-class, random
+baseline 33.3%) must be interpreted carefully: the random baselines differ (25% vs. 33.3%)
+because the state space is larger. The gap-to-oracle metric of 95.7% provides a more comparable
+measure of model quality across versions (v1.5: 88.0%, v1: same).
+The new Lharvest vs. Lderate accuracy of 89.4%—not expressible in v1 or v1.5—is the headline
+result of v2. It confirms that δthrottle provides sufficient discriminating power to support a
+11
+separate state for each sub-mode. The 10.6% error rate concentrates in Melbourne-analogue
+circuits with high mandatory super-clipping, where the δthrottle baseline shifts upward for all
+cars, narrowing the separation margin.
+Trap detection recall of 96.3% (vs. 95.7% in v1.5) reflects the cleaner Lharvest posterior: false
+trap activations caused by Lderate cars (the dominant error source in v1.5) are substantially
+reduced.
+7.3 Emission Model Robustness
+Table 5: ERS-level accuracy under emission parameter misspecification.
+Perturbation ERS Accuracy Change from Baseline
+Mean shift−20% 76.1%−7.3 pp
+Mean shift−10% 80.8%−2.6 pp
+Baseline (0%) 83.4% —
+Mean shift +10% 87.6% +4.0 pp
+Mean shift +20% 89.3% +5.5 pp
+Noise inflation +10% 81.1%−2.5 pp
+Noise inflation +20% 77.4%−5.9 pp
+Noise inflation +30% 75.7%−7.6 pp
+7.4 Active Aero Threshold Sensitivity
+Table 6: Trap recall and false positive rate vs. Active Aero detection threshold.
+Threshold (km/h) Trap Recall False Positive Rate
+1.0 97.9% 34.2%
+1.5 95.1% 23.1%
+2.0 91.4% 13.7%
+2.5 85.2% 7.6%
+3.0 75.3% 3.9%
+3.5 63.1% 1.8%
+The current 2.0 km/h threshold sits at the inflection point of the recall–FPR tradeoff. In
+v2, false zaero detections produce a shifted posterior over Lharvest vs. Lderate—which can be
+corrected on subsequent sectors—rather than directly triggering an action. The false positive
+rate at the 2.0 km/h threshold improves from 15.3% (v1.5) to 13.7% (v2), attributable to the
+cleaner posterior separation betweenLsub-modes.
+7.5 HMM Calibration on Real Data
+Baum-Welch calibration on 2026 race telemetry is reported in subsequent work.
+8 Discussion
+What the system does well.ERS state inference from ∆ vtrap and ∆bbrake is robust. Counter-
+harvest trap detection is the clearest strength of the full system over observable-only baselines.
+The v2 advance is the Lharvest posterior: where v1.5 required post-hoc correction to avoid false
+trap activations fromL derate cars, v2 provides the distinction directly in the belief state.
+12
+The stationary opponent assumption.The most important limitation is structural. We
+model rivals as stationary processes that do not adapt their strategy based on being observed.
+Thepomdppolicy trained here is the correct baseline—the floor, not the ceiling, of performance
+under adversarial conditions. Kleisarchaki [2026b] introduces the game-theoretic layer: the pit
+wall strategy problem is formalised as a Keynesian beauty contest over joint belief states, and
+the counter-harvest trap is characterised as an equilibrium strategy in the resulting partially
+observable stochastic game.
+Boost Mode exclusion.The 2026 regulations include two driver-controlled deployment
+tools: proximity-constrained Override Mode and unconstrained Boost Mode. The present model
+includes Override Mode but excludes Boost Mode as an explicit latent dimension. This exclusion
+is deliberate rather than inadvertent. In the current observation design, the principal emissions
+are tuned to distinguish latent energy-management states, especially deliberate harvesting versus
+derating. By contrast, unconstrained Boost usage is expected to be identifiable primarily through
+additional non-∆ vtrap observables, such as finer sector-level pace variation and non-straight
+deployment signatures, which are outside the present emission architecture. Adding Boost
+Mode as a further hidden dimension without those observation channels would introduce latent
+distinctions that are not reliably identifiable from the current data model. We therefore treat
+the Boost/harvest interaction as a separate inference problem and reserve its formalisation for
+subsequent work.
+Calibration.The conditional independence assumption produces over-confident beliefs. ECE =
+0.006 on v2 synthetic data is a lower bound on real-data calibration error. Post-Baum-Welch
+calibration on real data will partially improve this, but will not fully correct for the structural
+violation between ∆ vtrap, ∆ tsector, and ∆ bbrake. A structural correction—replacing the con-
+ditional independence assumption with bivariate Gaussian emission anders-state-dependent
+correlations between ∆vtrap and ∆tsector—is introduced in Kleisarchaki [2026b] and addresses
+the over-confidence at its source rather than correcting it post-hoc. Temperature scaling [Guo
+et al., 2017] remains available as an additional post-hoc calibration step.
+Data regime.At∼560 effective parameters and a limited dataset after one race, the Baum-
+Welch estimates are Dirichlet-regularised guesses. The model should be treated as empirically
+validated only from Race 4 onwards.
+Transition matrix sector averaging.The global T burn and T harvest matrices are population
+averages across track geometry. Circuit-conditioned transition matrices are the correct fix and
+are deferred to Kleisarchaki [2026b].
+Override Mode prior.The prior P (gap< 1 s) ≈ 0.25 governs Override Mode recovery when
+live timing data is incomplete. The Melbourne pipeline conditions Pearn on the rival’s observed
+gap to the car immediately ahead of them from the FOM live timing feed, reducing the residual
+dependence on the 0.25 scalar prior.
+Forward pointer to Kleisarchaki [2026b].The Lharvest/Lderate distinction is strategically
+meaningful specifically because rivals reason about being observed—the core topic of Kleisarchaki
+[2026b]. A rational trap-setter operates in Lharvest, not Lderate. The v2 belief state, by providing
+P (Lharvest) as a separate dimension, gives the game-theoretic layer of Kleisarchaki [2026b] a
+cleaner input.
+13
+9 Conclusion
+We have presented a tractable two-layer framework for opponent state inference and decision-
+making in 2026 Formula 1 energy strategy. The central advance of v2 is the decomposition of
+ERS=Low into two strategically distinct states: Lharvest (deliberate conservation, hidden reserve
+building, the trap condition) and Lderate (SOC ceiling, physical depletion, a genuine attack
+opportunity). This decomposition, motivated by the δthrottle signal added in v1.5, is elevated
+in v2 from a mixed emission to a full state-level distinction. The result is a 40-statehmmthat
+provides directly actionable belief dimensions to thedqnpolicy, and a 96.3% trap detection
+recall on synthetic data with a false positive rate substantially reduced from v1.5.
+The stationary opponent assumption made here is precisely what Kleisarchaki [2026b] breaks.
+A tractable approximate solution via Partially Observable Monte Carlo Tree Search with bounded
+rationality is the subject of forthcoming work.
+References
+S. V. Albrecht and P. Stone. Autonomous agents modelling other agents: A comprehensive
+survey and open problems.Artificial Intelligence, 258:66–95, 2018.
+L. E. Baum, T. Petrie, G. Soules, and N. Weiss. A maximization technique occurring in the
+statistical analysis of probabilistic functions of Markov chains.The Annals of Mathematical
+Statistics, 41(1):164–171, 1970.
+J. Betz, H. Zheng, A. Liniger, U. Rosolia, P. Karle, M. Behl, V. Kumar, and F. Borrelli.
+Autonomous vehicles on the edge: A survey on autonomous vehicle racing.IEEE Open
+Journal of Intelligent Transportation Systems, 3:458–488, 2022.
+F´ ed´ eration Internationale de l’Automobile. 2026 Formula 1 technical regulations, is-
+sue 16, 27 February 2026. https://www.fia.com/system/files/documents/fia_2026_f1_
+regulations_-_section_c_technical_-_iss_16_-_2026-02-27.pdf.
+P. J. Gmytrasiewicz and P. Doshi. A framework for sequential planning in multi-agent settings.
+Journal of Artificial Intelligence Research, 24:49–79, 2005.
+C. Guo, G. Pleiss, Y. Sun, and K. Q. Weinberger. On calibration of modern neural networks. In
+International Conference on Machine Learning, pages 1321–1330, 2017.
+E. A. Hansen, D. S. Bernstein, and S. Zilberstein. Dynamic programming for partially observable
+stochastic games. InProceedings of the AAAI Conference on Artificial Intelligence, pages
+709–715, 2004.
+A. Heilmeier, M. Graf, J. Betz, and M. Lienkamp. Application of Monte Carlo methods to
+consider probabilistic effects in a race simulation for circuit motorsport.Applied Sciences,
+10(12):4229, 2020. DOI: 10.3390/app10124229.
+L. P. Kaelbling, M. L. Littman, and A. R. Cassandra. Planning and acting in partially observable
+stochastic domains.Artificial Intelligence, 101(1–2):99–134, 1998.
+K. Kleisarchaki. Keynesian beauty contests on the pit wall: Game-theoretic energy strategy in
+2026 Formula 1. Preprint, ResearchGate, March 2026. DOI: 10.13140/RG.2.2.27003.17448.
+https://www.researchgate.net/publication/401730959
+L.-J. Lin. Self-improving reactive agents based on reinforcement learning, planning and teaching.
+Machine Learning, 8(3–4):293–321, 1992.
+14
+X. Liu, A. Fotouhi, and D. J. Auger. Formula-E race strategy development using distributed
+policy gradient reinforcement learning.Knowledge-Based Systems, 216:106781, 2021. DOI:
+10.1016/j.knosys.2021.106781.
+V. Mnih et al. Human-level control through deep reinforcement learning.Nature, 518:529–533,
+2015.
+L. R. Rabiner. A tutorial on hidden Markov models and selected applications in speech recognition.
+Proceedings of the IEEE, 77(2):257–286, 1989.
+P. Schaefer and contributors. FastF1: A Python package for Formula 1 telemetry and results
+data. Software, version 3.x, 2024. https://github.com/theOehrly/Fast-F1. Zenodo:
+https://doi.org/10.5281/zenodo.4661027.
+H. van Hasselt, A. Guez, and D. Silver. Deep reinforcement learning with double Q-learning. In
+Proceedings of the AAAI Conference on Artificial Intelligence, volume 30, pages 2094–2100,
+2016.
+A Observation Bin Boundaries
+Table 7: Discretisation bin boundaries for all six observables.
+Observable Bins Boundaries Notes
+∆vtrap (km/h) 8 (−∞,−8,−4,−1,1,3,5,8,+∞)
+∆tsector (s) 7 (−∞,−0.6,−0.2,0.2,0.6,1.0,1.5,+∞)
+∆bbrake (m) 5 (−∞,−8,−3,3,10,+∞)
+σ2
+speed 5 (−∞,0.06,0.12,0.18,0.24,+∞)
+zaero 2{0,1}Bernoulli
+δthrottle 6 [0,0.05,0.15,0.30,0.50,0.75,1.0] Truncated Gaussian
+Combined 16,800 8×7×5×5×2×6
+B Full Transition Matrices
+B.1 ERS Transitions
+Table 8: ERS transition matrices T burn (left) and T harvest (right). The Lharvest and Lderate rows
+differ materially under burn: a harvesting car has reserve to deploy; a derating car does not.
+T burn T harvest
+H M L H LD H M L H LD
+H0.60 0.35 0.03 0.02 0.95 0.05 0.00 0.00
+M0.05 0.55 0.25 0.15 0.60 0.35 0.03 0.02
+Lharvest 0.00 0.25 0.50 0.25 0.30 0.55 0.15 0.00
+Lderate 0.00 0.05 0.15 0.80 0.00 0.45 0.30 0.25
+Key asymmetries:
+• Under burn: P (Lharvest →M ) = 0.25 vs. P (Lderate →M ) = 0.05. A harvesting car can
+respond to a burn command; a derating car cannot.
+15
+• Under harvest: P (Lderate →L harvest) = 0 .30 (car manages throttle back below SOC
+ceiling);P(L derate →H) = 0.00 (cannot bypass recovery).
+B.2 Override Mode Transitions
+Override Mode uses a 2-state proximity-conditioned model:
+T idle =
+1−P d Pd
+Pe 1−P e
+
+, T activate =
+ 0 1
+Pe 1−P e
+
+(17)
+whereP d =P(deploy|available) = 0.60 andP e =P(earn|spent) =P(gap<1 s)≈0.25.
+B.3 Tyre Degradation Transitions
+Monotone absorbing chain with state-dependent persistence probabilities: new ( p = 23/24), light
+(p= 20/21), moderate (p= 14/15), heavy (p= 14/15), cliff (p= 1.00, absorbing).
+C DQN Hyperparameters
+Table 9: DQN training hyperparameters.
+Hyperparameter Value
+Network architecture 66-256-256-128-2
+Activation ReLU
+Weight initialisation He (Kaiming normal)
+Replay buffer capacity 50,000 transitions
+Batch size 64
+Discount factorγ0.95
+Target network update Every 500 gradient steps
+ε(start) 1.0
+ε(end) 0.05
+εdecay steps 20,000
+Learning rate (synthetic) 10 −3
+Learning rate (real) 10 −4
+Loss function Huber
+Gradient clipping 10.0 (max norm)
+Shaping weightλ0.3 (synthetic); 0.0 (real)
+Synthetic pre-training races 200
+D FastF1 Observable Derivation Pipeline
+Brake point delta.For each sector, we identify the track distance at which the car’s speed
+begins monotonically decreasing from the sector’s speed maximum, using the 10 Hz speed trace.
+A 3-sample Gaussian smoothing is applied before the monotone-descent detection to remove
+telemetry noise.
+Speed variance detrended.The within-sector speed trace is linearly detrended by fitting
+and subtracting a first-order polynomial. The variance of the detrended residual is computed as
+σ2
+speed.
+16
+Active Aero detection.In designated activation zones, Active Aero deployment is inferred
+from the speed residual after removing theers-explained component. A positive residual above
+2.0 km/h is classified asz aero = 1.
+Super-clipping duration ( δthrottle).For each sector, the fraction of straight-line telemetry
+samples in which throttle ≥ 98% and speed is simultaneously below the driver’s 5-lap rolling
+speed baseline is computed from the FastF1 car data Throttle channel at 10 Hz. If the Throttle
+channel is absent, δthrottle defaults to the circuit-appropriate prior mean for the inferred ERS
+state.
+E Synthetic Data Specification
+E.1 Strategy Profiles
+Table 10: Synthetic strategy profile definitions.
+Profilep burn schedule Trap execution Notes
+Aggressive 0.75 throughout Never Consistently high energy
+use
+Conservative 0.35 throughout Never Sustained harvesting
+Trap-setter 0.30 baseline; 0.90 post-trap In activation
+zones when gap
+<1.5 s
+Primary test of Propo-
+sition 1; operates from
+Lharvest
+Balanced 0.55 throughout Never Average behaviour
+E.2 Observation Noise Model
+Synthetic observations are generated from the emission parameters (Section 4) with i.i.d. Gaussian
+noise:
+ˆot =o t +ε t, ε t ∼ N(0, σ 2
+noise) (18)
+where σnoise = 0.2 km/h for ∆vtrap, 0.05 s for ∆tsector, and 1 m for ∆ bbrake. zaero is generated
+directly from Bernoulli emission parameters. σ2
+speed is generated from a truncated Gaussian
+(truncation at 0). δthrottle is generated from a truncated Gaussian on [0 , 1] with the parameters
+from Table 2, with a Melbourne circuit offset (+0.10) applied to the Lderate state to reflect
+mandatory super-clipping.
+Five races are generated per profile (20 total), each of 58 laps × 3 sectors × 6 rival cars =
+1,044 sector observations per race, for 20,880 total observations.
+17

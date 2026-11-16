@@ -1,0 +1,21 @@
+[opt26] apex penalty on 17 corners at [394, 541, 663, 943, 1787, 1995, 2191, 2633, 2755, 2877, 3021, 3569, 3823, 4299, 4421, 4665, 4791]
+[opt26] touch constraint: 2060-2120 m, side +1 (as at 1980 m)
+[opt26] 2451 stations, 205 knots, corridor median 9.3 m
+[opt26] base 93.911s
+[opt26] step 1.0 sweep 0: 93.837s (-0.075) acc 2 t 22s
+[opt26] step 1.0 sweep 1: 93.741s (-0.171) acc 2 t 42s
+[opt26] step 1.0 sweep 2: 93.737s (-0.174) acc 1 t 62s
+[opt26] step 0.5 sweep 0: 93.544s (-0.367) acc 5 t 100s
+[opt26] step 0.5 sweep 1: 93.506s (-0.405) acc 1 t 120s
+[opt26] step 0.25 sweep 0: 93.423s (-0.488) acc 11 t 156s
+[opt26] step 0.25 sweep 1: 93.343s (-0.568) acc 9 t 175s
+[opt26] step 0.25 sweep 2: 93.325s (-0.586) acc 6 t 193s
+[opt26] step 0.25 sweep 3: 93.293s (-0.619) acc 4 t 213s
+[opt26] step 0.25 sweep 4: 93.289s (-0.622) acc 2 t 231s
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[opt26] apex gaps 394:0.10 542:0.15 664:0.19 944:-0.00 1788:0.08 1996:0.20 2192:0.18 2634:0.32 2756:0.21 2878:0.04 3022:0.03 3570:0.05 3824:0.05 4300:0.20 4422:0.16 4666:0.15 4792:0.22 pure lap 91.672s
+[opt26] done: 93.289s (base 93.911), viol 0.078 m

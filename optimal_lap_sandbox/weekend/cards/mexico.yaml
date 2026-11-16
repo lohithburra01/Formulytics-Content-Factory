@@ -1,0 +1,8 @@
+# Track card (ticket 15): the only hand-written facts a new track needs. Everything else is fetched, computed or fitted.
+track: mexico
+event_name: {value: "Mexico City Grand Prix", source: "event name"}
+openf1: {country: "Mexico", circuit: "Mexico City"}
+length_m: {value: 4304.0, source: "FIA circuit length, Autodromo Hermanos Rodriguez (2015+ layout)"}
+direction: {value: clockwise, source: "Hermanos Rodriguez runs clockwise (turn 1 right after the long main straight)"}
+altitude_m: {value: 2240.0, source: "Mexico City basin elevation ~2,240 m (circuit commonly cited 2,240-2,285 m)"}
+street: {value: false, source: "permanent circuit"}

@@ -1,0 +1,26 @@
+{
+  "fetched_utc": "2026-09-11T17:10:36.607550+00:00",
+  "fastf1_version": "3.9.0.dev2",
+  "fp1": {
+    "api_path": "/static/2026/2026-09-13_Spanish_Grand_Prix/2026-09-11_Practice_1/",
+    "timed_laps": 343,
+    "skipped": 0,
+    "fastest": {
+      "driver": "RUS",
+      "lap": 20,
+      "lap_s": 94.077
+    },
+    "ideal_lap_best_sectors_s": 93.933
+  },
+  "fp2": {
+    "api_path": "/static/2026/2026-09-13_Spanish_Grand_Prix/2026-09-11_Practice_2/",
+    "timed_laps": 250,
+    "skipped": 0,
+    "fastest": {
+      "driver": "ANT",
+      "lap": 11,
+      "lap_s": 93.662
+    },
+    "ideal_lap_best_sectors_s": 93.26
+  }
+}

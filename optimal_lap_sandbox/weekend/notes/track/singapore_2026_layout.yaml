@@ -1,0 +1,23 @@
+id: track/singapore_2026_layout
+layer: track
+scope: {track: singapore, year: 2026}
+links: [weekend/singapore_2026]
+values:
+  track.mirror_outline_file: {value: F1_Pipeline_Assets/tracks/singapore_grand_prix_mirror_outline.json, file: true, origin: COMPUTED, source: "official map-matched path (top-10 2025 Q laps) at FIA 4927 m, 10 m wide, R >= 10, x-mirrored (cache/singapore/_build_official_outline.py)"}
+  ref.q2025_csv_file: {value: F1_Pipeline_Assets/exports/reference_2025_singapore_q.csv, file: true, origin: MEASURED, source: "OpenF1 2025 Singapore Q, RUS pole 1:29.158 (fetch_openf1_lap.py)"}
+  line.base_inset_m: {value: 1.0, unit: m, origin: COMPUTED, source: "street circuit: inset 0 put the line 0.55 m over an edge (registry note)"}
+  track.street_grip_k: {value: 0.723, origin: FITTED, source: "cache/singapore/_fit_street_grip.py -> street_grip.json k=0.72295, rounded to 0.7230 in the bat", fit_target: "2025-spec car lap = RUS 2025 pole 89.158 s", fit_range: [0.3, 1.0]}
+  sim.gain_cap_kmh_s: {value: 36.3, unit: km/h/s, origin: COMPUTED, source: "real 2025 Q throttle-on gain median 23.9 x max shipped sim/real ratio 1.52 (cache/_sim_singapore.py)"}
+  track.svg_file: {value: Marina_Bay_circuit_2023.svg, file: true, origin: MEASURED, source: "hand-drawn 2023 layout SVG (Wikimedia), used only to fix the coordinate frame"}
+  track.svg_frame_length_m: {value: 4940.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "frame only (the SVG fixes where the official path is placed and rotated, not its shape); kept from bat v4 (2026-10-08) - to be verified no-effect"}
+  track.svg_road_width_m: {value: 12.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "frame only (the SVG fixes where the official path is placed and rotated, not its shape); kept from bat v4 (2026-10-08) - to be verified no-effect"}
+  track.svg_min_radius_m: {value: 10.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "frame only (the SVG fixes where the official path is placed and rotated, not its shape); kept from bat v4 (2026-10-08) - to be verified no-effect"}
+  track.svg_sf_arc_m: {value: 855.0, unit: m, origin: USER_DECISION, decided: 2026-10-20, reason: "frame only (the SVG fixes where the official path is placed and rotated, not its shape); kept from bat v4 (2026-10-08) - to be verified no-effect", note: "cache/_singapore_prep.py: speed-profile match to 2025 Q, corr 0.942"}
+  track.path_samples_file: {value: cache/singapore/path_samples.json, file: true, origin: MEASURED, source: "OpenF1 location, 2025 Singapore Q (session 9892), fastest valid lap of the top-10 drivers, map-matched (cache/singapore/_fetch_path_multi.py, fetched 2026-10-08)"}
+  track.path_ref_driver: {value: 63, origin: MEASURED, source: "driver of the fastest 2025 Q lap (RUS, pole 1:29.158); his lap start = the official timing line"}
+  track.length_m: {value: 4927.0, unit: m, origin: KNOWLEDGE, source: "FIA circuit length, Marina Bay 2024+ layout (registry note)"}
+  track.width_m: {value: 10.0, unit: m, origin: FITTED, source: "cache/singapore_2026.md v4: 12 m gave worst corner error 46 km/h, 10 m gave 18", fit_target: "worst corner-speed error vs 2025 Q", fit_range: [8.0, 14.0]}
+  track.mirror_x: {value: true, origin: COMPUTED, source: "Marina Bay runs anticlockwise; the engine drives clockwise, so the sim runs on the x-mirror (physics is left/right symmetric, no banking)"}
+  ref.q2025_lap_s: {value: 89.158, unit: s, origin: MEASURED, source: "2025 Singapore Q pole, RUS 1:29.158 (official)"}
+  video.track_name: {value: "Singapore Grand Prix", origin: KNOWLEDGE, source: "event name"}
+

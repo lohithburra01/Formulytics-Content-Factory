@@ -1,0 +1,117 @@
+{
+ "track": "hungary",
+ "cda": 0.6139,
+ "cl": 4.7894,
+ "rho": 1.1959,
+ "iters": 3,
+ "converged": true,
+ "rail_ok": true,
+ "lap_rail_s": 75.84,
+ "top_err_kmh": -0.8,
+ "hs_median_err_kmh": -0.17,
+ "cl_tier": "v25>170",
+ "ls_median_err_kmh": 3.78,
+ "lap_s": 76.355,
+ "n_boundary_backoffs": 0,
+ "targets": "predicted_hungary.json",
+ "csv": "cache/autofit_hungary_sim.csv",
+ "corners": [
+  {
+   "s_frac": 0.13902,
+   "v25": 98.0,
+   "v26_target": 94.7,
+   "sim_v": 98.6,
+   "err": 3.9
+  },
+  {
+   "s_frac": 0.25881,
+   "v25": 127.0,
+   "v26_target": 120.9,
+   "sim_v": 120.4,
+   "err": -0.5
+  },
+  {
+   "s_frac": 0.4155,
+   "v25": 249.0,
+   "v26_target": 225.0,
+   "sim_v": 203.8,
+   "err": -21.2
+  },
+  {
+   "s_frac": 0.46651,
+   "v25": 167.0,
+   "v26_target": 154.7,
+   "sim_v": 143.7,
+   "err": -11.0
+  },
+  {
+   "s_frac": 0.54155,
+   "v25": 115.0,
+   "v26_target": 110.1,
+   "sim_v": 118.7,
+   "err": 8.6
+  },
+  {
+   "s_frac": 0.59019,
+   "v25": 179.0,
+   "v26_target": 164.4,
+   "sim_v": 174.1,
+   "err": 9.7
+  },
+  {
+   "s_frac": 0.61635,
+   "v25": 167.0,
+   "v26_target": 154.7,
+   "sim_v": 156.2,
+   "err": 1.5
+  },
+  {
+   "s_frac": 0.7087,
+   "v25": 244.0,
+   "v26_target": 220.5,
+   "sim_v": 210.5,
+   "err": -10.0
+  },
+  {
+   "s_frac": 0.80374,
+   "v25": 121.0,
+   "v26_target": 115.5,
+   "sim_v": 101.7,
+   "err": -13.8
+  },
+  {
+   "s_frac": 0.86303,
+   "v25": 108.0,
+   "v26_target": 103.8,
+   "sim_v": 107.6,
+   "err": 3.8
+  },
+  {
+   "s_frac": 0.92376,
+   "v25": 153.0,
+   "v26_target": 143.2,
+   "sim_v": 132.4,
+   "err": -10.8
+  }
+ ],
+ "history": [
+  {
+   "cda": 0.75,
+   "cl": 4.6,
+   "f1": -10.92,
+   "f2": -4.27
+  },
+  {
+   "cda": 0.6763,
+   "cl": 5.0,
+   "f1": -5.01,
+   "f2": 4.75
+  },
+  {
+   "cda": 0.6139,
+   "cl": 4.7894,
+   "f1": -0.8,
+   "f2": -0.17
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+[telemetry] 350 samples, lap_time=92.510s, v=[80,324] km/h, soc=no, mode=yes
+[telemetry] 2818 samples, lap_time=93.896s, v=[74,337] km/h, soc=yes, mode=yes
+  frame 300/2877
+  frame 600/2877
+  frame 900/2877
+  frame 1200/2877
+  frame 1500/2877
+  frame 1800/2877
+  frame 2100/2877
+  frame 2400/2877
+  frame 2700/2877
+[dual-v3] saved -> runs/austin_2026/vs2025/austin_2025_vs_2026.mp4  (2877 frames)

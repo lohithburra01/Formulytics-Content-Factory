@@ -1,0 +1,37 @@
+id: car/f1_2026_car
+layer: car
+scope: {year: 2026}
+links: [regulations/fia_2026_power_unit]
+values:
+  RHO: {value: 1.225, unit: kg/m^3, origin: KNOWLEDGE, source: "ISA sea level", note: "car default; each weekend overrides with ISA at altitude"}
+  CDA_STRAIGHT_M2: {value: 0.8, unit: m^2, origin: COMPUTED, source: "re-pinned to Silverstone 2026 FP1 top speed 317 km/h (memory silverstone-2026-calibration)", note: "car default; the weekend fit overrides"}
+  CL_CORNER_M2: {value: 4.2, unit: m^2, origin: COMPUTED, source: "re-pinned to Silverstone 2026 FP1 (memory silverstone-2026-calibration)", note: "car default; the weekend fit overrides"}
+  MU_LAT: {value: 1.95, origin: COMPUTED, source: "Canada 2025 hairpin apex 19.19 m/s (vehicle_calibration.json)"}
+  A_ACC_LONG_MAX: {value: 16.1865, unit: m/s^2, origin: COMPUTED, source: "1.65 g, matches real 2026 peak corner-exit gain ~55-58 km/h/s (sim comment)"}
+  P_SUPERCLIP_NET_W: {value: 335000, unit: W, origin: COMPUTED, source: "tuned to China 2026 Q superclip decline 5-7 km/h/s"}
+  CLIP_ZONES: {value: "", origin: USER_DECISION, decided: 2026-10-23, reason: "spec D28: no reference lap -> the old speed-fraction superclip rule; a weekend with FP1 overrides with its measured clip zones"}
+  GRIP_MAP: {value: "", origin: USER_DECISION, decided: 2026-10-24, reason: "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled"}
+  ACCEL_MAP: {value: "", origin: USER_DECISION, decided: 2026-10-24, reason: "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled"}
+  BRAKE_MAP: {value: "", origin: USER_DECISION, decided: 2026-10-24, reason: "no map (scale 1 everywhere); the shape_fit stage fits it per weekend when shape.enabled"}
+  WARM_MASS_KG: {value: 768.0, unit: kg, origin: KNOWLEDGE, source: "same as MASS_KG (FIA 2026 minimum)"}
+  WARM_A_LAT_MAX: {value: 24.55040666666667, unit: m/s^2, origin: COMPUTED, source: "vehicle_calibration.json v_apex_hairpin_obs 19.19^2 / 15 m (Canada 2025)"}
+  WARM_A_BRK_MAX: {value: 47.35287, unit: m/s^2, origin: COMPUTED, source: "vehicle_calibration.json mu_long_obs 4.827 x 9.81 (Canada 2025)"}
+  WARM_P_MAX_W: {value: 797414.3999999999, unit: W, origin: COMPUTED, source: "vehicle_calibration.json P_over_m_obs 1038.3 x 768 (Canada 2025)"}
+  # --- no external source: tuned from FP1 (FITTED) or held for review ---
+  CDA_CORNER_M2: {value: 1.79, unit: m^2, origin: USER_DECISION, decided: 2026-10-20, pending_review: false, reason: "approved under D22 (user, 2026-10-20); held: sim 200-250 km/h acceleration is 30-60% above FP1 at any plausible drag (likely un-modelled deployment management); conflict 2026-10-20"}
+  CL_STRAIGHT_M2: {value: 1.4, unit: m^2, origin: USER_DECISION, decided: 2026-10-20, pending_review: false, reason: "approved under D22 (user, 2026-10-20); held: no Singapore corner is taken in straight mode, so no feature controls it (2026-10-20)"}
+  MU_LONG: {value: 1.35, origin: FITTED, source: "weekend/tune.py fixed tuning vs the 2026 FP1 speed graph (grill D5, D21); value = start", fit_target: "braking rate in the 200-300 km/h bands", fit_range: [0.9, 2.2]}
+  MU_DRIVE: {value: 1.0, origin: FITTED, source: "weekend/tune.py fixed tuning vs the 2026 FP1 speed graph (grill D5, D21); value = start", fit_target: "acceleration in the 100-150 km/h band", fit_range: [0.6, 1.6]}
+  KAPPA_CORNER_THRESH: {value: 0.005, unit: 1/m, origin: USER_DECISION, decided: 2026-10-20, pending_review: false, reason: "approved under D22 (user, 2026-10-20); held at the shipped value: overlaps the corner/straight downforce split (2026-10-20)"}
+  E_BATTERY_CAP_J: {value: 4000000, unit: J, origin: KNOWLEDGE, source: "2026 PU rules: max 4 MJ difference between max and min ES state of charge (SAE 2026-01-0188 abstract; f1technical.net 2026 ES thread). FIA Art. 5 text not yet checked"}
+  SOC_INIT: {value: 1.0, origin: USER_DECISION, decided: 2026-10-20, reason: "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack"}
+  SOC_SUPERCLIP_THRESH: {value: 0.3, origin: USER_DECISION, decided: 2026-10-20, reason: "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack", note: "defined but never used"}
+  SUPERCLIP_SPEED_FRAC: {value: 0.96, origin: USER_DECISION, decided: 2026-10-20, pending_review: false, reason: "approved under D22 (user, 2026-10-20); held at the shipped value: superclip signature inside the gate band (2026-10-20)"}
+  TRAIL_V_FULL_KMH: {value: 235.0, unit: km/h, origin: USER_DECISION, decided: 2026-10-20, pending_review: false, reason: "approved under D22 (user, 2026-10-20); held at the shipped value: its effect overlaps the other brake numbers; 4 Hz FP1 data cannot separate it (2026-10-20)"}
+  TRAIL_FRAC_MIN: {value: 0.4, origin: FITTED, source: "weekend/tune.py fixed tuning vs the 2026 FP1 speed graph (grill D5, D21); value = start", fit_target: "braking rate in the 100-150 km/h band", fit_range: [0.15, 1.0]}
+  TRAIL_EXP: {value: 1.6, origin: USER_DECISION, decided: 2026-10-20, pending_review: false, reason: "approved under D22 (user, 2026-10-20); held at the shipped value: tuning against 150-250 km/h braking pinned it at its range end (conflict, 2026-10-20)"}
+  BRAKE_DECEL_THRESH: {value: 4.0, unit: m/s^2, origin: USER_DECISION, decided: 2026-10-20, reason: "kept: measured effect <= 0.001 s at x0.5 and x1.5 (2026-10-20)"}
+  DECEL_WINDOW_S: {value: 0.4, unit: s, origin: USER_DECISION, decided: 2026-10-20, reason: "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack", note: "calibration-extraction window, not on the main path"}
+  WARM_A_ACC_MAX: {value: 39.24, unit: m/s^2, origin: USER_DECISION, decided: 2026-10-20, reason: "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack", note: "4 g warm-start ceiling"}
+  WARM_CDA: {value: 0.55, unit: m^2, origin: USER_DECISION, decided: 2026-10-20, reason: "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack", note: "not updated by --cda"}
+  WARM_V_CAP: {value: 110.0, unit: m/s, origin: USER_DECISION, decided: 2026-10-20, reason: "no effect on the final sim step (output byte-identical at x0.5 and x1.5, measured 2026-10-20); revisit when the line-building step joins the pack"}

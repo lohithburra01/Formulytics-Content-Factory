@@ -1,0 +1,34 @@
+[calibrate] overrides applied from D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\F1_Pipeline_Assets\calibration\vehicle_calibration.json
+[sim] car overrides: CDA_STRAIGHT=0.614 CL_CORNER=4.970 RHO=1.2242
+[sim] outline loaded: outer=2000 inner=2000
+[sim] corridor widths: r=[4.94,6.41] l=[4.94,6.41]
+[iqp] sparse IQP, up to 30 iters at N=800
+  iter 0: max|a|=5.261 mean|a|=2.877 (20.44s)
+  iter 1: max|a|=3.465 mean|a|=1.912 (19.27s)
+  iter 2: max|a|=2.478 mean|a|=1.173 (19.33s)
+  iter 3: max|a|=1.434 mean|a|=0.719 (20.01s)
+  iter 4: max|a|=1.301 mean|a|=0.430 (20.75s)
+  iter 5: max|a|=1.152 mean|a|=0.255 (19.72s)
+  iter 6: max|a|=0.931 mean|a|=0.158 (20.70s)
+  iter 7: max|a|=0.729 mean|a|=0.106 (23.27s)
+  iter 8: max|a|=0.561 mean|a|=0.075 (18.93s)
+  iter 9: max|a|=0.430 mean|a|=0.056 (20.22s)
+  iter 10: max|a|=0.329 mean|a|=0.044 (19.98s)
+  iter 11: max|a|=0.254 mean|a|=0.037 (20.92s)
+  iter 12: max|a|=0.194 mean|a|=0.031 (23.19s)
+  converged at iter 12
+[iqp] 2677 pts, 5355 m, converged=True
+[sim] IQP seed alpha_seed: max|a|=5.68m
+[sim] J_max=12.0 unwind×3.0 α-reg active on 562/800 straight stations
+[sim] refinement slack: max=3.59e-03 (511/800 stations relaxed)
+[sim] adaptive de-wobble: 496/2682 stations apex-preserved (R<~121 m)
+[sim] |κ|max: 0.1287 (IQP seed) → 0.0585 (refined)
+[sim] raceline: 2682 pts, 5366 m, |κ|max=0.0585
+[sim] S/F line at raceline idx 2617/2682 (frac 97.6%, |κ|=0.0001) — reference_2025_bahrain_q.csv x-corr peak=1725
+[sim] wrote raceline -> cache/bahrain/drsin12_rl.json
+  closure iter 0: v0=86.6 vN=86.5 d=0.06 T_lap=90.228s
+  closure iter 1: v0=86.6 vN=86.5 d=0.06 T_lap=89.376s
+  closure converged at iter 1
+[sim] lap: 89.376s (bang-bang) -> 89.905s (jerk-limited), +0.529s for realism
+[sim] wrote 2698 rows -> cache/bahrain/drsin12.csv
+[sanity] T_lap=89.90s  v=[74,334] km/h  superclip frames=141  gain_med=29.4  drop_med=53.0 km/h/s

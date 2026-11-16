@@ -1,0 +1,6 @@
+id: season/shape_fit_default_2026
+layer: season
+scope: {year: 2026}
+# default off; a weekend with an FP1 reference turns it on in its own note (weekend layer wins)
+values:
+  shape.enabled: {value: false, origin: USER_DECISION, decided: 2026-10-24, reason: "user 2026-10-24: match the FP1 speed pattern section by section (D25/D28); value proposed by Claude from the Austin fast-loop fit"}

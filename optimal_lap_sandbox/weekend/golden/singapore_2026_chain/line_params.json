@@ -1,0 +1,34 @@
+{
+ "accept_s": 0.0001,
+ "apex_tol_m": 0.15,
+ "apex_w": 1.5,
+ "apex_win": 20,
+ "base_inset_m": 1.0,
+ "every": 12,
+ "fixed_point_tol_m": 0.5,
+ "fixed_raceline_file": "cache/singapore/k3w_rl.json",
+ "margin_m": 0.3,
+ "max_rounds": 3,
+ "max_sweeps": 30,
+ "rule.t9_entry_outside": "T9 wide entry after T8 (RUS 2025 onboard)|2191|entry|outside",
+ "rule_retries": 2,
+ "rule_seed_frac": 0.8,
+ "rule_w": 1.5,
+ "rule_window_frac": [
+  0.33,
+  0.67
+ ],
+ "smooth_w": 0.006,
+ "steps_first": [
+  2.0,
+  1.0,
+  0.5,
+  0.25
+ ],
+ "steps_next": [
+  1.0,
+  0.5,
+  0.25
+ ],
+ "workers": 12
+}

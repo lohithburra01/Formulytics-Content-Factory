@@ -1,0 +1,6 @@
+id: track/singapore_2026_line_rules
+layer: track
+scope: {track: singapore, year: 2026}
+links: [track/singapore_2026_layout]
+values:
+  line.rule.t9_entry_outside: {value: "T9 wide entry after T8 (RUS 2025 onboard)|2191|entry|outside", origin: USER_DECISION, decided: 2026-10-08, reason: "user nudges #26/#29 (2026-10-08): after the T8 apex the line crosses back to the far side before T9, as RUS 2025; direction only, the optimiser decides the amount"}

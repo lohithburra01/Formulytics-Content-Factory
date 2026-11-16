@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "weekend-notes": {
+      "command": "C:/Users/91910/AppData/Local/Programs/Python/Python310/python.exe",
+      "args": ["D:/f1_hot_lap/OPTIMAL LAP SCRIPTS_sandbox/weekend/mcp_server.py"]
+    }
+  }
+}

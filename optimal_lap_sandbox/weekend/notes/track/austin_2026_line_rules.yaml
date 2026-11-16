@@ -1,0 +1,39 @@
+id: track/austin_2026_line_rules
+layer: track
+scope:
+  track: austin
+  year: 2026
+links:
+- track/austin_2026_layout
+values:
+  line.rule.t1_apex_off:
+    value: T1 real car does not touch the apex (FP1 video 9 s)|646|apex|outside
+    origin: USER_DECISION
+    reason: 'user review of Austin run 1 video: at 9 s the sim touches the T1 apex, the real car does not; direction only, the optimiser decides the amount'
+    decided: '2026-10-23'
+  line.rule.t12_exit_wide:
+    value: T12 exit runs wide (in-OUT-in-out-in)|3800|at|outside
+    origin: USER_DECISION
+    reason: 'user 2026-10-23/24: from 1:02 (T12-T15, 3500-4250 m) the real car goes inside-outside-inside-outside-inside, the sim hugs the inside; v1 rules contradicted each other (exit wide of one corner
+      and entry wide of the next shared a window), replaced by points'
+    decided: '2026-10-24'
+  line.rule.t13_apex:
+    value: T13 apex inside (in-out-IN-out-in)|3900|at|inside
+    origin: USER_DECISION
+    reason: 'user 2026-10-24: real car double-apexes T13/T14 (the base line merged them into one corner at 3963 m)'
+    decided: '2026-10-24'
+  line.rule.t13_t14_wide:
+    value: between T13 and T14 the car drifts out (in-out-in-OUT-in)|3965|at|outside|0.6
+    origin: USER_DECISION
+    reason: 'user 2026-10-24: real car is wide between the T13 and T14 apexes, the sim hugs the inside 3875-4050 m; 0.6 across (not the full edge: a full-edge swing in 130 m made a kink that broke the FP1 speed pattern, 2026-10-24)'
+    decided: '2026-10-24'
+  line.rule.t14_apex:
+    value: T14 apex inside|4030|at|inside
+    origin: USER_DECISION
+    reason: 'user 2026-10-24: second apex of the T13/T14 double apex'
+    decided: '2026-10-24'
+  line.rule.t14_exit_wide:
+    value: T14 exit wide before T15|4090|at|outside
+    origin: USER_DECISION
+    reason: 'user 2026-10-24: real car runs out of T14 to the edge, then into T15 (in-out-in-out-IN)'
+    decided: '2026-10-24'

@@ -1,0 +1,64 @@
+[elev] 2000 pts, -24.6-1.9 m ASL (span 26.6 m) � F1 official timing archive via FastF1, 2025 Azerbaijan Q VER lap 22 position.z
+[load] outer=2000 pts, inner=2000 pts
+[telemetry] 3087 samples, lap_time=102.851s, v=[75,340] km/h, soc=yes, mode=yes
+[kerbs] outer=0 corner zones, inner=0 corner zones
+[corridor.iqp] widths: right=[2.18,5.57]  left=[2.18,5.57]
+[raceline] loaded precomputed: 2974 pts, track_length=5949 m
+[align] synthetic CSV detected � alignment skipped
+[diag] raceline X[-963,1094] Y[-782,716]
+[diag] visual   X[-972,1102] Y[-792,725]
+[render] 3086 frames at 30fps (102.85s)
+[elev] span 26.5 m -> vertical exaggeration 4.1 (35 px of wall)
+  frame 60/3086
+  frame 120/3086
+  frame 180/3086
+  frame 240/3086
+  frame 300/3086
+  frame 360/3086
+  frame 420/3086
+  frame 480/3086
+  frame 540/3086
+  frame 600/3086
+  frame 660/3086
+  frame 720/3086
+  frame 780/3086
+  frame 840/3086
+  frame 900/3086
+  frame 960/3086
+  frame 1020/3086
+  frame 1080/3086
+  frame 1140/3086
+  frame 1200/3086
+  frame 1260/3086
+  frame 1320/3086
+  frame 1380/3086
+  frame 1440/3086
+  frame 1500/3086
+  frame 1560/3086
+  frame 1620/3086
+  frame 1680/3086
+  frame 1740/3086
+  frame 1800/3086
+  frame 1860/3086
+  frame 1920/3086
+  frame 1980/3086
+  frame 2040/3086
+  frame 2100/3086
+  frame 2160/3086
+  frame 2220/3086
+  frame 2280/3086
+  frame 2340/3086
+  frame 2400/3086
+  frame 2460/3086
+  frame 2520/3086
+  frame 2580/3086
+  frame 2640/3086
+  frame 2700/3086
+  frame 2760/3086
+  frame 2820/3086
+  frame 2880/3086
+  frame 2940/3086
+  frame 3000/3086
+  frame 3060/3086
+  frame 3086/3086
+[render] saved -> azerbaijan_grand_prix_2026_optimal_lap.mp4

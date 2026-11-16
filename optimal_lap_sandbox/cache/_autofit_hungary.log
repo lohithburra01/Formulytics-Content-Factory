@@ -1,0 +1,5 @@
+[autofit] hungary it0: cda=0.750 cl=4.600 lap=77.34s vtop=311.3 (f1=-10.9) tier[v25>170] f2=-4.3
+[autofit] hungary it1: cda=0.676 cl=5.000 lap=75.72s vtop=317.2 (f1=-5.0) tier[v25>170] f2=+4.7  RAIL-VIOLATION
+[autofit] hungary it2: cda=0.614 cl=4.789 lap=76.36s vtop=321.4 (f1=-0.8) tier[v25>170] f2=-0.2
+[autofit] hungary: converged=True cda=0.614 cl=4.789 lap=76.36s  low-speed residual median=+3.8 (reported, not fitted)
+[autofit] wrote D:\f1_hot_lap\OPTIMAL LAP SCRIPTS\cache\autofit_hungary.json

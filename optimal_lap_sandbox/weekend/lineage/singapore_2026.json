@@ -1,0 +1,233 @@
+{
+ "base_line": {
+  "key": "9818bfd111a8133d",
+  "result": {
+   "length_m": 4902.1044029875675,
+   "sf_index": 2,
+   "stations": 2451
+  }
+ },
+ "car_and_line": {
+  "key": "5392255e1d8a0698",
+  "result": {
+   "car": {
+    "CDA_STRAIGHT_M2": 0.769026,
+    "CL_CORNER_M2": 3.921829,
+    "MU_DRIVE": 1.37544,
+    "MU_LONG": 2.113254,
+    "TRAIL_FRAC_MIN": 0.562364,
+    "track.street_grip_k": 0.749824
+   },
+   "conflicts": [],
+   "fixed_point": true,
+   "pure_lap_s": 88.37887431594906,
+   "rounds": 3,
+   "rules": [
+    {
+     "corner": 7,
+     "gap_m": 0.058,
+     "label": "T9 wide entry after T8 (RUS 2025 onboard)",
+     "phase": "entry",
+     "satisfied": true,
+     "side": "outside",
+     "window_m": [
+      2060.6,
+      2127.2
+     ]
+    }
+   ]
+  }
+ },
+ "checks": {
+  "key": "df57664483f09a5a",
+  "result": {
+   "all_ok": false,
+   "corners_flagged": 5,
+   "gate_ok": false,
+   "knob": {
+    "name": "CL_CORNER_M2",
+    "note": "time knob: tuned to the lap-time target, not physics",
+    "origin": "FITTED",
+    "scale": 0.9202749887481333,
+    "value": 3.6091615177838627
+   },
+   "knob_conflict": null,
+   "lap_in_band": true,
+   "lap_s": 90.4637,
+   "pattern": 0.9526,
+   "rules_ok": true,
+   "sectors": [
+    {
+     "fp1_s": 27.237,
+     "gap_s": 0.169,
+     "n": 1,
+     "sim_s": 26.889,
+     "target_s": 26.72
+    },
+    {
+     "fp1_s": 39.035,
+     "gap_s": -0.197,
+     "n": 2,
+     "sim_s": 38.098,
+     "target_s": 38.295
+    },
+    {
+     "fp1_s": 26.002,
+     "gap_s": -0.033,
+     "n": 3,
+     "sim_s": 25.476,
+     "target_s": 25.509
+    }
+   ]
+  }
+ },
+ "final": {
+  "key": "70b609c6070c05f9",
+  "result": {
+   "lap_s": 90.4637,
+   "vmax_kmh": 308.059,
+   "vmin_kmh": 64.412
+  }
+ },
+ "refs": {
+  "key": "5c4e52c6f2669871",
+  "result": {
+   "branch": "fp1",
+   "shape_ref_csv": "shape_ref.csv",
+   "target_band_s": [
+    90.274,
+    90.774
+   ],
+   "target_s": 90.524
+  }
+ },
+ "time_knob": {
+  "key": "75086e0612f81de2",
+  "result": {
+   "conflict": null,
+   "knob": {
+    "name": "CL_CORNER_M2",
+    "note": "time knob: tuned to the lap-time target, not physics",
+    "origin": "FITTED",
+    "scale": 0.9202749887481333,
+    "value": 3.6091615177838627
+   },
+   "lap_before_s": 89.288,
+   "pattern_before": 0.9524,
+   "rules": [
+    {
+     "corner": 7,
+     "gap_m": 0.058,
+     "label": "T9 wide entry after T8 (RUS 2025 onboard)",
+     "phase": "entry",
+     "satisfied": true,
+     "side": "outside",
+     "window_m": [
+      2060.6,
+      2127.2
+     ]
+    }
+   ],
+   "target_s": 90.524,
+   "tests": [
+    {
+     "keeps_pattern": true,
+     "line_change_m": 0.521,
+     "name": "MU_LAT",
+     "pattern": 0.9551,
+     "reachable": true,
+     "rules": [
+      {
+       "corner": 7,
+       "gap_m": 0.055,
+       "label": "T9 wide entry after T8 (RUS 2025 onboard)",
+       "phase": "entry",
+       "satisfied": true,
+       "side": "outside",
+       "window_m": [
+        2060.6,
+        2127.2
+       ]
+      }
+     ],
+     "scale": 0.9664935862645507,
+     "start": 1.95,
+     "value": 1.884662493215874
+    },
+    {
+     "keeps_pattern": false,
+     "line_change_m": 0.5,
+     "name": "P_ICE_MAX_W",
+     "pattern": 0.9479,
+     "reachable": true,
+     "rules": [
+      {
+       "corner": 7,
+       "gap_m": 0.058,
+       "label": "T9 wide entry after T8 (RUS 2025 onboard)",
+       "phase": "entry",
+       "satisfied": true,
+       "side": "outside",
+       "window_m": [
+        2060.6,
+        2127.2
+       ]
+      }
+     ],
+     "scale": 0.6996366685256362,
+     "start": 400000.0,
+     "value": 279854.6674102545
+    },
+    {
+     "keeps_pattern": true,
+     "line_change_m": 0.513,
+     "name": "CL_CORNER_M2",
+     "pattern": 0.9566,
+     "reachable": true,
+     "rules": [
+      {
+       "corner": 7,
+       "gap_m": 0.058,
+       "label": "T9 wide entry after T8 (RUS 2025 onboard)",
+       "phase": "entry",
+       "satisfied": true,
+       "side": "outside",
+       "window_m": [
+        2060.6,
+        2127.2
+       ]
+      }
+     ],
+     "scale": 0.9202749887481333,
+     "start": 3.9218294117647057,
+     "value": 3.6091615177838627
+    },
+    {
+     "name": "CDA_STRAIGHT_M2",
+     "reachable": false
+    }
+   ]
+  }
+ },
+ "track": {
+  "key": "7f14fad66e7e8cff",
+  "result": {
+   "mirror_x": true,
+   "official_path": {
+    "length_m": 4866.751456226882,
+    "rms_m": 6.232967719350634,
+    "scale": 1.006541209033029,
+    "sf_shift_m": -14.600254368680647
+   }
+  }
+ },
+ "video": {
+  "key": "bfa831e9f976ba16",
+  "result": {
+   "lap_text_s": 90.524,
+   "sha256": "8eab1481db4e4e9216a9881aab1c8ce999ba0eb25da35dee99f48ce3ed1d20ec",
+   "video": "video.mp4",
+   "zoom": 28.0
+  }
+ }
+}
