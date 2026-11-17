@@ -1,0 +1,15 @@
+# One entry in the variant library: a reusable touch for an open slot.
+# Folder layout (design):  factory/variants/<id>/{variant.yaml, component.py, preview.gif}
+
+id: rain_filter
+slot: weather_layer
+trigger:                       # when the Brief step should propose it
+  any:
+    - forecast.rain_prob_session >= 0.5
+    - observed.rain_frac >= 0.1
+reason_template: "Rain is forecast for {session}; the lap is still simulated dry, the layer is mood only."
+honesty:                       # what the touch must never imply
+  - "Does not imply the simulated lap is a wet lap."
+component: component.py        # draws into the slot; logs its elements to the scene manifest
+status: approved               # proposed | approved | retired. Only the owner moves it to approved.
+appearances: []                # filled by the Score step: [{post, hold_3s, avg_watch_s, vs_format_median}]

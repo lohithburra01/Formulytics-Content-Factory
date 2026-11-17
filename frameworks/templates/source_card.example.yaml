@@ -1,0 +1,19 @@
+# Source capability card: what a data source can and cannot support.
+# Most wrong outputs start with data asked to do something it cannot do, so the card is written
+# during Discover and enforced by gates during Produce.
+
+id: f1_position_feed
+kind: api
+access: public, rate-limited; locked during live sessions
+rate_hz: ~4
+trust: low for geometry, high for timing
+supports:
+  - lap and sector times
+  - speed, throttle, brake and gear traces
+  - elevation (z) and a distance axis
+cannot_support:
+  - real car position on track: x/y is map-matched to one path, so no racing lines, widths or corner radii
+  - sub-metre geometry of any kind
+verified_by: "73 laps of one session lie within 3 cm of a single path"
+enforced_by_gates: [no_api_xy]
+fallbacks: [official_timing_archive, f1ih_backend]

@@ -1,0 +1,52 @@
+# Rulebook template (PUBLIC EXAMPLE, placeholder rules only)
+#
+# The real rulebook is the creator's own: observations about attention, retention and format
+# fit, written after watching how their audience reacts. It is private, gitignored and loaded
+# into the agents' context at run time (see ../PRODUCE.md section 5 and ../DISCOVER.md section 2).
+# Every rule below is a generic placeholder that shows the schema. None of them is a real rule
+# from the Formulytics rulebook.
+#
+# Copy this file to  factory/taste/rulebook.private.yaml  (gitignored) and write your own.
+
+version: 1
+owner: you
+scope: [produce]          # produce | discover | both
+
+rules:
+  - id: P01
+    insight: "The first frame already shows the subject, not a title card."   # placeholder
+    kind: hard            # hard = blocks the plan | soft = lowers its score | note = shown to the reviewer only
+    applies_to:
+      window_s: [0.0, 0.5]
+      region: full_frame
+    checked_by: manifest  # manifest | vlm | learned | human  (see promotion rule below)
+    check: first_subject_visible_by_s    # name of a function in rule_checks.py, required for manifest rules
+    params: {max_s: 0.5}
+    learned_from: "reel-2026-03-xx"      # the post that taught it
+    track_record:                        # filled by the Score step, never by hand
+      followed: {n: 0, median_hold_3s: null}
+      broken:   {n: 0, median_hold_3s: null}
+
+  - id: P02
+    insight: "On-screen text is readable on a phone at arm's length."           # placeholder
+    kind: hard
+    applies_to: {window_s: [0, end], region: text_elements}
+    checked_by: manifest
+    check: min_text_height_px
+    params: {min_px_at_1080w: 42}
+
+  - id: P03
+    insight: "The hook makes a promise the video keeps before the end."         # placeholder
+    kind: soft
+    applies_to: {window_s: [0, 3]}
+    checked_by: vlm       # judged by a vision-language model on preview frames + the planned script
+    rubric: "Does the opening state or imply a question? Is it answered later? Quote both."
+
+  - id: P04
+    insight: "Seasonal touches feel native to the place, never like a sticker." # placeholder
+    kind: note
+    checked_by: human
+
+# Promotion rule: every rule starts as `human`. It moves to `manifest` or `vlm` only when it has
+# a check plus a passing and a failing test case (same standard as the publishing gates).
+# It moves to `learned` only when a held-out evaluation shows the learned model agrees with it.

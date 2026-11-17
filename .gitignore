@@ -25,3 +25,8 @@ OPTIMAL LAP SCRIPTS/cache/era2017/sat/
 
 # Separate project with its own git
 airflow_sim_on_track/
+
+# Owner-private taste rulebooks (never committed; see frameworks/templates/rulebook.example.yaml)
+*.private.yaml
+factory/taste/rulebook*.yaml
+!frameworks/templates/*.example.yaml

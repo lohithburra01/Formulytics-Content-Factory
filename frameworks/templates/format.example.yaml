@@ -1,0 +1,36 @@
+# Format grammar: what is frozen, what may change each event, and under which contract.
+# This is the optimal-lap format written as a grammar (design; the toolkit itself exists in
+# OPTIMAL LAP SCRIPTS/, this file is the contract the Produce loop reads).
+
+id: optimal_lap
+version: 2026.11
+freeze_test: {reproduce_cases: 3, tolerance_s: 0.5, deterministic_rerun: true}
+autonomy: L1
+
+locked:                      # never changed by an agent; a change is a new format version
+  engine: "OPTIMAL LAP SCRIPTS/sim_2026_lap.py"
+  renderer: "OPTIMAL LAP SCRIPTS/raceline_video.py"
+  layout: [track_map, hud_speed, hud_lap_time, energy_state_labels]
+  palette: house
+  motion: {camera: follow, zoom: 28, fps: 30}
+  branding: [logo_corner, end_card]
+  numbers: from_facts_only   # every number on screen is a Fact id (see ../SHARED.md)
+
+open_slots:                  # one small new thing per event goes here
+  weather_layer:
+    contract: {must_match: forecast_or_observed, never_covers: [hud, track_map_line], max_opacity: 0.35}
+  car_prop:
+    contract: {max_screen_frac: 0.03, never_covers: [hud, numbers], never_changes: [numbers, line]}
+  driver_focus:
+    contract: {subject_must_exist_in: event_entry_list}
+  hook_card:
+    contract: {window_s: [0, 3], claims_gate: true, max_words: 9}
+  caption:
+    contract: {claims_gate: true}
+  camera_emphasis:
+    contract: {allowed: [hold_on_corner, slow_zoom], max_total_s: 4}
+  music_cue:
+    contract: {source: licensed_library, decided_by: human}
+
+gates: [realism, no_api_xy, apex_touch, real_trace, zoom, no_inflation, claims_supported]
+review_packet: [raceline_plot, speed_trace_overlay, hook_gif_per_variant, mid_frame]
