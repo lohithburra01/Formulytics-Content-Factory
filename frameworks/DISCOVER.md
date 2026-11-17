@@ -43,20 +43,7 @@ of the content, watch how it lands, and write down each observation as a rule wi
 
 ## 3. The loop
 
-```mermaid
-flowchart TB
-  L["<b>1. Landscape</b><br/>what broadcasters, teams<br/>and creators already show"] --> S
-  S["<b>2. Sources</b><br/>what the data can and<br/>cannot support (cards)"] --> A
-  A["<b>3. Angles</b><br/>candidates filtered by the<br/>private rulebook"] --> C1{"owner<br/>checkpoint 1"}
-  C1 -- shortlist --> P["<b>4. Probes</b><br/>cheapest test that can<br/>kill each angle"]
-  C1 -. vetoes become rules .-> R[("discovery<br/>rulebook")]
-  P --> V["<b>5. Prototype + validate</b><br/>one full piece, checked<br/>against an outside reference"]
-  V --> C2{"owner<br/>checkpoint 2"}
-  C2 -- approve --> F["<b>6. Freeze</b><br/>toolkit + grammar + gates<br/>+ SKILL.md, passes the freeze test"]
-  C2 -. rework .-> A
-  F --> OUT[("format ready for Produce")]
-  R -. read at every step .-> A
-```
+<p align="center"><img src="../docs/diagrams/discover.svg" alt="Discover loop" width="100%"></p>
 
 ### Step 1. Landscape
 

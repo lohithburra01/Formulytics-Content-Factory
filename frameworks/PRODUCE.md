@@ -27,21 +27,7 @@ applies them before rendering, as checks on a plan, and then scores whether they
 
 ## 2. The weekly loop
 
-```mermaid
-flowchart LR
-  B["<b>1. Brief</b><br/>what is new<br/>this event"] --> N["<b>2. Numbers</b><br/>toolkit run, blind,<br/>bounded retries"]
-  N --> G1{"number<br/>gates"}
-  G1 -- fail --> X["stop, report"]
-  G1 -- pass --> D["<b>3. Design</b><br/>touch + 3 hooks<br/>per candidate"]
-  D --> PF{"<b>4. Pre-flight</b><br/>rulebook vs<br/>planned manifest"}
-  PF -- fail --> D
-  PF -- pass --> PV["<b>5. Preview</b><br/>render 0-3 s,<br/>vision judge"]
-  PV --> RP["<b>6. Review packet</b><br/>owner picks"]
-  RP --> R["<b>7. Render, gate,<br/>publish</b>"]
-  R --> S["<b>8. Score</b><br/>vs real result<br/>and real retention"]
-  S --> LN["<b>9. Learn</b>"]
-  LN -. rules, variants, gates .-> B
-```
+<p align="center"><img src="../docs/diagrams/produce.svg" alt="Produce loop" width="100%"></p>
 
 | Step | Who does it | Script or model? | Output |
 |---|---|---|---|
@@ -236,7 +222,7 @@ evals/
 
 | Part | Status |
 |---|---|
-| Brief, Numbers, critic, gates, packaging, publish queue, run records | **Built** in [`factory/`](../factory), run on São Paulo 2026 |
+| Brief, Numbers, critic, gates, packaging, publish queue, run records | **Built** in [`factory/`](../factory) |
 | Lap-prediction scoring with misses public | **Built**: [`factory/evals/`](../factory/evals), 8 weekends scored |
 | Claims gate on captions | **Built**; extends to hook cards once Design exists |
 | Format grammar, variant library, rulebook, rule checks | **Designed**, templates in [`templates/`](templates) |
